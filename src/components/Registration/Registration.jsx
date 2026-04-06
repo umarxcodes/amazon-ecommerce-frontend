@@ -40,7 +40,7 @@ const  currentYear=new Date().getFullYear();
             
             <div className="divider">Already have an account?</div>
             
-            <NavLink to={"/LoginPage"}>
+            <NavLink to={"/Login"}>
 <span>Sign In </span>
             </NavLink>
         </form>
@@ -52,10 +52,7 @@ const  currentYear=new Date().getFullYear();
         <a href="#">Help</a>
         <br/><br/>
         © 1996-{currentYear}, Amazon.com, Inc. or its affiliates
-    <footer/>
-
-        
-        </footer>
+    </footer>
        </>
        
     )
