@@ -1,0 +1,1 @@
+import{j as s}from"./index-CNPNcMit.js";function o({as:n="input",label:l,hint:e,className:a="",children:i,...r}){const t=n;return s.jsxs("label",{className:`field ${a}`.trim(),children:[l?s.jsx("span",{className:"field__label",children:l}):null,i||s.jsx(t,{className:"field__control",...r}),e?s.jsx("span",{className:"field__hint",children:e}):null]})}export{o as F};

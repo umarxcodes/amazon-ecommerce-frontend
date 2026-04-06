@@ -1,0 +1,93 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Background wrapper */
+.signin-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  padding: 40px 0;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  height: 40vh;
+}
+
+/* White centered box */
+.signin-box {
+  text-align: center;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px 20px;
+  background-color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Title */
+.signin-title {
+  font-family: 'Amazon Ember', Arial, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f1111;
+  margin-bottom: 20px;
+}
+
+/* Yellow sign-in button */
+.signin-button {
+  background-color: #ffd814;
+  border: 1px solid #fcd200;
+  border-radius: 9999px; /* fully rounded */
+  color: #0f1111;
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 10px 50px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  width: 200px;
+}
+
+.signin-button:hover {
+  background-color: #f7ca00;
+  border-color: #f2c200;
+}
+
+/* Text below the button */
+.signin-text {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: #0f1111;
+  font-family: 'Amazon Ember', Arial, sans-serif;
+}
+
+/* Link styling */
+.signin-link {
+  color: #007185;
+  text-decoration: none;
+}
+
+.signin-link:hover {
+  color: #c7511f;
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .signin-box {
+    width: 90%;
+    padding: 30px 15px;
+  }
+
+  .signin-title {
+    font-size: 1.2rem;
+  }
+
+  .signin-button {
+    width: 80%;
+    padding: 10px 0;
+  }
+}

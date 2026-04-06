@@ -1,0 +1,1 @@
+import{j as e,L as s}from"./index-CNPNcMit.js";function r(){return e.jsx("div",{className:"container page",children:e.jsxs("div",{className:"empty-state",children:[e.jsx("h1",{children:"404"}),e.jsx("p",{children:"The page you requested is not part of this storefront."}),e.jsx(s,{to:"/",className:"primary-button",children:"Return home"})]})})}export{r as default};

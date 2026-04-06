@@ -1,0 +1,1 @@
+import{j as e}from"./index-CNPNcMit.js";function r({title:t,description:s,action:a}){return e.jsxs("div",{className:"empty-state",role:"status","aria-live":"polite",children:[e.jsx("span",{className:"empty-state__icon","aria-hidden":"true",children:"◌"}),e.jsx("h3",{children:t}),e.jsx("p",{children:s}),a]})}export{r as E};
