@@ -1,176 +1,77 @@
-// ===*CSS*===
+/*
+📁 FILE: Footer.jsx
+📌 PURPOSE: Amazon-style footer with links and branding
+======================================
+*/
 
+// =====*** IMPORTS ***=====
 import './Footer.css'
 
-import { NavLink } from 'react-router-dom'
+// =====*** COMPONENT: FooterColumn ***=====
+function FooterColumn({ title, links }) {
+  return (
+    <div className="footer-column">
+      <h3>{title}</h3>
+      <ul>
+        {links.map((link) => (
+          <li key={link}>
+            <a href="#">{link}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
 
-// ===* Footer Component *===
-export default function Footer() {
-
-  // ===* Scroll to Top Function *===
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-
-  }
-
-  // ===*Date  For Footer *===
-
-  const date = new Date().getFullYear()
+// =====*** COMPONENT ***=====
+export default function Footer({ linkGroups }) {
+  const currentYear = new Date().getFullYear()
 
   return (
     <footer className="amazon-footer">
-      {/* Back to Top Button */}
-      <div className="footer-back-to-top" onClick={scrollToTop}>
+      {/* Back to Top */}
+      <div
+        className="footer-back-to-top"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      >
         Back to top
       </div>
 
-      {/* Main Footer Content */}
+      {/* Main Footer */}
       <div className="footer-main">
         <div className="footer-container">
-          {/* Get to Know Us */}
-          <div className="footer-column">
-            <h3>Get to Know Us</h3>
-            <ul>
-              <li>
-                <a href="#">Careers</a>
-              </li>
-              <li>
-                <a href="#">Blog</a>
-              </li>
-              <li>
-                <a href="#">About Amazon</a>
-              </li>
-              <li>
-                <a href="#">Investor Relations</a>
-              </li>
-              <li>
-                <a href="#">Amazon Devices</a>
-              </li>
-              <li>
-                <a href="#">Amazon Science</a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Make Money with Us */}
-          <div className="footer-column">
-            <h3>Make Money with Us</h3>
-            <ul>
-              <li>  
-                <a href="#">Sell products on Amazon</a>
-              </li>
-              <li>
-                <a href="#">Sell on Amazon Business</a>
-              </li>
-              <li>
-                <a href="#">Sell apps on Amazon</a>
-              </li>
-              <li>
-                <a href="#">Become an Affiliate</a>
-              </li>
-              <li>
-                <a href="#">Advertise Your Products</a>
-              </li>
-              <li>
-                <a href="#">Self-Publish with Us</a>
-              </li>
-              <li>
-                <a href="#">Host an Amazon Hub</a>
-              </li>
-              <li>
-                <a href="#"> See More Make Money with Us</a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Amazon Payment Products */}
-          <div className="footer-column">
-            <h3>Amazon Payment Products</h3>
-            <ul>
-              <li>
-                <a href="#">Amazon Business Card</a>
-              </li>
-              <li>
-                <a href="#">Shop with Points</a>
-              </li>
-              <li>
-                <a href="#">Reload Your Balance</a>
-              </li>
-              <li>
-                <a href="#">Amazon Currency Converter</a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Let Us Help You */}
-          <div className="footer-column">
-            <h3>Let Us Help You</h3>
-            <ul>
-              <li>
-                <a href="#">Amazon and COVID-19</a>
-              </li>
-              <li>
-                <a href="#">Your Account</a>
-              </li>
-              <li>
-                <a href="#">Your Orders</a>
-              </li>
-              <li>
-                <a href="#">Shipping Rates & Policies</a>
-              </li>
-              <li>
-                <a href="#">Returns & Replacements</a>
-              </li>
-              <li>
-                <a href="#">Manage Your Content and Devices</a>
-              </li>
-              <li>
-                <a href="#">Help</a>
-              </li>
-            </ul>
-          </div>
+          {linkGroups?.map((group) => (
+            <FooterColumn key={group.title} {...group} />
+          ))}
         </div>
       </div>
 
       {/* Footer Bottom */}
       <div className="footer-bottom">
         <div className="footer-bottom-container">
-          {/* Amazon Logo */}
           <div className="footer-logo">
-            <NavLink to="/">
-              <img
-                src="/src/assets/images/amazon_logo.png"
-                alt="Amazon Logo"
-                className="footer-amazon-logo"
-              />
-            </NavLink>
+            <img
+              src="/src/assets/images/amazon_logo.png"
+              alt="Amazon Logo"
+              className="footer-amazon-logo"
+            />
           </div>
-
-          {/* Language and Country Selector */}
           <div className="footer-locale">
             <div className="locale-selector">
               <i className="fas fa-globe"></i>
-              <select className="search-dropdown">
-                <option value="English">English</option>
-                <option value="Urdu">Urdu</option>
-              </select>
-              <i className="fas fa-caret-down"></i>
+              <span>English</span>
             </div>
-
             <div className="currency-selector">
               <span className="currency-symbol">$</span>
-              <span className="currency-text">USD - U.S. Dollar</span>
-              <i className="fas fa-caret-down"></i>
+              <span>USD - U.S. Dollar</span>
             </div>
-
             <div className="country-selector">
               <img
-                src="/src/assets/images/uSA.png"
-                alt="USA Flag"
+                src="https://images-na.ssl-images-amazon.com/images/G/01/x-locale/cs/help/images/gateway/us_flag._CB370028093_.gif"
+                alt="USA"
                 className="country-flag"
               />
-              <span className="country-text">United States</span>
-              <i className="fas fa-caret-down"></i>
+              <span>United States</span>
             </div>
           </div>
         </div>
@@ -183,45 +84,17 @@ export default function Footer() {
             <a href="#">Amazon Music</a>
             <span>Stream millions of songs</span>
           </div>
-
-          <div className="footer-links-group">
-            <a href="#">Amazon Advertising</a>
-            <span>Find, attract, and engage customers</span>
-          </div>
-
-          <div className="footer-links-group">
-            <a href="#">Amazon Drive</a>
-            <span>Cloud storage from Amazon</span>
-          </div>
-
           <div className="footer-links-group">
             <a href="#">6pm</a>
             <span>Score deals on fashion brands</span>
           </div>
-
           <div className="footer-links-group">
-            <a href="#">AbeBooks</a>
-            <span>Books, art & collectibles</span>
+            <a href="#">IMDb</a>
+            <span>Movies, TV & Celebrities</span>
           </div>
-
           <div className="footer-links-group">
-            <a href="#">ACX</a>
-            <span>Audiobook Publishing Made Easy</span>
-          </div>
-
-          <div className="footer-links-group">
-            <a href="#">Sell on Amazon</a>
-            <span>Start a Selling Account</span>
-          </div>
-
-          <div className="footer-links-group">
-            <a href="#">Amazon Business</a>
-            <span>Everything For Your Business</span>
-          </div>
-
-          <div className="footer-links-group">
-            <a href="#">Amazon Fresh</a>
-            <span>Groceries & More Right To Your Door</span>
+            <a href="#">Box Office Mojo</a>
+            <span>Movie Box Office Data</span>
           </div>
         </div>
       </div>
@@ -232,10 +105,10 @@ export default function Footer() {
           <div className="copyright-links">
             <a href="#">Conditions of Use</a>
             <a href="#">Privacy Notice</a>
-            <a href="#">Your Ads Privacy Choices</a>
+            <a href="#">Interest-Based Ads</a>
           </div>
           <div className="copyright-text">
-            © 1996-{date}, Amazon.com, Inc. or its affiliates
+            © 1996-{currentYear}, Amazon.com, Inc. or its affiliates
           </div>
         </div>
       </div>

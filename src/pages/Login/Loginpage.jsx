@@ -1,9 +1,5 @@
-// ===*Login*===
-import Login from "../../components/Login/Login"
-export default function LoginPage(){
-    return (
-        <>
-        <Login/>
-        </>
-    )
+import Login from '../Login'
+
+export default function LoginPage() {
+  return <Login />
 }
