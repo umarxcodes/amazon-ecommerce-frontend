@@ -1,9 +1,5 @@
-import Registration from "../../components/Registration/Registration"
+import Register from '../Register'
 
-export default function RegistrationPage (){
-    return (
-        <>
-<Registration/>
-        </>
-    )
+export default function RegistrationPage() {
+  return <Register />
 }

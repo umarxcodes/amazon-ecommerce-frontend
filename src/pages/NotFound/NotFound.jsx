@@ -1,13 +1,5 @@
+import NotFound from '../NotFound'
 
-
-// ===*component*===
-import NotFoundPage from "../../components/NotFound/NotFound"
-
-export default function NotFound(){
-
-    return (
-        <>
-       <NotFoundPage/>
-        </>
-    )
+export default function NotFoundPage() {
+  return <NotFound />
 }
