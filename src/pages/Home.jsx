@@ -1,8 +1,8 @@
+import { Suspense, lazy } from 'react'
 import CategoryCard from '../components/CategoryCard.jsx'
 import Footer from '../components/Footer.jsx'
 import HeroBanner from '../components/HeroBanner.jsx'
 import LifestyleGrid from '../components/LifestyleGrid.jsx'
-import Navbar from '../components/Navbar.jsx'
 import ProductCarousel from '../components/ProductCarousel.jsx'
 import {
   footerColumns,
@@ -12,6 +12,8 @@ import {
   productCarousels,
   topCategories,
 } from '../data/mockProducts'
+
+const Header = lazy(() => import('../components/Header/Header'))
 
 export default function Home() {
   const [
@@ -28,7 +30,9 @@ export default function Home() {
 
   return (
     <div className="amazon-home">
-      <Navbar />
+      <Suspense fallback={null}>
+        <Header />
+      </Suspense>
 
       <main>
         <HeroBanner slides={heroSlides} />
