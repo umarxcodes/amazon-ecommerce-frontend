@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { fetchOrderByIdAPI, fetchOrdersAPI } from './orderAPI'
 import { getErrorMessage } from '../../utils/helpers'
+import { fulfilled, pending, rejected } from '../../app/sliceHelpers'
 
 const initialState = {
   items: [],
@@ -10,51 +11,65 @@ const initialState = {
   error: null,
 }
 
-export const fetchOrders = createAsyncThunk('orders/fetchOrders', async (_, thunkApi) => {
-  try {
-    return await fetchOrdersAPI()
-  } catch (error) {
-    return thunkApi.rejectWithValue(getErrorMessage(error, 'Unable to fetch orders'))
+export const fetchOrders = createAsyncThunk(
+  'orders/fetchOrders',
+  async (_, thunkApi) => {
+    try {
+      return await fetchOrdersAPI()
+    } catch (error) {
+      return thunkApi.rejectWithValue(
+        getErrorMessage(error, 'Unable to fetch orders')
+      )
+    }
   }
-})
+)
 
-export const fetchOrderById = createAsyncThunk('orders/fetchOrderById', async (orderId, thunkApi) => {
-  try {
-    return await fetchOrderByIdAPI(orderId)
-  } catch (error) {
-    return thunkApi.rejectWithValue(getErrorMessage(error, 'Unable to fetch order'))
+export const fetchOrderById = createAsyncThunk(
+  'orders/fetchOrderById',
+  async (orderId, thunkApi) => {
+    try {
+      return await fetchOrderByIdAPI(orderId)
+    } catch (error) {
+      return thunkApi.rejectWithValue(
+        getErrorMessage(error, 'Unable to fetch order')
+      )
+    }
   }
-})
+)
 
 const orderSlice = createSlice({
   name: 'orders',
   initialState,
-  reducers: {},
+  reducers: {
+    resetOrderStatus(state) {
+      state.status = 'idle'
+      state.detailStatus = 'idle'
+      state.error = null
+    },
+  },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchOrders.pending, (state) => {
-        state.status = 'loading'
-      })
+      .addCase(fetchOrders.pending, pending())
+      .addCase(fetchOrders.rejected, rejected())
       .addCase(fetchOrders.fulfilled, (state, action) => {
-        state.status = 'succeeded'
+        fulfilled()(state)
         state.items = action.payload.orders || action.payload.data || []
       })
-      .addCase(fetchOrders.rejected, (state, action) => {
-        state.status = 'failed'
-        state.error = action.payload
-      })
-      .addCase(fetchOrderById.pending, (state) => {
-        state.detailStatus = 'loading'
-      })
+      .addCase(fetchOrderById.pending, pending('detailStatus'))
+      .addCase(fetchOrderById.rejected, rejected('detailStatus'))
       .addCase(fetchOrderById.fulfilled, (state, action) => {
-        state.detailStatus = 'succeeded'
+        fulfilled('detailStatus')(state)
         state.selectedOrder = action.payload.order || action.payload
-      })
-      .addCase(fetchOrderById.rejected, (state, action) => {
-        state.detailStatus = 'failed'
-        state.error = action.payload
       })
   },
 })
 
+export const { resetOrderStatus } = orderSlice.actions
 export default orderSlice.reducer
+
+// ─── Selectors ────────────────────────────────────────────
+export const selectAllOrders = (state) => state.orders.items
+export const selectSelectedOrder = (state) => state.orders.selectedOrder
+export const selectOrderStatus = (state) => state.orders.status
+export const selectDetailStatus = (state) => state.orders.detailStatus
+export const selectOrderError = (state) => state.orders.error

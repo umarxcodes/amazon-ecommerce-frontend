@@ -1,10 +1,10 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import { useAppSelector } from '../app/hooks'
+import { useIsAdmin } from '../hooks/customHooks'
 
 export default function AdminRoute() {
-  const user = useAppSelector((state) => state.auth.user)
+  const isAdmin = useIsAdmin()
 
-  if (user?.role !== 'admin') {
+  if (!isAdmin) {
     return <Navigate to="/" replace />
   }
 

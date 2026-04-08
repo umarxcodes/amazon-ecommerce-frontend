@@ -24,7 +24,7 @@ function FooterColumn({ title, links }) {
 }
 
 // =====*** COMPONENT ***=====
-export default function Footer({ linkGroups }) {
+export default function Footer({ columns, services }) {
   const currentYear = new Date().getFullYear()
 
   return (
@@ -40,8 +40,12 @@ export default function Footer({ linkGroups }) {
       {/* Main Footer */}
       <div className="footer-main">
         <div className="footer-container">
-          {linkGroups?.map((group) => (
-            <FooterColumn key={group.title} {...group} />
+          {columns?.map((group) => (
+            <FooterColumn
+              key={group.title}
+              title={group.title}
+              links={group.links}
+            />
           ))}
         </div>
       </div>
@@ -80,22 +84,12 @@ export default function Footer({ linkGroups }) {
       {/* Footer Links */}
       <div className="footer-links">
         <div className="footer-links-container">
-          <div className="footer-links-group">
-            <a href="#">Amazon Music</a>
-            <span>Stream millions of songs</span>
-          </div>
-          <div className="footer-links-group">
-            <a href="#">6pm</a>
-            <span>Score deals on fashion brands</span>
-          </div>
-          <div className="footer-links-group">
-            <a href="#">IMDb</a>
-            <span>Movies, TV & Celebrities</span>
-          </div>
-          <div className="footer-links-group">
-            <a href="#">Box Office Mojo</a>
-            <span>Movie Box Office Data</span>
-          </div>
+          {services?.map((service) => (
+            <div key={service.title} className="footer-links-group">
+              <a href="#">{service.title}</a>
+              <span>{service.description}</span>
+            </div>
+          ))}
         </div>
       </div>
 

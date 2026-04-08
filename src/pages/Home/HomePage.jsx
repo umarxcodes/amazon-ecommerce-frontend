@@ -1,29 +1,95 @@
-// ===*Components*===
-import { useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import Carousel from '../../components/Carousel/Carousel'
-import ProductCard from '../../components/ProductCard/ProductCard'
-import { fetchProducts } from '../../features/products/productSlice'
+import { Suspense, lazy } from 'react'
+import CategoryCard from '../../features/home/components/CategoryCard'
+import Footer from '../../components/Footer/Footer'
+import HeroBanner from '../../features/home/components/HeroBanner'
+import LifestyleGrid from '../../features/home/components/LifestyleGrid'
+import ProductCarousel from '../../features/home/components/ProductCarousel'
+import {
+  footerColumns,
+  footerServices,
+  heroSlides,
+  lifestyleRows,
+  productCarousels,
+  topCategories,
+} from '../../data/mockProducts'
 
+const Header = lazy(() => import('../../components/Header/Header'))
 
-// ===*Home Page*===
 export default function HomePage() {
-  const dispatch = useDispatch()
+  const [
+    pcCarousel,
+    apparelCarousel,
+    trendingCarousel,
+    wirelessCarousel,
+    computersCarousel,
+    beautyCarousel,
+    bestBeautyCarousel,
+  ] = productCarousels
 
-  useEffect(() => {
-    dispatch(fetchProducts())
-  }, [dispatch])
+  const [homeLifestyleRow, mixedPromoRow, beautyHomeRow] = lifestyleRows
 
   return (
-    <>
-      {/* // ===*Carousel Page *=== */}
-      <Carousel />
+    <div className="amazon-home">
+      <Suspense fallback={null}>
+        <Header />
+      </Suspense>
 
-      {/* // ===*Product Cards*=== */}
-      <ProductCard />
+      <main>
+        <HeroBanner slides={heroSlides} />
 
-      {/* // ===*Sign - in components*=== */}
+        <div className="amazon-home__content amazon-home__content--lifted">
+          <section
+            className="amazon-home-shell amazon-card-grid"
+            id="top-categories"
+          >
+            {topCategories.map((card) => (
+              <CategoryCard
+                key={card.title}
+                title={card.title}
+                items={card.items}
+                linkText={card.linkText}
+              />
+            ))}
+          </section>
 
-    </>
+          <ProductCarousel
+            title={pcCarousel.title}
+            products={pcCarousel.products}
+          />
+          <ProductCarousel
+            title={apparelCarousel.title}
+            products={apparelCarousel.products}
+          />
+          <LifestyleGrid
+            id={homeLifestyleRow.id}
+            items={homeLifestyleRow.items}
+          />
+          <ProductCarousel
+            title={trendingCarousel.title}
+            products={trendingCarousel.products}
+          />
+          <LifestyleGrid id={mixedPromoRow.id} items={mixedPromoRow.items} />
+          <ProductCarousel
+            title={wirelessCarousel.title}
+            products={wirelessCarousel.products}
+          />
+          <LifestyleGrid id={beautyHomeRow.id} items={beautyHomeRow.items} />
+          <ProductCarousel
+            title={computersCarousel.title}
+            products={computersCarousel.products}
+          />
+          <ProductCarousel
+            title={beautyCarousel.title}
+            products={beautyCarousel.products}
+          />
+          <ProductCarousel
+            title={bestBeautyCarousel.title}
+            products={bestBeautyCarousel.products}
+          />
+        </div>
+      </main>
+
+      <Footer columns={footerColumns} services={footerServices} />
+    </div>
   )
 }

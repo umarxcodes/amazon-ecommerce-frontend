@@ -1,5 +1,5 @@
 import api from '../../services/axiosInstance'
-import { mockProducts } from '../../utils/mockData'
+import { mockProducts } from '../../data/mockProducts'
 
 const useMocks = import.meta.env.VITE_ENABLE_MOCKS === 'true'
 let mockCatalog = [...mockProducts]
@@ -48,7 +48,9 @@ export async function updateProductAPI({ productId, payload }) {
   if (useMocks) {
     const current = mockCatalog.find((product) => product._id === productId)
     const updatedProduct = { ...current, ...payload, _id: productId }
-    mockCatalog = mockCatalog.map((product) => (product._id === productId ? updatedProduct : product))
+    mockCatalog = mockCatalog.map((product) =>
+      product._id === productId ? updatedProduct : product
+    )
     return updatedProduct
   }
 

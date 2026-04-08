@@ -31,3 +31,6 @@ const uiSlice = createSlice({
 
 export const { addToast, removeToast } = uiSlice.actions
 export default uiSlice.reducer
+
+// ─── Selectors ────────────────────────────────────────────
+export const selectToasts = (state) => state.ui.toasts

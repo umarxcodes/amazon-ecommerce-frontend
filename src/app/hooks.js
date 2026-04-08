@@ -1,4 +1,6 @@
-import { useDispatch, useSelector } from 'react-redux'
-
-export const useAppDispatch = useDispatch
-export const useAppSelector = useSelector
+// Re-export all hooks from the canonical source
+export {
+  useAppDispatch,
+  useAppSelector,
+  useDebouncedValue,
+} from '../hooks/customHooks'

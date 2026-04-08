@@ -1,6 +1,11 @@
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { useAppDispatch, useAppSelector } from '../app/hooks'
+import {
+  useAppDispatch,
+  useSelectedOrder,
+  useOrderDetailStatus,
+  useOrderError,
+} from '../hooks/customHooks'
 import { fetchOrderById } from '../features/orders/orderSlice'
 import LoadingSpinner from '../components/UI/LoadingSpinner'
 import EmptyState from '../components/UI/EmptyState'
@@ -9,7 +14,9 @@ import { formatCurrency, formatDate } from '../utils/helpers'
 export default function OrderDetail() {
   const { orderId } = useParams()
   const dispatch = useAppDispatch()
-  const { selectedOrder, detailStatus, error } = useAppSelector((state) => state.orders)
+  const selectedOrder = useSelectedOrder()
+  const detailStatus = useOrderDetailStatus()
+  const error = useOrderError()
 
   useEffect(() => {
     dispatch(fetchOrderById(orderId))

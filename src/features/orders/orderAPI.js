@@ -1,5 +1,5 @@
 import api from '../../services/axiosInstance'
-import { mockOrders } from '../../utils/mockData'
+import { mockOrders } from '../../data/mockProducts'
 
 const useMocks = import.meta.env.VITE_ENABLE_MOCKS === 'true'
 

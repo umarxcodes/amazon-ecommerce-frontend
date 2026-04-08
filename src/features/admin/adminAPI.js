@@ -1,5 +1,5 @@
 import api from '../../services/axiosInstance'
-import { mockUsers } from '../../utils/mockData'
+import { mockUsers } from '../../data/mockProducts'
 
 const useMocks = import.meta.env.VITE_ENABLE_MOCKS === 'true'
 let mockTeam = [...mockUsers]
@@ -19,7 +19,9 @@ export async function updateUserRoleAPI({ userId, role }) {
   if (useMocks) {
     const currentUser = mockTeam.find((user) => user._id === userId)
     const updatedUser = { ...currentUser, role }
-    mockTeam = mockTeam.map((user) => (user._id === userId ? updatedUser : user))
+    mockTeam = mockTeam.map((user) =>
+      user._id === userId ? updatedUser : user
+    )
     return updatedUser
   }
 

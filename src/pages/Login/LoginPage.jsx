@@ -1,15 +1,20 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useAppDispatch, useAppSelector } from '../app/hooks'
-import AuthForm from '../features/auth/components/AuthForm'
-import { login } from '../features/auth/authSlice'
-import { addToast } from '../features/ui/uiSlice'
+import {
+  useAppDispatch,
+  useAuthStatus,
+  useAuthError,
+} from '../../hooks/customHooks'
+import AuthForm from '../../features/auth/components/AuthForm'
+import { login } from '../../features/auth/authSlice'
+import { addToast } from '../../features/ui/uiSlice'
 
-export default function Login() {
+export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
-  const { status, error } = useAppSelector((state) => state.auth)
+  const status = useAuthStatus()
+  const error = useAuthError()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -37,12 +42,25 @@ export default function Login() {
         title="Sign in"
         subtitle="Authenticate with your JWT-backed backend and unlock protected customer flows."
         fields={[
-          { name: 'email', label: 'Email', type: 'email', placeholder: 'admin@example.com' },
-          { name: 'password', label: 'Password', type: 'password', placeholder: '••••••••' },
+          {
+            name: 'email',
+            label: 'Email',
+            type: 'email',
+            placeholder: 'admin@example.com',
+          },
+          {
+            name: 'password',
+            label: 'Password',
+            type: 'password',
+            placeholder: '••••••••',
+          },
         ]}
         formData={formData}
         onChange={(event) =>
-          setFormData((current) => ({ ...current, [event.target.name]: event.target.value }))
+          setFormData((current) => ({
+            ...current,
+            [event.target.name]: event.target.value,
+          }))
         }
         onSubmit={handleSubmit}
         isSubmitting={status === 'loading'}

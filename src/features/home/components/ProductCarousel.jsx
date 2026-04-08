@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import ProductCard from './ProductCard.jsx'
+import ProductCard from '../../../features/products/components/ProductCard'
 
 export default function ProductCarousel({ title, products }) {
   const trackRef = useRef(null)
@@ -17,10 +17,18 @@ export default function ProductCarousel({ title, products }) {
         <h2>{title}</h2>
 
         <div className="amazon-carousel-section__actions">
-          <button type="button" onClick={() => handleScroll(-1)} aria-label={`Scroll ${title} left`}>
+          <button
+            type="button"
+            onClick={() => handleScroll(-1)}
+            aria-label={`Scroll ${title} left`}
+          >
             ‹
           </button>
-          <button type="button" onClick={() => handleScroll(1)} aria-label={`Scroll ${title} right`}>
+          <button
+            type="button"
+            onClick={() => handleScroll(1)}
+            aria-label={`Scroll ${title} right`}
+          >
             ›
           </button>
         </div>

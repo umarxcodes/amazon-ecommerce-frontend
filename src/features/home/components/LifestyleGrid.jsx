@@ -1,4 +1,4 @@
-import CategoryCard from './CategoryCard.jsx'
+import CategoryCard from './CategoryCard'
 
 export default function LifestyleGrid({ items, id }) {
   return (
