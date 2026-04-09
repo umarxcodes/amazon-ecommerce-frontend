@@ -1,12 +1,7 @@
+import { useSelector } from 'react-redux'
 import { Navigate, Outlet } from 'react-router-dom'
-import { useIsAdmin } from '../hooks/customHooks'
 
 export default function AdminRoute() {
-  const isAdmin = useIsAdmin()
-
-  if (!isAdmin) {
-    return <Navigate to="/" replace />
-  }
-
-  return <Outlet />
+  const user = useSelector((s) => s.auth.user)
+  return user?.role === 'admin' ? <Outlet /> : <Navigate to="/" replace />
 }

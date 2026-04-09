@@ -1,70 +1,66 @@
+import { memo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAppDispatch } from '../../../app/hooks'
-import { addToCart } from '../../cart/cartSlice'
-import { addToast } from '../../ui/uiSlice'
 import { formatCurrency } from '../../../utils/helpers'
-import Button from '../../../components/UI/Button'
+import StarRating from '../../../components/ui/StarRating'
+import './ProductCard.css'
 
-export default function ProductCard({ product }) {
-  const dispatch = useAppDispatch()
-  const price = product.salePrice || product.price
-  const rating = Number(product.rating || 0).toFixed(1)
-
-  const handleAddToCart = () => {
-    dispatch(
-      addToCart({
-        productId: product._id,
-        title: product.title,
-        image: product.image,
-        category: product.category,
-        price,
-        quantity: 1,
-      })
-    )
-    dispatch(
-      addToast({
-        title: 'Added to cart',
-        message: `${product.title} has been added to your cart.`,
-        type: 'success',
-      })
-    )
-  }
+function ProductCard({ product, onAddToCart }) {
+  const [imgErr, setImgErr] = useState(false)
+  const inStock = product.stock > 0
 
   return (
-    <article className="product-card">
-      <Link to={`/products/${product._id}`} className="product-card__image">
-        <img src={product.image} alt={product.title} loading="lazy" />
+    <div className="product-card">
+      <Link to={`/products/${product._id}`} className="product-card__img-wrap">
+        <img
+          src={
+            imgErr
+              ? 'https://placehold.co/300x300'
+              : product.image || 'https://placehold.co/300x300'
+          }
+          alt={product.title}
+          onError={() => setImgErr(true)}
+          loading="lazy"
+        />
+        {product.featured && (
+          <span className="product-card__badge">Featured</span>
+        )}
       </Link>
-
-      <div className="product-card__content">
-        <div className="product-card__meta">
-          <span className="chip">{product.category}</span>
-          {product.featured ? <span className="badge">Featured</span> : null}
-        </div>
-
-        <Link to={`/products/${product._id}`} className="product-card__title">
-          {product.title}
-        </Link>
-        <p className="product-card__brand">{product.brand}</p>
-
-        <div className="rating-row">
-          <span aria-label={`Rated ${rating} out of 5`}>{"★".repeat(Math.round(product.rating || 0))}</span>
-          <span>{rating}</span>
-          <span>{product.reviewsCount || 0} reviews</span>
-        </div>
-
-        <div className="price-row">
-          <strong>{formatCurrency(price)}</strong>
-          {product.salePrice ? <span>{formatCurrency(product.price)}</span> : null}
-        </div>
-
-        <div className="product-card__footer">
-          <span className="inventory-pill">{product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}</span>
-          <Button type="button" size="sm" onClick={handleAddToCart} disabled={product.stock < 1}>
-            Add to cart
-          </Button>
-        </div>
+      <Link to={`/products/${product._id}`} className="product-card__title">
+        {product.title}
+      </Link>
+      <StarRating rating={product.rating} count={product.reviewsCount} />
+      <div className="product-card__price">
+        <span className="product-card__price-symbol">$</span>
+        <span className="product-card__price-value">
+          {product.price ? Number(product.price).toFixed(2) : '0.00'}
+        </span>
       </div>
-    </article>
+      {product.salePrice && product.salePrice < product.price && (
+        <div className="product-card__was">
+          <s>{formatCurrency(product.price)}</s>
+        </div>
+      )}
+      {product.prime && <span className="product-card__prime">✓ prime</span>}
+      {!inStock && (
+        <span className="product-card__out">Currently unavailable</span>
+      )}
+      {inStock && product.stock < 5 && (
+        <span className="product-card__stock">Only {product.stock} left</span>
+      )}
+      {inStock && (
+        <button
+          type="button"
+          className="product-card__add-btn"
+          onClick={(e) => {
+            e.preventDefault()
+            onAddToCart?.(product)
+          }}
+        >
+          Add to Cart
+        </button>
+      )}
+    </div>
   )
 }
+
+export default memo(ProductCard)

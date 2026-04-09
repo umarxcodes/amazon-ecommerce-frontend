@@ -1,9 +1,9 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import {
+  createOrderAPI,
   fetchOrderByIdAPI,
   fetchOrdersAPI,
-  createOrderAPI,
-  createCheckoutSessionAPI,
+  startCheckoutAPI,
 } from './orderAPI'
 import { getErrorMessage } from '../../utils/helpers'
 import { fulfilled, pending, rejected } from '../../app/sliceHelpers'
@@ -13,8 +13,8 @@ const initialState = {
   selectedOrder: null,
   status: 'idle',
   detailStatus: 'idle',
-  checkoutStatus: 'idle',
   createOrderStatus: 'idle',
+  checkoutStatus: 'idle',
   error: null,
 }
 
@@ -23,9 +23,9 @@ export const fetchOrders = createAsyncThunk(
   async (_, thunkApi) => {
     try {
       return await fetchOrdersAPI()
-    } catch (error) {
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to fetch orders')
+        getErrorMessage(err, 'Unable to fetch orders')
       )
     }
   }
@@ -33,12 +33,12 @@ export const fetchOrders = createAsyncThunk(
 
 export const fetchOrderById = createAsyncThunk(
   'orders/fetchOrderById',
-  async (orderId, thunkApi) => {
+  async (id, thunkApi) => {
     try {
-      return await fetchOrderByIdAPI(orderId)
-    } catch (error) {
+      return await fetchOrderByIdAPI(id)
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to fetch order')
+        getErrorMessage(err, 'Unable to fetch order')
       )
     }
   }
@@ -46,12 +46,12 @@ export const fetchOrderById = createAsyncThunk(
 
 export const createOrder = createAsyncThunk(
   'orders/createOrder',
-  async (shippingAddress, thunkApi) => {
+  async (payload, thunkApi) => {
     try {
-      return await createOrderAPI(shippingAddress)
-    } catch (error) {
+      return await createOrderAPI(payload)
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to create order')
+        getErrorMessage(err, 'Unable to create order')
       )
     }
   }
@@ -61,15 +61,13 @@ export const startCheckout = createAsyncThunk(
   'orders/startCheckout',
   async (orderId, thunkApi) => {
     try {
-      const result = await createCheckoutSessionAPI(orderId)
-      // Redirect to Stripe checkout URL
-      if (result.url) {
-        window.location.href = result.url
-      }
-      return result
-    } catch (error) {
+      const { data } = await startCheckoutAPI(orderId)
+      const url = data?.url || data?.checkoutUrl
+      if (url) window.location.href = url
+      return data
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to start checkout')
+        getErrorMessage(err, 'Unable to start checkout')
       )
     }
   }
@@ -82,6 +80,7 @@ const orderSlice = createSlice({
     resetOrderStatus(state) {
       state.status = 'idle'
       state.detailStatus = 'idle'
+      state.createOrderStatus = 'idle'
       state.error = null
     },
   },
@@ -91,35 +90,33 @@ const orderSlice = createSlice({
       .addCase(fetchOrders.rejected, rejected())
       .addCase(fetchOrders.fulfilled, (state, action) => {
         fulfilled()(state)
-        state.items = action.payload.orders || action.payload.data || []
+        state.items = action.payload.orders || action.payload || []
       })
       .addCase(fetchOrderById.pending, pending('detailStatus'))
       .addCase(fetchOrderById.rejected, rejected('detailStatus'))
       .addCase(fetchOrderById.fulfilled, (state, action) => {
         fulfilled('detailStatus')(state)
-        state.selectedOrder = action.payload.order || action.payload
+        state.selectedOrder = action.payload
       })
       .addCase(createOrder.pending, pending('createOrderStatus'))
       .addCase(createOrder.rejected, rejected('createOrderStatus'))
       .addCase(createOrder.fulfilled, (state, action) => {
         fulfilled('createOrderStatus')(state)
-        const newOrder = action.payload.order || action.payload
-        state.items.unshift(newOrder)
+        state.items.unshift(action.payload)
       })
       .addCase(startCheckout.pending, pending('checkoutStatus'))
-      .addCase(startCheckout.rejected, rejected('checkoutStatus'))
       .addCase(startCheckout.fulfilled, fulfilled('checkoutStatus'))
+      .addCase(startCheckout.rejected, rejected('checkoutStatus'))
   },
 })
 
 export const { resetOrderStatus } = orderSlice.actions
 export default orderSlice.reducer
 
-// ─── Selectors ────────────────────────────────────────────
-export const selectAllOrders = (state) => state.orders.items
-export const selectSelectedOrder = (state) => state.orders.selectedOrder
-export const selectOrderStatus = (state) => state.orders.status
-export const selectDetailStatus = (state) => state.orders.detailStatus
-export const selectOrderError = (state) => state.orders.error
-export const selectCreateOrderStatus = (state) => state.orders.createOrderStatus
-export const selectCheckoutStatus = (state) => state.orders.checkoutStatus
+export const selectAllOrders = (s) => s.orders.items
+export const selectSelectedOrder = (s) => s.orders.selectedOrder
+export const selectOrderStatus = (s) => s.orders.status
+export const selectDetailStatus = (s) => s.orders.detailStatus
+export const selectOrderError = (s) => s.orders.error
+export const selectCreateOrderStatus = (s) => s.orders.createOrderStatus
+export const selectCheckoutStatus = (s) => s.orders.checkoutStatus

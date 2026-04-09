@@ -1,5 +1,8 @@
+import { Link } from 'react-router-dom'
+import StarRating from '../../../components/ui/StarRating'
 import ProductPricing from './ProductPricing'
 import ProductTabs from './ProductTabs'
+import './ProductInfo.css'
 
 const DEFAULT_FEATURES = [
   'Fast dispatch — ships within 24 hours',
@@ -10,65 +13,41 @@ const DEFAULT_FEATURES = [
 
 export default function ProductInfo({ product }) {
   const features = product.features || DEFAULT_FEATURES
+  const inStock = product.stock > 0
 
   return (
-    <div className="pdp-info">
-      <div className="pdp-info__breadcrumbs">
-        <a href="/">Home</a>
-        <span>/</span>
-        <a href={`/products?category=${product.category}`}>
-          {product.category}
-        </a>
-        <span>/</span>
-        <span className="pdp-info__breadcrumbs--current">{product.title}</span>
-      </div>
+    <div className="product-info">
+      <nav className="product-info__breadcrumbs">
+        <Link to="/">Home</Link> <span>/</span>
+        <Link to={`/products?category=${product.category}`}>{product.category}</Link> <span>/</span>
+        <span className="product-info__breadcrumbs--current">{product.title}</span>
+      </nav>
 
-      <span className="pdp-info__category-chip">{product.category}</span>
+      <span className="product-info__category">{product.category}</span>
+      <h1 className="product-info__title">{product.title}</h1>
 
-      <h1 className="pdp-info__title">{product.title}</h1>
+      {product.brand && (
+        <Link to={`/products?brand=${product.brand}`} className="product-info__brand">
+          Visit the <strong>{product.brand}</strong> Store
+        </Link>
+      )}
 
-      <a href={`/products?brand=${product.brand}`} className="pdp-info__brand">
-        Visit the <strong>{product.brand}</strong> Store
-      </a>
+      <StarRating rating={product.rating} count={product.reviewsCount} size="lg" />
 
-      <div className="pdp-info__rating">
-        <span
-          className="pdp-info__stars"
-          aria-label={`Rating: ${product.rating} out of 5`}
-        >
-          {'★'.repeat(Math.round(product.rating || 0))}
-          {'☆'.repeat(5 - Math.round(product.rating || 0))}
-        </span>
-        <span className="pdp-info__rating-value">
-          {Number(product.rating || 0).toFixed(1)}
-        </span>
-        <span className="pdp-info__reviews-count">
-          {(product.reviewsCount || 0).toLocaleString()} ratings
-        </span>
-      </div>
-
-      <hr className="pdp-info__divider" />
+      <hr className="product-info__divider" />
 
       <ProductPricing product={product} />
 
-      <ul className="pdp-info__features">
-        {features.map((feature, index) => (
-          <li key={index}>{feature}</li>
-        ))}
+      <ul className="product-info__features">
+        {features.map((f, i) => <li key={i}>{f}</li>)}
       </ul>
 
-      <div className="pdp-info__availability">
-        <span
-          className={`pdp-info__availability-dot ${
-            product.stock > 0 ? 'pdp-info__availability-dot--in-stock' : ''
-          }`}
-        />
-        <span>
-          {product.stock > 0
-            ? `In Stock — ${product.stock} available`
-            : 'Currently unavailable'}
-        </span>
+      <div className="product-info__stock">
+        <span className={`product-info__stock-dot ${inStock ? 'product-info__stock-dot--in' : 'product-info__stock-dot--out'}`} />
+        <span>{inStock ? `In Stock — ${product.stock} available` : 'Currently unavailable'}</span>
       </div>
+
+      <hr className="product-info__divider" />
 
       <ProductTabs product={product} />
     </div>

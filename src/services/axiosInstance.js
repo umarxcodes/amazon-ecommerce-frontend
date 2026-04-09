@@ -1,36 +1,32 @@
 import axios from 'axios'
 
 const axiosInstance = axios.create({
-  baseURL: 'https://amazon-ecommerce-backend.vercel.app/api',
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: import.meta.env.VITE_API_URL || 'https://amazon-ecommerce-backend.vercel.app/api',
   timeout: 15000,
+  headers: { 'Content-Type': 'application/json' },
 })
 
-// Attach JWT token to every request automatically
+// Attach JWT to every request
 axiosInstance.interceptors.request.use((config) => {
-  const session = localStorage.getItem('session')
-  if (session) {
-    const { token } = JSON.parse(session)
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
+  const raw = localStorage.getItem('amazon_clone_session')
+  if (raw) {
+    try {
+      const session = JSON.parse(raw)
+      if (session?.token) config.headers.Authorization = `Bearer ${session.token}`
+    } catch { /* ignore corrupt session */ }
   }
   return config
 })
 
-// Global error handling
+// Handle 401 globally — force re-login
 axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const status = error.response?.status
-    const message = error.response?.data?.message || error.message
-
-    if (status === 401) {
-      localStorage.removeItem('session')
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('amazon_clone_session')
       window.location.href = '/login'
     }
-
-    return Promise.reject(new Error(message))
+    return Promise.reject(err)
   }
 )
 

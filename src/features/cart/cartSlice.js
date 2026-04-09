@@ -28,71 +28,66 @@ const initialState = {
   error: null,
 }
 
-// Fetch cart from backend (call on app load if user is logged in)
 export const fetchCart = createAsyncThunk(
   'cart/fetchCart',
   async (_, thunkApi) => {
     try {
       return await fetchCartAPI()
-    } catch (error) {
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to fetch cart')
+        getErrorMessage(err, 'Unable to fetch cart')
       )
     }
   }
 )
 
-// Add item to backend cart
 export const addItemToCart = createAsyncThunk(
   'cart/addItemToCart',
   async (payload, thunkApi) => {
     try {
       return await addToCartAPI(payload)
-    } catch (error) {
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to add to cart')
+        getErrorMessage(err, 'Unable to add to cart')
       )
     }
   }
 )
 
-// Update quantity in backend cart
 export const updateItemQuantity = createAsyncThunk(
   'cart/updateItemQuantity',
   async (payload, thunkApi) => {
     try {
       return await updateCartItemAPI(payload)
-    } catch (error) {
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to update cart')
+        getErrorMessage(err, 'Unable to update cart')
       )
     }
   }
 )
 
-// Remove item from backend cart
 export const removeItem = createAsyncThunk(
   'cart/removeItem',
   async (productId, thunkApi) => {
     try {
       return await removeCartItemAPI(productId)
-    } catch (error) {
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to remove item')
+        getErrorMessage(err, 'Unable to remove item')
       )
     }
   }
 )
 
-// Clear backend cart
 export const clearBackendCart = createAsyncThunk(
   'cart/clearBackendCart',
   async (_, thunkApi) => {
     try {
       return await clearCartAPI()
-    } catch (error) {
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to clear cart')
+        getErrorMessage(err, 'Unable to clear cart')
       )
     }
   }
@@ -102,11 +97,10 @@ export const syncCart = createAsyncThunk(
   'cart/syncCart',
   async (_, thunkApi) => {
     try {
-      const items = thunkApi.getState().cart.items
-      return await syncCartAPI({ items })
-    } catch (error) {
+      return await syncCartAPI({ items: thunkApi.getState().cart.items })
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to sync cart')
+        getErrorMessage(err, 'Unable to sync cart')
       )
     }
   }
@@ -118,9 +112,9 @@ export const createCheckoutSession = createAsyncThunk(
     try {
       const { items, shippingAddress } = thunkApi.getState().cart
       return await createCheckoutSessionAPI({ items, shippingAddress })
-    } catch (error) {
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to start checkout')
+        getErrorMessage(err, 'Unable to start checkout')
       )
     }
   }
@@ -150,9 +144,7 @@ const cartSlice = createSlice({
     },
     updateCartQuantity(state, action) {
       const { productId, quantity } = action.payload
-      const item = state.items.find(
-        (cartItem) => cartItem.productId === productId
-      )
+      const item = state.items.find((i) => i.productId === productId)
       if (item) {
         item.quantity = Math.max(1, quantity)
       }
@@ -173,43 +165,36 @@ const cartSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // syncCart
       .addCase(syncCart.pending, pending())
       .addCase(syncCart.fulfilled, fulfilled())
       .addCase(syncCart.rejected, rejected())
-      // createCheckoutSession
       .addCase(createCheckoutSession.pending, pending('checkoutStatus'))
       .addCase(createCheckoutSession.fulfilled, fulfilled('checkoutStatus'))
       .addCase(createCheckoutSession.rejected, rejected('checkoutStatus'))
-      // fetchCart
       .addCase(fetchCart.pending, pending())
       .addCase(fetchCart.rejected, rejected())
       .addCase(fetchCart.fulfilled, (state, action) => {
         fulfilled()(state)
         state.items = action.payload?.items || []
       })
-      // addItemToCart
       .addCase(addItemToCart.pending, pending())
       .addCase(addItemToCart.rejected, rejected())
       .addCase(addItemToCart.fulfilled, (state, action) => {
         fulfilled()(state)
         state.items = action.payload?.items || state.items
       })
-      // updateItemQuantity
       .addCase(updateItemQuantity.pending, pending())
       .addCase(updateItemQuantity.rejected, rejected())
       .addCase(updateItemQuantity.fulfilled, (state, action) => {
         fulfilled()(state)
         state.items = action.payload?.items || state.items
       })
-      // removeItem
       .addCase(removeItem.pending, pending())
       .addCase(removeItem.rejected, rejected())
       .addCase(removeItem.fulfilled, (state, action) => {
         fulfilled()(state)
         state.items = action.payload?.items || state.items
       })
-      // clearBackendCart
       .addCase(clearBackendCart.pending, pending())
       .addCase(clearBackendCart.rejected, rejected())
       .addCase(clearBackendCart.fulfilled, (state) => {
@@ -230,16 +215,12 @@ export const {
 } = cartSlice.actions
 export default cartSlice.reducer
 
-// ─── Selectors ────────────────────────────────────────────
-export const selectCartItems = (state) => state.cart.items
-export const selectShippingAddress = (state) => state.cart.shippingAddress
-export const selectCartStatus = (state) => state.cart.status
-export const selectCheckoutStatus = (state) => state.cart.checkoutStatus
-export const selectCartError = (state) => state.cart.error
-export const selectCartCount = (state) =>
-  state.cart.items.reduce((total, item) => total + item.quantity, 0)
-export const selectCartTotal = (state) =>
-  state.cart.items.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  )
+export const selectCartItems = (s) => s.cart.items
+export const selectShippingAddress = (s) => s.cart.shippingAddress
+export const selectCartStatus = (s) => s.cart.status
+export const selectCheckoutStatus = (s) => s.cart.checkoutStatus
+export const selectCartError = (s) => s.cart.error
+export const selectCartCount = (s) =>
+  s.cart.items.reduce((t, i) => t + i.quantity, 0)
+export const selectCartTotal = (s) =>
+  s.cart.items.reduce((t, i) => t + i.price * i.quantity, 0)

@@ -1,0 +1,5 @@
+.stars { display: inline-flex; align-items: center; gap: 0.375rem; }
+.stars__value { color: #de7921; letter-spacing: 1px; }
+.stars--sm { font-size: 0.875rem; }
+.stars--lg { font-size: 1.25rem; }
+.stars__count { font-size: 0.8125rem; color: #007185; }

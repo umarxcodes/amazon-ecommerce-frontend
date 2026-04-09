@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import StarRating from '../../../components/ui/StarRating'
+import './ProductTabs.css'
 
 const TABS = [
   { key: 'description', label: 'Description' },
@@ -7,97 +9,35 @@ const TABS = [
 ]
 
 export default function ProductTabs({ product }) {
-  const [activeTab, setActiveTab] = useState('description')
+  const [active, setActive] = useState('description')
 
   return (
-    <div className="pdp-tabs">
-      <div className="pdp-tabs__bar" role="tablist">
-        {TABS.map((tab) => (
-          <button
-            key={tab.key}
-            role="tab"
-            type="button"
-            className={`pdp-tabs__tab ${
-              activeTab === tab.key ? 'pdp-tabs__tab--active' : ''
-            }`}
-            onClick={() => setActiveTab(tab.key)}
-            aria-selected={activeTab === tab.key}
-          >
-            {tab.label}
-          </button>
+    <div className="product-tabs">
+      <div className="product-tabs__bar" role="tablist">
+        {TABS.map((t) => (
+          <button key={t.key} type="button" role="tab" aria-selected={active === t.key} className={`product-tabs__tab ${active === t.key ? 'product-tabs__tab--active' : ''}`} onClick={() => setActive(t.key)}>{t.label}</button>
         ))}
       </div>
+      <div className="product-tabs__panel">
+        {active === 'description' && <p className="product-tabs__desc">{product.description || 'No description available.'}</p>}
 
-      <div className="pdp-tabs__panel">
-        {activeTab === 'description' && (
-          <div className="pdp-tabs__description">
-            <p>
-              {product.description ||
-                'No description available for this product.'}
-            </p>
-          </div>
+        {active === 'specifications' && (
+          <table className="product-tabs__specs">
+            <tbody>
+              <tr><th>Brand</th><td>{product.brand || 'N/A'}</td></tr>
+              <tr><th>Category</th><td>{product.category || 'N/A'}</td></tr>
+              <tr><th>Rating</th><td><StarRating rating={product.rating} /> {Number(product.rating || 0).toFixed(1)} / 5</td></tr>
+              <tr><th>Reviews</th><td>{(product.reviewsCount || 0).toLocaleString()}</td></tr>
+              <tr><th>Stock</th><td>{product.stock ?? 'N/A'} units</td></tr>
+              {product.featured && <tr><th>Featured</th><td>Yes</td></tr>}
+            </tbody>
+          </table>
         )}
 
-        {activeTab === 'specifications' && (
-          <div className="pdp-tabs__specifications">
-            <table className="pdp-tabs__spec-table">
-              <tbody>
-                <tr>
-                  <th>Brand</th>
-                  <td>{product.brand}</td>
-                </tr>
-                <tr>
-                  <th>Category</th>
-                  <td>{product.category}</td>
-                </tr>
-                <tr>
-                  <th>Rating</th>
-                  <td>{Number(product.rating || 0).toFixed(1)} / 5</td>
-                </tr>
-                <tr>
-                  <th>Reviews</th>
-                  <td>{(product.reviewsCount || 0).toLocaleString()}</td>
-                </tr>
-                {product.tags && product.tags.length > 0 && (
-                  <tr>
-                    <th>Tags</th>
-                    <td>{product.tags.join(', ')}</td>
-                  </tr>
-                )}
-                <tr>
-                  <th>Stock</th>
-                  <td>{product.stock} units</td>
-                </tr>
-                {product.featured && (
-                  <tr>
-                    <th>Featured</th>
-                    <td>Yes</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {activeTab === 'reviews' && (
-          <div className="pdp-tabs__reviews">
-            <div className="pdp-tabs__reviews-summary">
-              <div className="pdp-tabs__reviews-score">
-                <span className="pdp-tabs__reviews-score__number">
-                  {Number(product.rating || 0).toFixed(1)}
-                </span>
-                <span className="pdp-tabs__reviews-score__stars">
-                  {'★'.repeat(Math.round(product.rating || 0))}
-                </span>
-                <span>
-                  Based on {(product.reviewsCount || 0).toLocaleString()}{' '}
-                  ratings
-                </span>
-              </div>
-            </div>
-            <p className="pdp-tabs__reviews-placeholder">
-              Customer reviews will appear here once available.
-            </p>
+        {active === 'reviews' && (
+          <div className="product-tabs__reviews">
+            <StarRating rating={product.rating} count={product.reviewsCount} size="lg" />
+            <p className="product-tabs__reviews-placeholder">Customer reviews will appear here once available.</p>
           </div>
         )}
       </div>

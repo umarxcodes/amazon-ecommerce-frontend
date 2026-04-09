@@ -1,0 +1,3 @@
+.not-found { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 1rem; }
+.not-found__code { font-size: 6rem; font-weight: 700; color: #0f1111; margin: 0; }
+.not-found__text { font-size: 1.25rem; color: #565959; margin: 0; }

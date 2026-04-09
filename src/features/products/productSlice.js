@@ -32,9 +32,9 @@ export const fetchProducts = createAsyncThunk(
   async (params, thunkApi) => {
     try {
       return await fetchProductsAPI(params)
-    } catch (error) {
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to fetch products')
+        getErrorMessage(err, 'Unable to fetch products')
       )
     }
   }
@@ -42,12 +42,12 @@ export const fetchProducts = createAsyncThunk(
 
 export const fetchProductById = createAsyncThunk(
   'products/fetchProductById',
-  async (productId, thunkApi) => {
+  async (id, thunkApi) => {
     try {
-      return await fetchProductByIdAPI(productId)
-    } catch (error) {
+      return await fetchProductByIdAPI(id)
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to fetch product details')
+        getErrorMessage(err, 'Unable to fetch product')
       )
     }
   }
@@ -58,9 +58,9 @@ export const createProduct = createAsyncThunk(
   async (payload, thunkApi) => {
     try {
       return await createProductAPI(payload)
-    } catch (error) {
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to create product')
+        getErrorMessage(err, 'Unable to create product')
       )
     }
   }
@@ -71,9 +71,9 @@ export const updateProduct = createAsyncThunk(
   async (payload, thunkApi) => {
     try {
       return await updateProductAPI(payload)
-    } catch (error) {
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to update product')
+        getErrorMessage(err, 'Unable to update product')
       )
     }
   }
@@ -81,13 +81,13 @@ export const updateProduct = createAsyncThunk(
 
 export const deleteProduct = createAsyncThunk(
   'products/deleteProduct',
-  async (productId, thunkApi) => {
+  async (id, thunkApi) => {
     try {
-      await deleteProductAPI(productId)
-      return productId
-    } catch (error) {
+      await deleteProductAPI(id)
+      return id
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to delete product')
+        getErrorMessage(err, 'Unable to delete product')
       )
     }
   }
@@ -128,28 +128,24 @@ const productSlice = createSlice({
       .addCase(createProduct.rejected, rejected('mutationStatus'))
       .addCase(createProduct.fulfilled, (state, action) => {
         fulfilled('mutationStatus')(state)
-        const newProduct =
+        const p =
           action.payload.product || action.payload.data || action.payload
-        if (newProduct) state.items.unshift(newProduct)
+        if (p) state.items.unshift(p)
       })
       .addCase(updateProduct.pending, pending('mutationStatus'))
       .addCase(updateProduct.rejected, rejected('mutationStatus'))
       .addCase(updateProduct.fulfilled, (state, action) => {
-        const updated =
+        const p =
           action.payload.product || action.payload.data || action.payload
         fulfilled('mutationStatus')(state)
-        state.items = state.items.map((item) =>
-          item._id === updated._id ? updated : item
-        )
-        if (state.selectedProduct?._id === updated._id) {
-          state.selectedProduct = updated
-        }
+        state.items = state.items.map((i) => (i._id === p._id ? p : i))
+        if (state.selectedProduct?._id === p._id) state.selectedProduct = p
       })
       .addCase(deleteProduct.pending, pending('mutationStatus'))
       .addCase(deleteProduct.rejected, rejected('mutationStatus'))
       .addCase(deleteProduct.fulfilled, (state, action) => {
         fulfilled('mutationStatus')(state)
-        state.items = state.items.filter((item) => item._id !== action.payload)
+        state.items = state.items.filter((i) => i._id !== action.payload)
       })
   },
 })
@@ -158,13 +154,12 @@ export const { setProductFilters, resetSelectedProduct, resetMutationStatus } =
   productSlice.actions
 export default productSlice.reducer
 
-// ─── Selectors ────────────────────────────────────────────
-export const selectAllProducts = (state) => state.products.items
-export const selectSelectedProduct = (state) => state.products.selectedProduct
-export const selectProductFilters = (state) => state.products.filters
-export const selectProductTotal = (state) => state.products.total
-export const selectProductPages = (state) => state.products.pages
-export const selectProductStatus = (state) => state.products.status
-export const selectDetailStatus = (state) => state.products.detailStatus
-export const selectMutationStatus = (state) => state.products.mutationStatus
-export const selectProductError = (state) => state.products.error
+export const selectAllProducts = (s) => s.products.items
+export const selectSelectedProduct = (s) => s.products.selectedProduct
+export const selectProductFilters = (s) => s.products.filters
+export const selectProductTotal = (s) => s.products.total
+export const selectProductPages = (s) => s.products.pages
+export const selectProductStatus = (s) => s.products.status
+export const selectDetailStatus = (s) => s.products.detailStatus
+export const selectMutationStatus = (s) => s.products.mutationStatus
+export const selectProductError = (s) => s.products.error

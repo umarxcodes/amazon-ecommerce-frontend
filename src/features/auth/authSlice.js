@@ -1,18 +1,18 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { fetchProfile, loginUser, registerUser } from './authAPI'
+import { loginAPI, registerAPI, fetchProfileAPI } from './authAPI'
 import {
-  clearSession,
   getErrorMessage,
   loadSession,
   saveSession,
+  clearSession,
 } from '../../utils/helpers'
 import { fulfilled, pending, rejected } from '../../app/sliceHelpers'
 
-const persistedSession = loadSession()
+const session = loadSession()
 
 const initialState = {
-  user: persistedSession?.user || null,
-  token: persistedSession?.token || null,
+  user: session?.user || null,
+  token: session?.token || null,
   status: 'idle',
   profileStatus: 'idle',
   error: null,
@@ -22,35 +22,33 @@ export const login = createAsyncThunk(
   'auth/login',
   async (credentials, thunkApi) => {
     try {
-      return await loginUser(credentials)
-    } catch (error) {
-      return thunkApi.rejectWithValue(getErrorMessage(error, 'Login failed'))
+      return await loginAPI(credentials)
+    } catch (err) {
+      return thunkApi.rejectWithValue(getErrorMessage(err, 'Login failed'))
     }
   }
 )
 
 export const register = createAsyncThunk(
   'auth/register',
-  async (payload, thunkApi) => {
+  async (credentials, thunkApi) => {
     try {
-      return await registerUser(payload)
-    } catch (error) {
+      return await registerAPI(credentials)
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Registration failed')
+        getErrorMessage(err, 'Registration failed')
       )
     }
   }
 )
 
 export const getProfile = createAsyncThunk(
-  'auth/getProfile',
+  'auth/profile',
   async (_, thunkApi) => {
     try {
-      return await fetchProfile()
-    } catch (error) {
-      return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to load profile')
-      )
+      return await fetchProfileAPI()
+    } catch {
+      return null
     }
   }
 )
@@ -62,9 +60,6 @@ const authSlice = createSlice({
     logout(state) {
       state.user = null
       state.token = null
-      state.status = 'idle'
-      state.profileStatus = 'idle'
-      state.error = null
       clearSession()
     },
     resetAuthStatus(state) {
@@ -80,7 +75,7 @@ const authSlice = createSlice({
         fulfilled()(state)
         state.user = action.payload.user
         state.token = action.payload.token
-        saveSession(action.payload)
+        saveSession({ user: action.payload.user, token: action.payload.token })
       })
       .addCase(register.pending, pending())
       .addCase(register.rejected, rejected())
@@ -88,13 +83,13 @@ const authSlice = createSlice({
         fulfilled()(state)
         state.user = action.payload.user
         state.token = action.payload.token
-        saveSession(action.payload)
+        saveSession({ user: action.payload.user, token: action.payload.token })
       })
       .addCase(getProfile.pending, pending('profileStatus'))
       .addCase(getProfile.rejected, rejected('profileStatus'))
       .addCase(getProfile.fulfilled, (state, action) => {
         fulfilled('profileStatus')(state)
-        state.user = action.payload.user
+        if (action.payload) state.user = action.payload.user || action.payload
       })
   },
 })
@@ -102,11 +97,10 @@ const authSlice = createSlice({
 export const { logout, resetAuthStatus } = authSlice.actions
 export default authSlice.reducer
 
-// ─── Selectors ────────────────────────────────────────────
-export const selectCurrentUser = (state) => state.auth.user
-export const selectAuthToken = (state) => state.auth.token
-export const selectIsAuthenticated = (state) => Boolean(state.auth.token)
-export const selectIsAdmin = (state) => state.auth.user?.role === 'ADMIN'
-export const selectAuthStatus = (state) => state.auth.status
-export const selectProfileStatus = (state) => state.auth.profileStatus
-export const selectAuthError = (state) => state.auth.error
+export const selectCurrentUser = (s) => s.auth.user
+export const selectAuthToken = (s) => s.auth.token
+export const selectIsAuthenticated = (s) => !!s.auth.token
+export const selectIsAdmin = (s) => s.auth.user?.role === 'admin'
+export const selectAuthStatus = (s) => s.auth.status
+export const selectProfileStatus = (s) => s.auth.profileStatus
+export const selectAuthError = (s) => s.auth.error
