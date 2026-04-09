@@ -3,27 +3,29 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from '../layout/Layout'
 import ProtectedRoute from './ProtectedRoute'
 import AdminRoute from './AdminRoute'
-import LoadingSpinner from '../components/ui/LoadingSpinner'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 
 const HomePage = lazy(() => import('../pages/home/HomePage'))
-const LoginPage = lazy(() => import('../pages/login/LoginPage'))
-const RegisterPage = lazy(() => import('../pages/register/RegisterPage'))
-const AccountPage = lazy(() => import('../pages/account/AccountPage'))
-const ProductsPage = lazy(() => import('../pages/products/ProductsPage'))
+const LoginPage = lazy(() => import('../pages/LoginPage/LoginPage'))
+const RegisterPage = lazy(() => import('../pages/RegisterPage/RegisterPage'))
+const AccountPage = lazy(() => import('../pages/AccountPage/AccountPage'))
+const ProductsPage = lazy(() => import('../pages/ProductsPage/ProductsPage'))
 const ProductDetailPage = lazy(
-  () => import('../pages/product-detail/ProductDetailPage')
+  () => import('../pages/ProductDetailPage/ProductDetailPage')
 )
-const CartPage = lazy(() => import('../pages/cart/CartPage'))
-const CheckoutPage = lazy(() => import('../pages/checkout/CheckoutPage'))
-const OrdersPage = lazy(() => import('../pages/orders/OrdersPage'))
+const CartPage = lazy(() => import('../pages/CartPage/CartPage'))
+const CheckoutPage = lazy(() => import('../pages/CheckoutPage/CheckoutPage'))
+const OrdersPage = lazy(() => import('../pages/OrdersPage/OrdersPage'))
 const OrderDetailPage = lazy(
-  () => import('../pages/order-detail/OrderDetailPage')
+  () => import('../pages/OrderDetailPage/OrderDetailPage')
 )
 const AdminProductsPage = lazy(
-  () => import('../pages/admin-products/AdminProductsPage')
+  () => import('../pages/AdminProductsPage/AdminProductsPage')
 )
-const AdminUsersPage = lazy(() => import('../pages/admin-users/AdminUsersPage'))
-const NotFoundPage = lazy(() => import('../pages/not-found/NotFound'))
+const AdminUsersPage = lazy(
+  () => import('../pages/AdminUsersPage/AdminUsersPage')
+)
+const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage'))
 
 export default function AppRoutes() {
   return (

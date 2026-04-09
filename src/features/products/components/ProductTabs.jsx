@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import StarRating from '../../../components/ui/StarRating'
+import StarRating from '../../../components/shared/StarRating'
 import './ProductTabs.css'
 
 const TABS = [

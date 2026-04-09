@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
   useAppDispatch,
@@ -9,11 +9,11 @@ import {
 } from '../../hooks'
 import { fetchProducts } from '../../features/products/productSlice'
 import { addToast } from '../../features/ui/uiSlice'
-import Carousel from '../../components/ui/Carousel'
-import LoadingSpinner from '../../components/ui/LoadingSpinner'
-import EmptyState from '../../components/ui/EmptyState'
+import Carousel from '../../components/shared/Carousel'
+import LoadingSpinner from '../../components/shared/LoadingSpinner'
+import EmptyState from '../../components/shared/EmptyState'
 import ProductCard from '../../features/products/components/ProductCard'
-import SkeletonCard from '../../components/ui/SkeletonCard'
+import SkeletonCard from '../../components/shared/SkeletonCard'
 import './HomePage.css'
 
 const CAROUSEL_IMAGES = [
@@ -22,6 +22,8 @@ const CAROUSEL_IMAGES = [
   'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1600&q=80',
   'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?auto=format&fit=crop&w=1600&q=80',
 ]
+
+const FEATURED_COUNT = 8
 
 export default function HomePage() {
   const dispatch = useAppDispatch()
@@ -34,33 +36,36 @@ export default function HomePage() {
     if (status === 'idle') dispatch(fetchProducts())
   }, [dispatch, status])
 
-  const handleAddToCart = (product) => {
-    if (!isAuthenticated) {
+  const handleAddToCart = useCallback(
+    (product) => {
+      if (!isAuthenticated) {
+        dispatch(
+          addToast({
+            title: 'Sign in required',
+            message: 'Please sign in to add items.',
+            type: 'info',
+          })
+        )
+        return
+      }
+      addToCart({ productId: product._id, quantity: 1 })
       dispatch(
         addToast({
-          title: 'Sign in required',
-          message: 'Please sign in to add items.',
-          type: 'info',
+          title: 'Added',
+          message: `${product.title} added to cart.`,
+          type: 'success',
         })
       )
-      return
-    }
-    addToCart({ productId: product._id, quantity: 1 })
-    dispatch(
-      addToast({
-        title: 'Added',
-        message: `${product.title} added to cart.`,
-        type: 'success',
-      })
-    )
-  }
+    },
+    [dispatch, isAuthenticated, addToCart]
+  )
 
   if (status === 'loading' && !products.length) {
     return (
       <div className="home-page">
         <div className="home-page__skeleton-grid">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <SkeletonCard key={i} />
+          {Array.from({ length: FEATURED_COUNT }).map((_, index) => (
+            <SkeletonCard key={index} />
           ))}
         </div>
       </div>
@@ -84,13 +89,16 @@ export default function HomePage() {
     )
   }
 
+  const featuredProducts = products.slice(0, FEATURED_COUNT)
+  const remainingProducts = products.slice(FEATURED_COUNT)
+
   return (
     <div className="home-page">
       <Carousel images={CAROUSEL_IMAGES} autoPlayInterval={4000} />
 
       <section className="home-page__section">
         <h2 className="home-page__section-title">Featured Products</h2>
-        {products.length === 0 ? (
+        {featuredProducts.length === 0 ? (
           <EmptyState
             title="No products found"
             description="Check back soon for new arrivals."
@@ -102,10 +110,10 @@ export default function HomePage() {
           />
         ) : (
           <div className="home-page__grid">
-            {products.slice(0, 8).map((p) => (
+            {featuredProducts.map((product) => (
               <ProductCard
-                key={p._id}
-                product={p}
+                key={product._id}
+                product={product}
                 onAddToCart={handleAddToCart}
               />
             ))}
@@ -113,14 +121,14 @@ export default function HomePage() {
         )}
       </section>
 
-      {products.length > 8 && (
+      {remainingProducts.length > 0 && (
         <section className="home-page__section">
           <h2 className="home-page__section-title">More for You</h2>
           <div className="home-page__grid">
-            {products.slice(8).map((p) => (
+            {remainingProducts.map((product) => (
               <ProductCard
-                key={p._id}
-                product={p}
+                key={product._id}
+                product={product}
                 onAddToCart={handleAddToCart}
               />
             ))}

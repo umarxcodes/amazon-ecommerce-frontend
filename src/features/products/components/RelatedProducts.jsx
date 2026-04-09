@@ -7,7 +7,7 @@ import {
 } from '../../../hooks'
 import { fetchProducts } from '../productSlice'
 import { formatCurrency } from '../../../utils/helpers'
-import StarRating from '../../../components/ui/StarRating'
+import StarRating from '../../../components/shared/StarRating'
 import './RelatedProducts.css'
 
 export default function RelatedProducts({ currentProductId, category }) {
