@@ -1,0 +1,176 @@
+import { useState } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
+import {
+  useCartCount,
+  useCurrentUser,
+  useIsAuthenticated,
+  useAppDispatch,
+} from '../../hooks'
+import { logout } from '../../features/auth/authSlice'
+import { clearCart } from '../../features/cart/cartSlice'
+import { addToast } from '../../features/ui/uiSlice'
+import './Header.css'
+
+export default function Header() {
+  const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+  const cartCount = useCartCount()
+  const user = useCurrentUser()
+  const isAuthenticated = useIsAuthenticated()
+  const [searchInput, setSearchInput] = useState('')
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+
+  const handleSearch = (e) => {
+    e.preventDefault()
+    const q = searchInput.trim()
+    navigate(q ? `/products?search=${encodeURIComponent(q)}` : '/products')
+  }
+
+  const handleLogout = () => {
+    dispatch(logout())
+    dispatch(clearCart())
+    dispatch(
+      addToast({
+        title: 'Signed out',
+        message: 'You have been signed out.',
+        type: 'info',
+      })
+    )
+    navigate('/')
+  }
+
+  return (
+    <header id="top">
+      <div className="navbar-top">
+        <div className="nav-container">
+          <NavLink className="nav-logo-link" to="/">
+            <img
+              src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1775646248/amazon_logo_vwm0jl.png"
+              alt="Amazon"
+              className="nav-logo"
+            />
+          </NavLink>
+
+          <div className="nav-deliver-to">
+            <i className="nav-deliver-to__icon fas fa-map-marker-alt" />
+            <div>
+              <span className="nav-deliver-to__label">Deliver to</span>
+              <span className="nav-deliver-to__location">Pakistan</span>
+            </div>
+          </div>
+
+          <form className="nav-search" onSubmit={handleSearch}>
+            <select
+              className="nav-search__select"
+              defaultValue="All"
+              aria-label="Search department"
+            >
+              <option value="All">All</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Computers">Computers</option>
+              <option value="Gaming">Gaming</option>
+              <option value="Clothing">Clothing</option>
+              <option value="Home & Kitchen">Home & Kitchen</option>
+              <option value="Books">Books</option>
+              <option value="Beauty">Beauty</option>
+            </select>
+            <input
+              type="text"
+              className="nav-search__input"
+              placeholder="Search Amazon"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              aria-label="Search Amazon"
+            />
+            <button
+              type="submit"
+              className="nav-search__btn"
+              aria-label="Search"
+            >
+              <i className="fas fa-search" />
+            </button>
+          </form>
+
+          <div
+            className="nav-account"
+            onMouseEnter={() => setDropdownOpen(true)}
+            onMouseLeave={() => setDropdownOpen(false)}
+          >
+            {isAuthenticated ? (
+              <>
+                <button
+                  type="button"
+                  className="nav-account__trigger"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                >
+                  <span>Hello, {user?.name || 'User'}</span>
+                  <span>Account & Lists ▾</span>
+                </button>
+                {dropdownOpen && (
+                  <div className="nav-account__dropdown">
+                    <NavLink to="/orders" className="nav-account__link">
+                      My Orders
+                    </NavLink>
+                    <NavLink to="/account" className="nav-account__link">
+                      Your Account
+                    </NavLink>
+                    <button
+                      type="button"
+                      className="nav-account__link nav-account__signout"
+                      onClick={handleLogout}
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <NavLink className="nav-account__trigger" to="/login">
+                <span>
+                  Hello, <b>Sign in</b>
+                </span>
+                <span>Account & Lists ▾</span>
+              </NavLink>
+            )}
+          </div>
+
+          <NavLink className="nav-orders" to="/orders">
+            <span>Returns</span>
+            <span>& Orders</span>
+          </NavLink>
+
+          <NavLink className="nav-cart" to="/cart">
+            <img
+              src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1775645116/cart-icon_1_edned4.png"
+              alt=""
+            />
+            <span className="nav-cart__count">{cartCount}</span>
+            <span>Cart</span>
+          </NavLink>
+        </div>
+      </div>
+
+      <nav className="navbar-secondary">
+        <div className="nav-container">
+          <div className="nav-secondary-left">
+            <button type="button" className="nav-all-btn">
+              <i className="fas fa-bars" /> <span>All</span>
+            </button>
+            <NavLink className="nav-secondary-link" to="/products">
+              Today&apos;s Deals
+            </NavLink>
+            <span className="nav-secondary-link">Customer Service</span>
+            <span className="nav-secondary-link">Registry</span>
+            <span className="nav-secondary-link">Gift Cards</span>
+            <span className="nav-secondary-link">Sell</span>
+          </div>
+          <div className="nav-secondary-right">
+            <span className="nav-secondary-link">
+              Shop deals in Electronics
+            </span>
+          </div>
+        </div>
+      </nav>
+    </header>
+  )
+}

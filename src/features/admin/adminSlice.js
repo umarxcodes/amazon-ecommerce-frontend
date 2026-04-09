@@ -1,16 +1,16 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import {
+  createAdminAPI,
+  deactivateUserAPI,
   fetchUsersAPI,
   updateUserRoleAPI,
-  deactivateUserAPI,
-  createAdminAPI,
 } from './adminAPI'
 import { getErrorMessage } from '../../utils/helpers'
 import { fulfilled, pending, rejected } from '../../app/sliceHelpers'
 
 const initialState = {
   users: [],
-  usersStatus: 'idle',
+  status: 'idle',
   mutationStatus: 'idle',
   error: null,
 }
@@ -20,9 +20,9 @@ export const fetchUsers = createAsyncThunk(
   async (_, thunkApi) => {
     try {
       return await fetchUsersAPI()
-    } catch (error) {
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to fetch users')
+        getErrorMessage(err, 'Unable to fetch users')
       )
     }
   }
@@ -33,9 +33,9 @@ export const updateUserRole = createAsyncThunk(
   async (payload, thunkApi) => {
     try {
       return await updateUserRoleAPI(payload)
-    } catch (error) {
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to update user')
+        getErrorMessage(err, 'Unable to update role')
       )
     }
   }
@@ -43,12 +43,12 @@ export const updateUserRole = createAsyncThunk(
 
 export const deactivateUser = createAsyncThunk(
   'admin/deactivateUser',
-  async (userId, thunkApi) => {
+  async (id, thunkApi) => {
     try {
-      return await deactivateUserAPI(userId)
-    } catch (error) {
+      return await deactivateUserAPI(id)
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to deactivate user')
+        getErrorMessage(err, 'Unable to deactivate user')
       )
     }
   }
@@ -59,9 +59,9 @@ export const createAdmin = createAsyncThunk(
   async (payload, thunkApi) => {
     try {
       return await createAdminAPI(payload)
-    } catch (error) {
+    } catch (err) {
       return thunkApi.rejectWithValue(
-        getErrorMessage(error, 'Unable to create admin')
+        getErrorMessage(err, 'Unable to create admin')
       )
     }
   }
@@ -72,48 +72,46 @@ const adminSlice = createSlice({
   initialState,
   reducers: {
     resetAdminStatus(state) {
-      state.usersStatus = 'idle'
+      state.status = 'idle'
       state.mutationStatus = 'idle'
       state.error = null
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUsers.pending, pending('usersStatus'))
-      .addCase(fetchUsers.rejected, rejected('usersStatus'))
+      .addCase(fetchUsers.pending, pending())
+      .addCase(fetchUsers.rejected, rejected())
       .addCase(fetchUsers.fulfilled, (state, action) => {
-        fulfilled('usersStatus')(state)
-        state.users = action.payload.users || []
+        fulfilled()(state)
+        state.users = action.payload.users || action.payload || []
       })
       .addCase(updateUserRole.pending, pending('mutationStatus'))
       .addCase(updateUserRole.rejected, rejected('mutationStatus'))
       .addCase(updateUserRole.fulfilled, (state, action) => {
         fulfilled('mutationStatus')(state)
-        const updatedUser = action.payload.user || action.payload
-        state.users = state.users.map((user) =>
-          user._id === updatedUser._id ? updatedUser : user
-        )
+        const u = action.payload.user || action.payload
+        state.users = state.users.map((x) => (x._id === u._id ? u : x))
       })
       .addCase(deactivateUser.pending, pending('mutationStatus'))
       .addCase(deactivateUser.rejected, rejected('mutationStatus'))
       .addCase(deactivateUser.fulfilled, (state, action) => {
         fulfilled('mutationStatus')(state)
-        const updated = action.payload.user || action.payload
-        state.users = state.users.map((u) =>
-          u._id === updated._id ? updated : u
-        )
+        const u = action.payload.user || action.payload
+        state.users = state.users.map((x) => (x._id === u._id ? u : x))
       })
       .addCase(createAdmin.pending, pending('mutationStatus'))
       .addCase(createAdmin.rejected, rejected('mutationStatus'))
-      .addCase(createAdmin.fulfilled, fulfilled('mutationStatus'))
+      .addCase(createAdmin.fulfilled, (state, action) => {
+        fulfilled('mutationStatus')(state)
+        state.users.unshift(action.payload)
+      })
   },
 })
 
 export const { resetAdminStatus } = adminSlice.actions
 export default adminSlice.reducer
 
-// ─── Selectors ────────────────────────────────────────────
-export const selectAllUsers = (state) => state.admin.users
-export const selectUsersStatus = (state) => state.admin.usersStatus
-export const selectMutationStatus = (state) => state.admin.mutationStatus
-export const selectAdminError = (state) => state.admin.error
+export const selectAllUsers = (s) => s.admin.users
+export const selectUsersStatus = (s) => s.admin.status
+export const selectMutationStatus = (s) => s.admin.mutationStatus
+export const selectAdminError = (s) => s.admin.error

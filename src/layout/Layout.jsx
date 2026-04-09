@@ -1,65 +1,22 @@
 import { Suspense, lazy } from 'react'
 import { Outlet } from 'react-router-dom'
-
-// ===*style*===
+import LoadingSpinner from '../components/ui/LoadingSpinner'
 import './Layout.css'
 
-const Header = lazy(() => import('../components/Header/Header'))
-const Footer = lazy(() => import('../components/Footer/Footer'))
-
-// ===*Layout Component*===
+const Header = lazy(() => import('../components/layout/Header'))
+const Footer = lazy(() => import('../components/layout/Footer'))
 
 export default function Layout() {
   return (
     <>
-      <Suspense fallback={null}>
+      <Suspense fallback={<LoadingSpinner fullScreen />}>
         <Header />
       </Suspense>
-      <main className="main-body-layout">
+      <main className="main-content">
         <Outlet />
       </main>
-      <Suspense fallback={null}>
-        <Footer
-          columns={[
-            {
-              title: 'Get to Know Us',
-              links: [
-                'Careers',
-                'Blog',
-                'About Amazon',
-                'Investor Relations',
-                'Amazon Devices',
-              ],
-            },
-            {
-              title: 'Make Money with Us',
-              links: [
-                'Sell products on Amazon',
-                'Become an Affiliate',
-                'Advertise Your Products',
-                'Self-Publish with Us',
-              ],
-            },
-            {
-              title: 'Amazon Payment Products',
-              links: [
-                'Amazon Business Card',
-                'Shop with Points',
-                'Reload Your Balance',
-                'Amazon Currency Converter',
-              ],
-            },
-            {
-              title: 'Let Us Help You',
-              links: [
-                'Your Account',
-                'Returns Centre',
-                'Recalls and Product Safety Alerts',
-                'Help',
-              ],
-            },
-          ]}
-        />
+      <Suspense fallback={<LoadingSpinner fullScreen />}>
+        <Footer />
       </Suspense>
     </>
   )

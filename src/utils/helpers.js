@@ -1,34 +1,30 @@
 const SESSION_KEY = 'amazon_clone_session'
 const CART_KEY = 'amazon_clone_cart'
 
-export function formatCurrency(value, currency = 'USD') {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 2,
-  }).format(Number(value || 0))
+export function formatCurrency(amount) {
+  if (amount == null || isNaN(amount)) return '$0.00'
+  return `$${Number(amount).toFixed(2)}`
 }
 
-export function formatDate(value) {
-  if (!value) return 'N/A'
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
+export function formatDate(dateString) {
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
-  }).format(new Date(value))
+    month: 'long',
+    day: 'numeric',
+  })
 }
 
 export function loadSession() {
   try {
-    return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null')
+    return JSON.parse(localStorage.getItem(SESSION_KEY))
   } catch {
     return null
   }
 }
 
-export function saveSession(session) {
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+export function saveSession(data) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify(data))
 }
 
 export function clearSession() {
@@ -37,25 +33,26 @@ export function clearSession() {
 
 export function loadCart() {
   try {
-    return JSON.parse(localStorage.getItem(CART_KEY) || '[]')
+    return JSON.parse(localStorage.getItem(CART_KEY)) || []
   } catch {
     return []
   }
 }
 
-export function saveCart(cartItems) {
-  localStorage.setItem(CART_KEY, JSON.stringify(cartItems))
+export function saveCart(items) {
+  localStorage.setItem(CART_KEY, JSON.stringify(items))
 }
 
-export function getErrorMessage(error, fallback) {
-  return error?.message || fallback
+export function getErrorMessage(error, fallback = 'Something went wrong') {
+  if (error?.response?.data?.message) return error.response.data.message
+  if (error?.message) return error.message
+  return fallback
 }
 
-export function debounce(fn, wait = 250) {
-  let timeoutId
-
+export function debounce(fn, delay = 300) {
+  let timer
   return (...args) => {
-    window.clearTimeout(timeoutId)
-    timeoutId = window.setTimeout(() => fn(...args), wait)
+    clearTimeout(timer)
+    timer = setTimeout(() => fn(...args), delay)
   }
 }

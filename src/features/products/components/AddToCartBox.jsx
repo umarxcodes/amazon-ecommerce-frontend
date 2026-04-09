@@ -1,65 +1,60 @@
 import { useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { addToCart } from '../../cart/cartSlice'
+import { useAppDispatch, useIsAuthenticated } from '../../../hooks'
 import { addToast } from '../../ui/uiSlice'
 import { formatCurrency } from '../../../utils/helpers'
-import Button from '../../../components/UI/Button'
+import Button from '../../../components/ui/Button'
+import './AddToCartBox.css'
 
-export default function AddToCartBox({ product }) {
-  const dispatch = useDispatch()
-  const [quantity, setQuantity] = useState(1)
-  const price = product.salePrice || product.price
+export default function AddToCartBox({ product, onAddToCart }) {
+  const [qty, setQty] = useState(1)
+  const dispatch = useAppDispatch()
+  const isAuthenticated = useIsAuthenticated()
   const inStock = product.stock > 0
+  const price = product.salePrice || product.price
 
-  const handleAddToCart = () => {
-    dispatch(
-      addToCart({
-        productId: product._id,
-        title: product.title,
-        image: product.image,
-        category: product.category,
-        price,
-        quantity,
-      })
-    )
-    dispatch(
-      addToast({
-        title: 'Added to cart',
-        message: `${product.title}${quantity > 1 ? ` (x${quantity})` : ''} is ready for checkout.`,
-        type: 'success',
-      })
-    )
+  const handleAdd = () => {
+    if (!isAuthenticated) {
+      dispatch(
+        addToast({
+          title: 'Sign in required',
+          message: 'Please sign in to add items to your cart.',
+          type: 'info',
+        })
+      )
+      return
+    }
+    onAddToCart({
+      productId: product._id,
+      title: product.title,
+      image: product.image,
+      price,
+      quantity: qty,
+    })
   }
 
-  const handleBuyNow = () => {
-    handleAddToCart()
+  const handleBuy = () => {
+    handleAdd()
   }
 
   return (
-    <div className="pdp-buybox">
-      <div className="pdp-buybox__price">
-        <span className="pdp-buybox__price-label">Price</span>
+    <div className="buybox">
+      <div className="buybox__price">
         <strong>{formatCurrency(price)}</strong>
         {product.salePrice && product.salePrice < product.price && (
-          <>
-            <span className="pdp-buybox__was">
-              Was: {formatCurrency(product.price)}
-            </span>
-            <span className="pdp-buybox__save">
-              You save: {formatCurrency(product.price - product.salePrice)}
-            </span>
-          </>
+          <div className="buybox__was">
+            Was: <s>{formatCurrency(product.price)}</s>
+          </div>
         )}
       </div>
 
       {inStock && (
-        <div className="pdp-buybox__quantity">
-          <label htmlFor="pdp-qty">Quantity:</label>
+        <div className="buybox__qty">
+          <label htmlFor="buybox-qty">Qty:</label>
           <select
-            id="pdp-qty"
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
-            className="pdp-buybox__qty-select"
+            id="buybox-qty"
+            value={qty}
+            onChange={(e) => setQty(Number(e.target.value))}
+            className="buybox__qty-select"
           >
             {Array.from(
               { length: Math.min(product.stock, 10) },
@@ -73,47 +68,36 @@ export default function AddToCartBox({ product }) {
         </div>
       )}
 
-      <div className="pdp-buybox__actions">
+      <div className="buybox__actions">
         <Button
-          type="button"
           variant="primary"
           fullWidth
           disabled={!inStock}
-          onClick={handleAddToCart}
+          onClick={handleAdd}
         >
           {inStock ? 'Add to Cart' : 'Out of Stock'}
         </Button>
         <Button
-          type="button"
           variant="accent"
           fullWidth
           disabled={!inStock}
-          onClick={handleBuyNow}
+          onClick={handleBuy}
         >
           Buy Now
         </Button>
       </div>
 
-      <div className="pdp-buybox__stock">
-        <span
-          className={`pdp-buybox__stock-dot ${
-            inStock ? 'pdp-buybox__stock-dot--in' : 'pdp-buybox__stock-dot--out'
-          }`}
-        />
-        <span>
-          {inStock ? `${product.stock} in stock` : 'Currently unavailable'}
-        </span>
+      {product.stock > 0 && product.stock < 5 && (
+        <div className="buybox__stock-warning">
+          Only {product.stock} left in stock — order soon
+        </div>
+      )}
+
+      <div className="buybox__delivery">
+        <strong>FREE delivery</strong> <span>Wed, Apr 15</span>
       </div>
 
-      <div className="pdp-buybox__delivery">
-        <strong>FREE delivery</strong>
-        <span>Wed, Apr 15</span>
-      </div>
-
-      <div className="pdp-buybox__secure">
-        <span>🔒</span>
-        <span>Secure transaction</span>
-      </div>
+      <div className="buybox__secure">🔒 Secure transaction</div>
     </div>
   )
 }

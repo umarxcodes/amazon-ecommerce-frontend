@@ -1,0 +1,2 @@
+.surface-card { background: #fff; border: 1px solid #e3e6e6; border-radius: 8px; padding: 1.25rem; transition: box-shadow 0.2s; }
+.surface-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
