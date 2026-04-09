@@ -1328,6 +1328,26 @@ img {
   border-radius: 4px;
 }
 
+.amazon-home-hero__banner {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.amazon-home-hero__banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: opacity 0.6s ease;
+}
+
+.amazon-home-hero__overlay {
+  position: relative;
+  z-index: 2;
+}
+
 .amazon-home-hero__panel::after {
   content: '';
   position: absolute;
@@ -1335,13 +1355,15 @@ img {
   height: 190px;
   background: linear-gradient(180deg, rgba(234, 237, 237, 0) 0%, #eaeded 88%);
   pointer-events: none;
+  z-index: 3;
 }
 
 .amazon-home-hero__headline {
   position: relative;
-  z-index: 2;
+  z-index: 4;
   max-width: 340px;
   margin-left: 112px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .amazon-home-hero__eyebrow {
@@ -1365,7 +1387,7 @@ img {
 .amazon-home-hero__scene {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 3;
 }
 
 .amazon-home-hero__scene-item {
@@ -1413,7 +1435,7 @@ img {
   position: absolute;
   top: 0;
   bottom: 56px;
-  z-index: 2;
+  z-index: 5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1453,7 +1475,7 @@ img {
   right: 28px;
   bottom: 24px;
   left: 28px;
-  z-index: 2;
+  z-index: 5;
   display: flex;
   flex-wrap: wrap;
   gap: 8px 10px;
@@ -1560,7 +1582,13 @@ img {
 }
 
 .amazon-carousel-section {
+  position: relative;
   padding: 20px 20px 12px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: none;
+  overflow: hidden;
+  isolation: isolate;
 }
 
 .amazon-carousel-section__header {
@@ -1597,10 +1625,13 @@ img {
   display: flex;
   gap: 10px;
   overflow-x: auto;
+  overflow-y: hidden;
+  padding: 8px 4px 6px;
   padding-bottom: 6px;
   scroll-behavior: smooth;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
+  margin: 0 -4px;
 }
 
 .amazon-carousel-section__track::-webkit-scrollbar {
@@ -1654,6 +1685,102 @@ img {
   color: #0f1111;
   font-size: 12px;
   line-height: 1.35;
+}
+
+/* ─── Simplified Carousel Product Card ────────────────────── */
+
+.carousel-product-card {
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #e7e7e7;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  scroll-snap-align: start;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.carousel-product-card:hover {
+  box-shadow: 0 6px 16px rgba(15, 17, 17, 0.18);
+  transform: translateY(-3px) scale(1.02);
+  color: inherit;
+  z-index: 2;
+}
+
+.carousel-product-card__image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7f7f7;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.carousel-product-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.2s;
+}
+
+.carousel-product-card:hover .carousel-product-card__image img {
+  transform: scale(1.05);
+}
+
+.carousel-product-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.carousel-product-card__title {
+  margin: 0;
+  color: #0f1111;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.carousel-product-card:hover .carousel-product-card__title {
+  color: #c7511f;
+}
+
+.carousel-product-card__price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f1111;
+}
+
+@media (max-width: 768px) {
+  .carousel-product-card {
+    flex: 0 0 160px;
+    padding: 10px;
+  }
+
+  .carousel-product-card__title {
+    font-size: 12px;
+  }
+
+  .carousel-product-card__price {
+    font-size: 14px;
+  }
 }
 
 .amazon-home-footer {

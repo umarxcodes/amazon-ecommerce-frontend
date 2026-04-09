@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import ProductCard from '../../../features/products/components/ProductCard'
+import CarouselProductCard from './CarouselProductCard'
 
 export default function ProductCarousel({ title, products }) {
   const trackRef = useRef(null)
@@ -36,7 +36,7 @@ export default function ProductCarousel({ title, products }) {
 
       <div className="amazon-carousel-section__track" ref={trackRef}>
         {products.map((item) => (
-          <ProductCard key={item.title} product={item} />
+          <CarouselProductCard key={item.title} product={item} />
         ))}
       </div>
     </section>

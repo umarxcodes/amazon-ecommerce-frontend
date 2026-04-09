@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(yarn *)"
+      "Bash(yarn *)",
+      "Bash(mkdir *)",
+      "Bash(npm run *)"
     ]
-  }
+  },
+  "$version": 3
 }

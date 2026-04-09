@@ -14,22 +14,44 @@ export default function HeroBanner({ slides }) {
   const activeSlide = slides[activeIndex]
 
   return (
-    <section className="amazon-home-shell amazon-home-hero" aria-label="Featured promotions">
-      <div className="amazon-home-hero__panel" style={{ background: activeSlide.background }}>
-        <div className="amazon-home-hero__headline">
-          <span className="amazon-home-hero__eyebrow">{activeSlide.eyebrow}</span>
-          <h1>{activeSlide.title}</h1>
-        </div>
+    <section
+      className="amazon-home-shell amazon-home-hero"
+      aria-label="Featured promotions"
+    >
+      <div
+        className="amazon-home-hero__panel"
+        style={{ background: activeSlide.background }}
+      >
+        {/* Full-width banner image */}
+        {activeSlide.image && (
+          <div className="amazon-home-hero__banner">
+            <img
+              src={activeSlide.image}
+              alt={activeSlide.title}
+              className="amazon-home-hero__banner-img"
+            />
+          </div>
+        )}
 
-        <div className="amazon-home-hero__scene" aria-hidden="true">
-          {activeSlide.images.map((item, index) => (
-            <div
-              key={item.title}
-              className={`amazon-home-hero__scene-item amazon-home-hero__scene-item--${index + 1}`}
-            >
-              <img src={item.image} alt="" />
-            </div>
-          ))}
+        {/* Overlay content */}
+        <div className="amazon-home-hero__overlay">
+          <div className="amazon-home-hero__headline">
+            <span className="amazon-home-hero__eyebrow">
+              {activeSlide.eyebrow}
+            </span>
+            <h1>{activeSlide.title}</h1>
+          </div>
+
+          <div className="amazon-home-hero__scene" aria-hidden="true">
+            {activeSlide.images.map((item, index) => (
+              <div
+                key={item.title}
+                className={`amazon-home-hero__scene-item amazon-home-hero__scene-item--${index + 1}`}
+              >
+                <img src={item.image} alt="" />
+              </div>
+            ))}
+          </div>
         </div>
 
         <button
@@ -48,7 +70,9 @@ export default function HeroBanner({ slides }) {
         <button
           className="amazon-home-hero__arrow amazon-home-hero__arrow--right"
           type="button"
-          onClick={() => setActiveIndex((currentIndex) => (currentIndex + 1) % slides.length)}
+          onClick={() =>
+            setActiveIndex((currentIndex) => (currentIndex + 1) % slides.length)
+          }
           aria-label="Next slide"
         >
           ›
@@ -59,7 +83,11 @@ export default function HeroBanner({ slides }) {
           <a href="#top-categories">{activeSlide.ctaText}</a>
         </div>
 
-        <div className="amazon-home-hero__dots" role="tablist" aria-label="Hero slides">
+        <div
+          className="amazon-home-hero__dots"
+          role="tablist"
+          aria-label="Hero slides"
+        >
           {slides.map((slide, index) => (
             <button
               key={slide.title}

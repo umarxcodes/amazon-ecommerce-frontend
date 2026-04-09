@@ -55,7 +55,7 @@ export default function Footer({ columns, services }) {
         <div className="footer-bottom-container">
           <div className="footer-logo">
             <img
-              src="/src/assets/images/amazon_logo.png"
+              src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1775646248/amazon_logo_vwm0jl.png"
               alt="Amazon Logo"
               className="footer-amazon-logo"
             />
@@ -66,16 +66,16 @@ export default function Footer({ columns, services }) {
               <span>English</span>
             </div>
             <div className="currency-selector">
-              <span className="currency-symbol">$</span>
-              <span>USD - U.S. Dollar</span>
+              <span className="currency-symbol">PKR</span>
+              <span>Pakistani Rupee</span>
             </div>
             <div className="country-selector">
               <img
-                src="https://images-na.ssl-images-amazon.com/images/G/01/x-locale/cs/help/images/gateway/us_flag._CB370028093_.gif"
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZSSWew2B0nqzF4FUO7I-wnRaKpo1KANswquusvLqfyQ&s"
                 alt="USA"
                 className="country-flag"
               />
-              <span>United States</span>
+              <span>Pakistan</span>
             </div>
           </div>
         </div>

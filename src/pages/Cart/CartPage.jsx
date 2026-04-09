@@ -19,6 +19,7 @@ import { addToast } from '../../features/ui/uiSlice'
 import LoadingSpinner from '../../components/UI/LoadingSpinner'
 import EmptyState from '../../components/UI/EmptyState'
 import { formatCurrency } from '../../utils/helpers'
+import './CartPage.css'
 
 function CartItemRow({ item }) {
   const updateQty = useUpdateQty()

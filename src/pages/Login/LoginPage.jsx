@@ -7,6 +7,7 @@ import {
 } from '../../hooks/customHooks'
 import { login } from '../../features/auth/authSlice'
 import { addToast } from '../../features/ui/uiSlice'
+import './LoginPage.css'
 
 export default function LoginPage() {
   const navigate = useNavigate()

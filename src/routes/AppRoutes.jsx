@@ -4,6 +4,7 @@ import HomePage from '../pages/Home/HomePage'
 import CartPage from '../pages/Cart/CartPage'
 import LoginPage from '../pages/Login/LoginPage'
 import RegistrationPage from '../pages/Registration/RegistrationPage'
+import AccountPage from '../pages/Account/AccountPage'
 import NotFoundPage from '../pages/NotFound/NotFound'
 import AdminProductsPage from '../pages/AdminProductsPage/AdminProductsPage'
 import AdminUsersPage from '../pages/AdminUsersPage/AdminUsersPage'
@@ -21,6 +22,7 @@ export default function AppRoutes() {
       <Route index element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegistrationPage />} />
+      <Route path="/account" element={<AccountPage />} />
 
       {/* Routes with Layout wrapper */}
       <Route element={<Layout />}>

@@ -15,48 +15,43 @@ const product = (title, background, badge) => ({
   badge,
 })
 
-export const heroSlides = [
+const slides = [
   {
-    eyebrow: 'Limited-time event',
-    title: "Explore Mother's Day deals",
+    id: 1,
+    image: '/src/assets/images/Hero1.png',
+    title: 'Latest Electronics',
     description:
-      'Discover thoughtful picks across beauty, home, fashion, and tech with fresh spring savings.',
-    ctaText: 'Shop gift ideas',
-    background: 'linear-gradient(90deg, #dbe6d2 0%, #f6d8e0 45%, #f2d0a7 100%)',
-    images: [
-      tile('Fresh bouquets', 'ffffff', '360x240'),
-      tile('Gift bags', 'fde9e2', '360x240'),
-      tile('Kitchen helpers', 'ffffff', '360x240'),
-      tile('Beauty picks', 'fff2d8', '360x240'),
-    ],
+      'Discover the newest gadgets and tech innovations with exclusive deals.',
+    buttonText: 'Shop Now',
   },
   {
-    eyebrow: 'Home refresh',
-    title: 'Bring spring energy to every room',
-    description:
-      'Swap in warm neutrals, easy storage, and cheerful essentials for a lighter everyday setup.',
-    ctaText: 'Browse home finds',
-    background: 'linear-gradient(90deg, #d7ebf2 0%, #f5f2cf 45%, #f0d7c4 100%)',
-    images: [
-      tile('Decor accents', 'ffffff', '360x240'),
-      tile('Cozy bedding', 'e9f4ff', '360x240'),
-      tile('Entry storage', 'fff5de', '360x240'),
-      tile('Coffee corner', 'ffffff', '360x240'),
-    ],
+    id: 2,
+    image: '/src/assets/images/Hero2.png',
+    title: 'Summer Fashion',
+    description: 'Refresh your wardrobe with our latest summer collection.',
+    buttonText: 'Shop Now',
   },
   {
-    eyebrow: 'Trending now',
-    title: 'International best sellers are here',
+    id: 3,
+    image: '/src/assets/images/Hero3.png',
+    title: 'Home & Kitchen',
+    description: 'Upgrade your home with our premium kitchen appliances.',
+    buttonText: 'Shop Now',
+  },
+  {
+    id: 4,
+    image: '/src/assets/images/Hero4.png',
+    title: 'Fitness Equipment',
+    description: 'Get fit at home with our range of exercise equipment.',
+    buttonText: 'Shop Now',
+  },
+  {
+    id: 5,
+    image: '/src/assets/images/Hero5.jpg',
+    title: 'Best Sellers',
     description:
-      'Scroll the most-loved picks in apparel, beauty, wireless tech, and computer accessories.',
-    ctaText: 'See top picks',
-    background: 'linear-gradient(90deg, #dbe4f4 0%, #f7e9d7 45%, #f1d6e5 100%)',
-    images: [
-      tile('Statement tees', 'ffffff', '360x240'),
-      tile('Travel-ready beauty', 'fdf0f4', '360x240'),
-      tile('Smart gadgets', 'ffffff', '360x240'),
-      tile('Workstation upgrades', 'eef4ff', '360x240'),
-    ],
+      'Explore our collection of best-selling books across all genres.',
+    buttonText: 'Shop Now',
   },
 ]
 

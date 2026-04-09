@@ -16,29 +16,30 @@ export const bannerData = [
   {
     _id: 'banner-001',
     eyebrow: 'Limited-time event',
-    title: "Explore Mother's Day deals",
-    description:
-      'Discover thoughtful picks across beauty, home, fashion, and tech with fresh spring savings.',
-    ctaText: 'Shop gift ideas',
+    title: 'Celebrate Mom with gifts she’ll love',
     background: 'linear-gradient(90deg, #dbe6d2 0%, #f6d8e0 45%, #f2d0a7 100%)',
     isActive: true,
     sortOrder: 1,
     images: [
       {
         title: 'Fresh bouquets',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/mothers-day-bouquets.jpg', // Upload to Cloudinary: banner/mothers-day-bouquets.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/mothers-day-bouquets.jpg', // Upload to Cloudinary: banner/mothers-day-bouquets.jpg
       },
       {
         title: 'Gift bags',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/mothers-day-gift-bags.jpg', // Upload to Cloudinary: banner/mothers-day-gift-bags.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/mothers-day-gift-bags.jpg', // Upload to Cloudinary: banner/mothers-day-gift-bags.jpg
       },
       {
         title: 'Kitchen helpers',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/kitchen-helpers.jpg', // Upload to Cloudinary: banner/kitchen-helpers.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/kitchen-helpers.jpg', // Upload to Cloudinary: banner/kitchen-helpers.jpg
       },
       {
         title: 'Beauty picks',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/beauty-picks.jpg', // Upload to Cloudinary: banner/beauty-picks.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/beauty-picks.jpg', // Upload to Cloudinary: banner/beauty-picks.jpg
       },
     ],
   },
@@ -55,19 +56,23 @@ export const bannerData = [
     images: [
       {
         title: 'Decor accents',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/decor-accents.jpg', // Upload to Cloudinary: banner/decor-accents.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/decor-accents.jpg', // Upload to Cloudinary: banner/decor-accents.jpg
       },
       {
         title: 'Cozy bedding',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/cozy-bedding.jpg', // Upload to Cloudinary: banner/cozy-bedding.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/cozy-bedding.jpg', // Upload to Cloudinary: banner/cozy-bedding.jpg
       },
       {
         title: 'Entry storage',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/entry-storage.jpg', // Upload to Cloudinary: banner/entry-storage.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/entry-storage.jpg', // Upload to Cloudinary: banner/entry-storage.jpg
       },
       {
         title: 'Coffee corner',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/coffee-corner.jpg', // Upload to Cloudinary: banner/coffee-corner.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/coffee-corner.jpg', // Upload to Cloudinary: banner/coffee-corner.jpg
       },
     ],
   },
@@ -83,20 +88,21 @@ export const bannerData = [
     sortOrder: 3,
     images: [
       {
-        title: 'Statement tees',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/statement-tees.jpg', // Upload to Cloudinary: banner/statement-tees.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/statement-tees.jpg', // Upload to Cloudinary: banner/statement-tees.jpg
       },
       {
         title: 'Travel-ready beauty',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/travel-ready-beauty.jpg', // Upload to Cloudinary: banner/travel-ready-beauty.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/travel-ready-beauty.jpg', // Upload to Cloudinary: banner/travel-ready-beauty.jpg
       },
       {
-        title: 'Smart gadgets',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/smart-gadgets.jpg', // Upload to Cloudinary: banner/smart-gadgets.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/smart-gadgets.jpg', // Upload to Cloudinary: banner/smart-gadgets.jpg
       },
       {
-        title: 'Workstation upgrades',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/workstation-upgrades.jpg', // Upload to Cloudinary: banner/workstation-upgrades.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/banner/workstation-upgrades.jpg', // Upload to Cloudinary: banner/workstation-upgrades.jpg
       },
     ],
   },
@@ -120,19 +126,23 @@ export const categoryData = [
     items: [
       {
         title: 'Gaming monitor',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/gaming-monitor.jpg', // Upload to Cloudinary: categories/gaming-monitor.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/gaming-monitor.jpg', // Upload to Cloudinary: categories/gaming-monitor.jpg
       },
       {
         title: 'Mechanical keyboard',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/mechanical-keyboard.jpg', // Upload to Cloudinary: categories/mechanical-keyboard.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/mechanical-keyboard.jpg', // Upload to Cloudinary: categories/mechanical-keyboard.jpg
       },
       {
         title: 'Precision mouse',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/precision-mouse.jpg', // Upload to Cloudinary: categories/precision-mouse.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/precision-mouse.jpg', // Upload to Cloudinary: categories/precision-mouse.jpg
       },
       {
         title: 'RGB headset',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/rgb-headset.jpg', // Upload to Cloudinary: categories/rgb-headset.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/rgb-headset.jpg', // Upload to Cloudinary: categories/rgb-headset.jpg
       },
     ],
   },
@@ -145,19 +155,23 @@ export const categoryData = [
     items: [
       {
         title: 'Coffee machines',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/coffee-machines.jpg', // Upload to Cloudinary: categories/coffee-machines.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/coffee-machines.jpg', // Upload to Cloudinary: categories/coffee-machines.jpg
       },
       {
         title: 'Air fryers',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/air-fryers.jpg', // Upload to Cloudinary: categories/air-fryers.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/air-fryers.jpg', // Upload to Cloudinary: categories/air-fryers.jpg
       },
       {
         title: 'Mixers',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/mixers.jpg', // Upload to Cloudinary: categories/mixers.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/mixers.jpg', // Upload to Cloudinary: categories/mixers.jpg
       },
       {
         title: 'Cookware sets',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/cookware-sets.jpg', // Upload to Cloudinary: categories/cookware-sets.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/cookware-sets.jpg', // Upload to Cloudinary: categories/cookware-sets.jpg
       },
     ],
   },
@@ -170,19 +184,23 @@ export const categoryData = [
     items: [
       {
         title: 'Denim layers',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/denim-layers.jpg', // Upload to Cloudinary: categories/denim-layers.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/denim-layers.jpg', // Upload to Cloudinary: categories/denim-layers.jpg
       },
       {
         title: 'Bags & sneakers',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/bags-sneakers.jpg', // Upload to Cloudinary: categories/bags-sneakers.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/bags-sneakers.jpg', // Upload to Cloudinary: categories/bags-sneakers.jpg
       },
       {
         title: 'Easy dresses',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/easy-dresses.jpg', // Upload to Cloudinary: categories/easy-dresses.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/easy-dresses.jpg', // Upload to Cloudinary: categories/easy-dresses.jpg
       },
       {
         title: 'Jewelry picks',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/jewelry-picks.jpg', // Upload to Cloudinary: categories/jewelry-picks.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/jewelry-picks.jpg', // Upload to Cloudinary: categories/jewelry-picks.jpg
       },
     ],
   },
@@ -195,19 +213,23 @@ export const categoryData = [
     items: [
       {
         title: 'Spa favorites',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/spa-favorites.jpg', // Upload to Cloudinary: categories/spa-favorites.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/spa-favorites.jpg', // Upload to Cloudinary: categories/spa-favorites.jpg
       },
       {
         title: 'Fragrance sets',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/fragrance-sets.jpg', // Upload to Cloudinary: categories/fragrance-sets.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/fragrance-sets.jpg', // Upload to Cloudinary: categories/fragrance-sets.jpg
       },
       {
         title: 'Jewelry boxes',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/jewelry-boxes.jpg', // Upload to Cloudinary: categories/jewelry-boxes.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/jewelry-boxes.jpg', // Upload to Cloudinary: categories/jewelry-boxes.jpg
       },
       {
         title: 'Fresh florals',
-        image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/fresh-florals.jpg', // Upload to Cloudinary: categories/fresh-florals.jpg
+        image:
+          'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/categories/fresh-florals.jpg', // Upload to Cloudinary: categories/fresh-florals.jpg
       },
     ],
   },
@@ -233,13 +255,15 @@ export const productData = [
     rating: 4.6,
     reviewsCount: 1823,
     stock: 18,
-    description: 'Adaptive ANC headphones with all-day battery life. Features premium comfort cushions and 40-hour battery life with quick charge support.',
+    description:
+      'Adaptive ANC headphones with all-day battery life. Features premium comfort cushions and 40-hour battery life with quick charge support.',
     sku: 'EWH-NC-001',
     isActive: true,
     featured: true,
     tags: ['prime', 'wireless', 'noise-cancelling'],
     images: {
-      primary: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/echowave-headphones-primary.jpg', // Upload: products/echowave-headphones-primary.jpg
+      primary:
+        'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/echowave-headphones-primary.jpg', // Upload: products/echowave-headphones-primary.jpg
       gallery: [
         'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/echowave-headphones-angle1.jpg', // Upload: products/echowave-headphones-angle1.jpg
         'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/echowave-headphones-angle2.jpg', // Upload: products/echowave-headphones-angle2.jpg
@@ -264,13 +288,15 @@ export const productData = [
     rating: 4.8,
     reviewsCount: 982,
     stock: 33,
-    description: 'Glare-free reader with wireless charging and warm light. Waterproof design with adjustable warm light for comfortable reading day or night.',
+    description:
+      'Glare-free reader with wireless charging and warm light. Waterproof design with adjustable warm light for comfortable reading day or night.',
     sku: 'KDL-PW-SIG',
     isActive: true,
     featured: true,
     tags: ['bestseller', 'prime', 'waterproof'],
     images: {
-      primary: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/kindle-paperwhite-primary.jpg', // Upload: products/kindle-paperwhite-primary.jpg
+      primary:
+        'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/kindle-paperwhite-primary.jpg', // Upload: products/kindle-paperwhite-primary.jpg
       gallery: [
         'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/kindle-paperwhite-angle1.jpg', // Upload: products/kindle-paperwhite-angle1.jpg
         'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/kindle-paperwhite-screen.jpg', // Upload: products/kindle-paperwhite-screen.jpg
@@ -295,13 +321,15 @@ export const productData = [
     rating: 4.4,
     reviewsCount: 441,
     stock: 12,
-    description: 'Alexa-compatible hub, bulbs, and sensors bundle. Includes smart hub, 4 color bulbs, motion sensor, and door/window sensor for complete home automation.',
+    description:
+      'Alexa-compatible hub, bulbs, and sensors bundle. Includes smart hub, 4 color bulbs, motion sensor, and door/window sensor for complete home automation.',
     sku: 'SHS-START-001',
     isActive: true,
     featured: true,
     tags: ['smart-home', 'alexa', 'bundle'],
     images: {
-      primary: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/smart-home-kit-primary.jpg', // Upload: products/smart-home-kit-primary.jpg
+      primary:
+        'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/smart-home-kit-primary.jpg', // Upload: products/smart-home-kit-primary.jpg
       gallery: [
         'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/smart-home-kit-hub.jpg', // Upload: products/smart-home-kit-hub.jpg
         'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/smart-home-kit-bulbs.jpg', // Upload: products/smart-home-kit-bulbs.jpg
@@ -326,13 +354,15 @@ export const productData = [
     rating: 4.5,
     reviewsCount: 703,
     stock: 6,
-    description: 'Breathable office chair with lumbar support and headrest. Adjustable armrests, seat depth, and tilt tension for all-day comfort.',
+    description:
+      'Breathable office chair with lumbar support and headrest. Adjustable armrests, seat depth, and tilt tension for all-day comfort.',
     sku: 'ERG-CHR-MESH',
     isActive: true,
     featured: false,
     tags: ['workspace', 'ergonomic', 'adjustable'],
     images: {
-      primary: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/ergonomic-chair-primary.jpg', // Upload: products/ergonomic-chair-primary.jpg
+      primary:
+        'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/ergonomic-chair-primary.jpg', // Upload: products/ergonomic-chair-primary.jpg
       gallery: [
         'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/ergonomic-chair-side.jpg', // Upload: products/ergonomic-chair-side.jpg
         'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/ergonomic-chair-back.jpg', // Upload: products/ergonomic-chair-back.jpg
@@ -357,13 +387,15 @@ export const productData = [
     rating: 4.7,
     reviewsCount: 513,
     stock: 9,
-    description: '32-inch 4K panel built for work, streaming, and gaming. HDR600 support, USB-C connectivity, and built-in speakers for versatile use.',
+    description:
+      '32-inch 4K panel built for work, streaming, and gaming. HDR600 support, USB-C connectivity, and built-in speakers for versatile use.',
     sku: 'AUR-4K-32',
     isActive: true,
     featured: false,
     tags: ['4k', 'hdr', 'gaming'],
     images: {
-      primary: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/4k-monitor-primary.jpg', // Upload: products/4k-monitor-primary.jpg
+      primary:
+        'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/4k-monitor-primary.jpg', // Upload: products/4k-monitor-primary.jpg
       gallery: [
         'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/4k-monitor-angle.jpg', // Upload: products/4k-monitor-angle.jpg
         'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/4k-monitor-ports.jpg', // Upload: products/4k-monitor-ports.jpg
@@ -388,13 +420,15 @@ export const productData = [
     rating: 4.2,
     reviewsCount: 201,
     stock: 24,
-    description: 'Water-resistant duffel with dedicated laptop sleeve. Perfect for weekend trips with multiple compartments and shoe pocket.',
+    description:
+      'Water-resistant duffel with dedicated laptop sleeve. Perfect for weekend trips with multiple compartments and shoe pocket.',
     sku: 'NU-DUFFEL-WKND',
     isActive: true,
     featured: false,
     tags: ['travel', 'waterproof', 'laptop'],
     images: {
-      primary: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/travel-duffel-primary.jpg', // Upload: products/travel-duffel-primary.jpg
+      primary:
+        'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/travel-duffel-primary.jpg', // Upload: products/travel-duffel-primary.jpg
       gallery: [
         'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/travel-duffel-open.jpg', // Upload: products/travel-duffel-open.jpg
         'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/products/travel-duffel-side.jpg', // Upload: products/travel-duffel-side.jpg
@@ -476,19 +510,23 @@ export const promoBannerData = [
         items: [
           {
             title: 'Accent chairs',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/accent-chairs.jpg', // Upload: promo/accent-chairs.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/accent-chairs.jpg', // Upload: promo/accent-chairs.jpg
           },
           {
             title: 'Storage baskets',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/storage-baskets.jpg', // Upload: promo/storage-baskets.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/storage-baskets.jpg', // Upload: promo/storage-baskets.jpg
           },
           {
             title: 'Wall mirrors',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/wall-mirrors.jpg', // Upload: promo/wall-mirrors.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/wall-mirrors.jpg', // Upload: promo/wall-mirrors.jpg
           },
           {
             title: 'Table lamps',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/table-lamps.jpg', // Upload: promo/table-lamps.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/table-lamps.jpg', // Upload: promo/table-lamps.jpg
           },
         ],
       },
@@ -499,19 +537,23 @@ export const promoBannerData = [
         items: [
           {
             title: 'Yoga mats',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/yoga-mats.jpg', // Upload: promo/yoga-mats.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/yoga-mats.jpg', // Upload: promo/yoga-mats.jpg
           },
           {
             title: 'Free weights',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/free-weights.jpg', // Upload: promo/free-weights.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/free-weights.jpg', // Upload: promo/free-weights.jpg
           },
           {
             title: 'Running shoes',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/running-shoes.jpg', // Upload: promo/running-shoes.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/running-shoes.jpg', // Upload: promo/running-shoes.jpg
           },
           {
             title: 'Recovery tools',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/recovery-tools.jpg', // Upload: promo/recovery-tools.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/recovery-tools.jpg', // Upload: promo/recovery-tools.jpg
           },
         ],
       },
@@ -522,19 +564,23 @@ export const promoBannerData = [
         items: [
           {
             title: 'Beauty offers',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/beauty-offers.jpg', // Upload: promo/beauty-offers.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/beauty-offers.jpg', // Upload: promo/beauty-offers.jpg
           },
           {
             title: 'Tech markdowns',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/tech-markdowns.jpg', // Upload: promo/tech-markdowns.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/tech-markdowns.jpg', // Upload: promo/tech-markdowns.jpg
           },
           {
             title: 'Home favorites',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/home-favorites.jpg', // Upload: promo/home-favorites.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/home-favorites.jpg', // Upload: promo/home-favorites.jpg
           },
           {
             title: 'Kitchen picks',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/kitchen-picks.jpg', // Upload: promo/kitchen-picks.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/kitchen-picks.jpg', // Upload: promo/kitchen-picks.jpg
           },
         ],
       },
@@ -545,19 +591,23 @@ export const promoBannerData = [
         items: [
           {
             title: 'Portable speakers',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/portable-speakers.jpg', // Upload: promo/portable-speakers.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/portable-speakers.jpg', // Upload: promo/portable-speakers.jpg
           },
           {
             title: 'Charging pads',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/charging-pads.jpg', // Upload: promo/charging-pads.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/charging-pads.jpg', // Upload: promo/charging-pads.jpg
           },
           {
             title: 'Wearables',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/wearables.jpg', // Upload: promo/wearables.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/wearables.jpg', // Upload: promo/wearables.jpg
           },
           {
             title: 'Phone cases',
-            image: 'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/phone-cases.jpg', // Upload: promo/phone-cases.jpg
+            image:
+              'https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v1234567890/promo/phone-cases.jpg', // Upload: promo/phone-cases.jpg
           },
         ],
       },
@@ -635,17 +685,17 @@ PHASE 3: BULK UPLOAD TO DATABASE
 ==================================
 Step 8: Create Upload Script (Node.js/Express)
   Create file: backend/scripts/seedData.js
-  
+
   Example structure:
   ```javascript
   import { productData } from '../data/productData.js';
   import Product from '../models/Product.js';
-  
+
   async function seedProducts() {
     try {
       // Clear existing data
       await Product.deleteMany({});
-      
+
       // Bulk insert
       await Product.insertMany(productData);
       console.log('✅ Products uploaded successfully');
@@ -653,7 +703,7 @@ Step 8: Create Upload Script (Node.js/Express)
       console.error('❌ Upload failed:', error);
     }
   }
-  
+
   seedProducts();
   ```
 
@@ -672,16 +722,16 @@ PHASE 4: FRONTEND INTEGRATION
 Step 11: Create API Service Functions
   Create file: src/services/bannerService.js
   Create file: src/services/productService.js
-  
+
   Example:
   ```javascript
   const API_URL = import.meta.env.VITE_API_URL;
-  
+
   export const fetchBanners = async () => {
     const response = await fetch(`${API_URL}/api/banners`);
     return response.json();
   };
-  
+
   export const fetchProducts = async () => {
     const response = await fetch(`${API_URL}/api/products`);
     return response.json();
@@ -751,10 +801,10 @@ NEXT STEPS:
 // Use these exports in your upload script
 
 export const allData = {
-  banners: bannerData,           // 3 hero slides
-  categories: categoryData,      // 4 category cards
-  products: productData,         // 6 products
-  carousels: carouselData,       // 5 carousels
+  banners: bannerData, // 3 hero slides
+  categories: categoryData, // 4 category cards
+  products: productData, // 6 products
+  carousels: carouselData, // 5 carousels
   promoBanners: promoBannerData, // 1 promo section
 }
 
