@@ -136,6 +136,7 @@
 }
 .nav-account__trigger:hover {
   border-color: #fff;
+  color: #fff;
 }
 .nav-account__trigger:hover::after {
   background: #fff;
@@ -169,10 +170,6 @@
   text-align: left;
   cursor: pointer;
 }
-.nav-account__link:hover {
-  color: #c7511f;
-  text-decoration: underline;
-}
 .nav-account__signout {
   border-top: 1px solid #e3e6e6;
   margin-top: 0.5rem;
@@ -204,6 +201,7 @@
 }
 .nav-orders:hover {
   border-color: #fff;
+  color: #fff;
 }
 .nav-orders:hover::after {
   background: #fff;
@@ -240,6 +238,7 @@
 }
 .nav-cart:hover {
   border-color: #fff;
+  color: #fff;
 }
 .nav-cart:hover::after {
   background: #fff;
