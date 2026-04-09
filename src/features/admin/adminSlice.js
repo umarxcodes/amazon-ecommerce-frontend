@@ -1,5 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { fetchUsersAPI, updateUserRoleAPI } from './adminAPI'
+import {
+  fetchUsersAPI,
+  updateUserRoleAPI,
+  deactivateUserAPI,
+  createAdminAPI,
+} from './adminAPI'
 import { getErrorMessage } from '../../utils/helpers'
 import { fulfilled, pending, rejected } from '../../app/sliceHelpers'
 
@@ -36,6 +41,32 @@ export const updateUserRole = createAsyncThunk(
   }
 )
 
+export const deactivateUser = createAsyncThunk(
+  'admin/deactivateUser',
+  async (userId, thunkApi) => {
+    try {
+      return await deactivateUserAPI(userId)
+    } catch (error) {
+      return thunkApi.rejectWithValue(
+        getErrorMessage(error, 'Unable to deactivate user')
+      )
+    }
+  }
+)
+
+export const createAdmin = createAsyncThunk(
+  'admin/createAdmin',
+  async (payload, thunkApi) => {
+    try {
+      return await createAdminAPI(payload)
+    } catch (error) {
+      return thunkApi.rejectWithValue(
+        getErrorMessage(error, 'Unable to create admin')
+      )
+    }
+  }
+)
+
 const adminSlice = createSlice({
   name: 'admin',
   initialState,
@@ -63,6 +94,18 @@ const adminSlice = createSlice({
           user._id === updatedUser._id ? updatedUser : user
         )
       })
+      .addCase(deactivateUser.pending, pending('mutationStatus'))
+      .addCase(deactivateUser.rejected, rejected('mutationStatus'))
+      .addCase(deactivateUser.fulfilled, (state, action) => {
+        fulfilled('mutationStatus')(state)
+        const updated = action.payload.user || action.payload
+        state.users = state.users.map((u) =>
+          u._id === updated._id ? updated : u
+        )
+      })
+      .addCase(createAdmin.pending, pending('mutationStatus'))
+      .addCase(createAdmin.rejected, rejected('mutationStatus'))
+      .addCase(createAdmin.fulfilled, fulfilled('mutationStatus'))
   },
 })
 

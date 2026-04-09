@@ -1,28 +1,36 @@
-import api from '../../services/axiosInstance'
+import axiosInstance from '../../services/axiosInstance'
 
-const useMocks = import.meta.env.VITE_ENABLE_MOCKS === 'true'
-
-export async function syncCartAPI(payload) {
-  if (useMocks) {
-    return {
-      success: true,
-      ...payload,
-    }
-  }
-
-  const { data } = await api.put('/cart', payload)
-  return data
+export const fetchCartAPI = async () => {
+  const { data } = await axiosInstance.get('/cart')
+  return data.cart || data.data || data
 }
 
-export async function createCheckoutSessionAPI(payload) {
-  if (useMocks) {
-    return {
-      success: true,
-      checkoutUrl: '',
-      ...payload,
-    }
-  }
+export const addToCartAPI = async ({ productId, quantity }) => {
+  const { data } = await axiosInstance.post('/cart', { productId, quantity })
+  return data.cart || data.data || data
+}
 
-  const { data } = await api.post('/checkout/session', payload)
+export const updateCartItemAPI = async ({ productId, quantity }) => {
+  const { data } = await axiosInstance.put(`/cart/${productId}`, { quantity })
+  return data.cart || data.data || data
+}
+
+export const removeCartItemAPI = async (productId) => {
+  const { data } = await axiosInstance.delete(`/cart/${productId}`)
+  return data.cart || data.data || data
+}
+
+export const clearCartAPI = async () => {
+  const { data } = await axiosInstance.delete('/cart')
+  return data.cart || data.data || data
+}
+
+// Keep this for local-only sync fallback
+export const syncCartAPI = async (payload) => {
+  return payload
+}
+
+export const createCheckoutSessionAPI = async (orderId) => {
+  const { data } = await axiosInstance.post('/payment/checkout', { orderId })
   return data
 }

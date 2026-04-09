@@ -2,52 +2,109 @@ import { useEffect, useState } from 'react'
 import {
   useAppDispatch,
   useProducts,
+  useProductStatus,
   useProductMutationStatus,
+  useIsAdmin,
+  useFetchCart,
 } from '../../hooks/customHooks'
 import {
-  createProduct,
-  deleteProduct,
   fetchProducts,
+  createProduct,
   updateProduct,
+  deleteProduct,
 } from '../../features/products/productSlice'
 import { addToast } from '../../features/ui/uiSlice'
+import LoadingSpinner from '../../components/UI/LoadingSpinner'
+import EmptyState from '../../components/UI/EmptyState'
+import Modal from '../../components/UI/Modal'
 import { formatCurrency } from '../../utils/helpers'
 
+const CATEGORIES = [
+  'Electronics',
+  'Computers',
+  'Gaming',
+  'Office Products',
+  'Clothing',
+  'Home & Kitchen',
+  'Books',
+  'Toys',
+  'Sports',
+  'Beauty',
+]
+
 const emptyProduct = {
-  title: '',
-  brand: '',
-  category: '',
-  price: '',
-  salePrice: '',
-  stock: '',
-  image: '',
+  name: '',
   description: '',
+  price: '',
+  category: 'Electronics',
+  stock: '',
 }
 
 export default function AdminProductsPage() {
   const dispatch = useAppDispatch()
-  const items = useProducts()
+  const products = useProducts()
+  const status = useProductStatus()
   const mutationStatus = useProductMutationStatus()
+
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState(null)
   const [formData, setFormData] = useState(emptyProduct)
-  const [editingId, setEditingId] = useState(null)
+  const [images, setImages] = useState([])
+  const [imagePreviews, setImagePreviews] = useState([])
+  const [deleteConfirm, setDeleteConfirm] = useState(null)
 
   useEffect(() => {
     dispatch(fetchProducts())
   }, [dispatch])
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
+  const openCreateModal = () => {
+    setEditingProduct(null)
+    setFormData(emptyProduct)
+    setImages([])
+    setImagePreviews([])
+    setModalOpen(true)
+  }
 
-    const payload = {
-      ...formData,
-      price: Number(formData.price),
-      salePrice: Number(formData.salePrice),
-      stock: Number(formData.stock),
+  const openEditModal = (product) => {
+    setEditingProduct(product)
+    setFormData({
+      name: product.name || product.title || '',
+      description: product.description || '',
+      price: product.price || '',
+      category: product.category || 'Electronics',
+      stock: product.stock ?? '',
+    })
+    setImages([])
+    setImagePreviews(product.image ? [product.image] : [])
+    setModalOpen(true)
+  }
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files).slice(0, 5)
+    setImages(files)
+    const previews = files.map((file) => URL.createObjectURL(file))
+    setImagePreviews(previews.length ? previews : imagePreviews)
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    const form = new FormData()
+    form.append('name', formData.name)
+    form.append('description', formData.description)
+    form.append('price', Number(formData.price))
+    form.append('category', formData.category)
+    form.append('stock', Number(formData.stock))
+    images.forEach((img) => form.append('images', img))
+
+    let result
+    if (editingProduct) {
+      result = await dispatch(
+        updateProduct({ id: editingProduct._id, formData: form })
+      )
+    } else {
+      result = await dispatch(createProduct(form))
     }
-
-    const result = editingId
-      ? await dispatch(updateProduct({ productId: editingId, payload }))
-      : await dispatch(createProduct(payload))
 
     if (
       createProduct.fulfilled.match(result) ||
@@ -55,111 +112,284 @@ export default function AdminProductsPage() {
     ) {
       dispatch(
         addToast({
-          title: editingId ? 'Product updated' : 'Product created',
-          message: 'Catalog changes have been applied.',
+          title: editingProduct ? 'Product updated' : 'Product created',
+          message: `${formData.name} has been ${editingProduct ? 'updated' : 'created'} successfully.`,
           type: 'success',
         })
       )
-      setFormData(emptyProduct)
-      setEditingId(null)
+      setModalOpen(false)
+      dispatch(fetchProducts())
+    } else {
+      dispatch(
+        addToast({
+          title: 'Operation failed',
+          message: result.payload || 'Something went wrong.',
+          type: 'error',
+        })
+      )
     }
   }
 
+  const handleDelete = async () => {
+    if (!deleteConfirm) return
+    const result = await dispatch(deleteProduct(deleteConfirm))
+    if (deleteProduct.fulfilled.match(result)) {
+      dispatch(
+        addToast({
+          title: 'Product deleted',
+          message: 'The product has been deleted.',
+          type: 'success',
+        })
+      )
+      dispatch(fetchProducts())
+    } else {
+      dispatch(
+        addToast({
+          title: 'Delete failed',
+          message: result.payload || 'Unable to delete product.',
+          type: 'error',
+        })
+      )
+    }
+    setDeleteConfirm(null)
+  }
+
+  if (status === 'loading' && !products.length) {
+    return <LoadingSpinner label="Loading products..." />
+  }
+
   return (
-    <div className="container page admin-layout">
-      <section className="stack-card">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">Admin catalog</span>
-            <h1>Manage products</h1>
-          </div>
-          <p>
-            Create, update, and remove products through RTK async mutations.
-          </p>
-        </div>
-
-        <form className="form-grid" onSubmit={handleSubmit}>
-          {Object.entries(formData).map(([key, value]) => (
-            <label className="input-group" key={key}>
-              <span>{key.replace(/([A-Z])/g, ' $1')}</span>
-              {key === 'description' ? (
-                <textarea
-                  value={value}
-                  onChange={(event) =>
-                    setFormData((current) => ({
-                      ...current,
-                      [key]: event.target.value,
-                    }))
-                  }
-                />
-              ) : (
-                <input
-                  value={value}
-                  onChange={(event) =>
-                    setFormData((current) => ({
-                      ...current,
-                      [key]: event.target.value,
-                    }))
-                  }
-                />
-              )}
-            </label>
-          ))}
-
+    <div className="admin-products-page">
+      <div className="admin-page-container">
+        <div className="admin-page-header">
+          <h1>Manage Products</h1>
           <button
-            className="primary-button"
+            type="button"
+            className="admin-add-btn"
+            onClick={openCreateModal}
             disabled={mutationStatus === 'loading'}
-            type="submit"
           >
-            {editingId ? 'Update product' : 'Create product'}
+            + Add New Product
           </button>
-        </form>
-      </section>
-
-      <section className="stack-card">
-        <div className="stack-list">
-          {items.map((product) => (
-            <article className="admin-row" key={product._id}>
-              <div>
-                <strong>{product.title}</strong>
-                <p>
-                  {product.category} •{' '}
-                  {formatCurrency(product.salePrice || product.price)}
-                </p>
-              </div>
-
-              <div className="row-actions">
-                <button
-                  className="ghost-button"
-                  type="button"
-                  onClick={() => {
-                    setEditingId(product._id)
-                    setFormData({
-                      title: product.title,
-                      brand: product.brand,
-                      category: product.category,
-                      price: product.price,
-                      salePrice: product.salePrice || product.price,
-                      stock: product.stock,
-                      image: product.image,
-                      description: product.description,
-                    })
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  className="danger-button"
-                  type="button"
-                  onClick={() => dispatch(deleteProduct(product._id))}
-                >
-                  Delete
-                </button>
-              </div>
-            </article>
-          ))}
         </div>
-      </section>
+
+        {products.length === 0 ? (
+          <EmptyState
+            title="No products found"
+            description="Start by adding your first product."
+            action={
+              <button className="btn-primary" onClick={openCreateModal}>
+                Add Product
+              </button>
+            }
+          />
+        ) : (
+          <div className="admin-table-container">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th>Rating</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((product) => (
+                  <tr key={product._id}>
+                    <td>
+                      <img
+                        src={product.image || '/placeholder-product.png'}
+                        alt={product.name || product.title}
+                        className="admin-table__thumb"
+                      />
+                    </td>
+                    <td>{product.name || product.title}</td>
+                    <td>{product.category}</td>
+                    <td>{formatCurrency(product.price)}</td>
+                    <td>{product.stock ?? 'N/A'}</td>
+                    <td>
+                      {'★'.repeat(Math.round(product.rating || 0))}
+                      {'☆'.repeat(5 - Math.round(product.rating || 0))}
+                      <span className="admin-table__rating-count">
+                        ({product.reviewsCount || 0})
+                      </span>
+                    </td>
+                    <td className="admin-table__actions">
+                      <button
+                        type="button"
+                        className="admin-table__btn admin-table__btn--edit"
+                        onClick={() => openEditModal(product)}
+                        title="Edit"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-table__btn admin-table__btn--delete"
+                        onClick={() => setDeleteConfirm(product._id)}
+                        title="Delete"
+                      >
+                        🗑️
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Add/Edit Modal */}
+      <Modal
+        open={modalOpen}
+        title={editingProduct ? 'Edit Product' : 'Add New Product'}
+        onClose={() => setModalOpen(false)}
+      >
+        <form onSubmit={handleSubmit} className="admin-form">
+          <label className="admin-form__field">
+            <span>Name</span>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
+              required
+            />
+          </label>
+
+          <label className="admin-form__field">
+            <span>Description</span>
+            <textarea
+              value={formData.description}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+              rows="3"
+            />
+          </label>
+
+          <label className="admin-form__field">
+            <span>Price</span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.price}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, price: e.target.value }))
+              }
+              required
+            />
+          </label>
+
+          <label className="admin-form__field">
+            <span>Category</span>
+            <select
+              value={formData.category}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, category: e.target.value }))
+              }
+            >
+              {CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="admin-form__field">
+            <span>Stock</span>
+            <input
+              type="number"
+              min="0"
+              value={formData.stock}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, stock: e.target.value }))
+              }
+              required
+            />
+          </label>
+
+          <label className="admin-form__field">
+            <span>Images (up to 5)</span>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageChange}
+            />
+            {imagePreviews.length > 0 && (
+              <div className="admin-form__previews">
+                {imagePreviews.map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt={`Preview ${i}`}
+                    className="admin-form__preview"
+                  />
+                ))}
+              </div>
+            )}
+          </label>
+
+          <div className="admin-form__actions">
+            <button
+              type="button"
+              className="admin-form__cancel"
+              onClick={() => setModalOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="admin-form__submit"
+              disabled={mutationStatus === 'loading'}
+            >
+              {mutationStatus === 'loading'
+                ? 'Saving...'
+                : editingProduct
+                  ? 'Update Product'
+                  : 'Create Product'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={!!deleteConfirm}
+        title="Delete Product"
+        description="Are you sure you want to delete this product? This action cannot be undone."
+        onClose={() => setDeleteConfirm(null)}
+      >
+        <div className="admin-form__actions">
+          <button
+            type="button"
+            className="admin-form__cancel"
+            onClick={() => setDeleteConfirm(null)}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="admin-form__submit admin-form__submit--danger"
+            onClick={handleDelete}
+            disabled={mutationStatus === 'loading'}
+          >
+            {mutationStatus === 'loading' ? 'Deleting...' : 'Delete'}
+          </button>
+        </div>
+      </Modal>
     </div>
   )
 }

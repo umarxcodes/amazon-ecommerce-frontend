@@ -1,5 +1,13 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { createCheckoutSessionAPI, syncCartAPI } from './cartAPI'
+import {
+  fetchCartAPI,
+  addToCartAPI,
+  updateCartItemAPI,
+  removeCartItemAPI,
+  clearCartAPI,
+  syncCartAPI,
+  createCheckoutSessionAPI,
+} from './cartAPI'
 import { getErrorMessage, loadCart, saveCart } from '../../utils/helpers'
 import { fulfilled, pending, rejected } from '../../app/sliceHelpers'
 
@@ -19,6 +27,76 @@ const initialState = {
   checkoutStatus: 'idle',
   error: null,
 }
+
+// Fetch cart from backend (call on app load if user is logged in)
+export const fetchCart = createAsyncThunk(
+  'cart/fetchCart',
+  async (_, thunkApi) => {
+    try {
+      return await fetchCartAPI()
+    } catch (error) {
+      return thunkApi.rejectWithValue(
+        getErrorMessage(error, 'Unable to fetch cart')
+      )
+    }
+  }
+)
+
+// Add item to backend cart
+export const addItemToCart = createAsyncThunk(
+  'cart/addItemToCart',
+  async (payload, thunkApi) => {
+    try {
+      return await addToCartAPI(payload)
+    } catch (error) {
+      return thunkApi.rejectWithValue(
+        getErrorMessage(error, 'Unable to add to cart')
+      )
+    }
+  }
+)
+
+// Update quantity in backend cart
+export const updateItemQuantity = createAsyncThunk(
+  'cart/updateItemQuantity',
+  async (payload, thunkApi) => {
+    try {
+      return await updateCartItemAPI(payload)
+    } catch (error) {
+      return thunkApi.rejectWithValue(
+        getErrorMessage(error, 'Unable to update cart')
+      )
+    }
+  }
+)
+
+// Remove item from backend cart
+export const removeItem = createAsyncThunk(
+  'cart/removeItem',
+  async (productId, thunkApi) => {
+    try {
+      return await removeCartItemAPI(productId)
+    } catch (error) {
+      return thunkApi.rejectWithValue(
+        getErrorMessage(error, 'Unable to remove item')
+      )
+    }
+  }
+)
+
+// Clear backend cart
+export const clearBackendCart = createAsyncThunk(
+  'cart/clearBackendCart',
+  async (_, thunkApi) => {
+    try {
+      return await clearCartAPI()
+    } catch (error) {
+      return thunkApi.rejectWithValue(
+        getErrorMessage(error, 'Unable to clear cart')
+      )
+    }
+  }
+)
 
 export const syncCart = createAsyncThunk(
   'cart/syncCart',
@@ -95,12 +173,50 @@ const cartSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // syncCart
       .addCase(syncCart.pending, pending())
       .addCase(syncCart.fulfilled, fulfilled())
       .addCase(syncCart.rejected, rejected())
+      // createCheckoutSession
       .addCase(createCheckoutSession.pending, pending('checkoutStatus'))
       .addCase(createCheckoutSession.fulfilled, fulfilled('checkoutStatus'))
       .addCase(createCheckoutSession.rejected, rejected('checkoutStatus'))
+      // fetchCart
+      .addCase(fetchCart.pending, pending())
+      .addCase(fetchCart.rejected, rejected())
+      .addCase(fetchCart.fulfilled, (state, action) => {
+        fulfilled()(state)
+        state.items = action.payload?.items || []
+      })
+      // addItemToCart
+      .addCase(addItemToCart.pending, pending())
+      .addCase(addItemToCart.rejected, rejected())
+      .addCase(addItemToCart.fulfilled, (state, action) => {
+        fulfilled()(state)
+        state.items = action.payload?.items || state.items
+      })
+      // updateItemQuantity
+      .addCase(updateItemQuantity.pending, pending())
+      .addCase(updateItemQuantity.rejected, rejected())
+      .addCase(updateItemQuantity.fulfilled, (state, action) => {
+        fulfilled()(state)
+        state.items = action.payload?.items || state.items
+      })
+      // removeItem
+      .addCase(removeItem.pending, pending())
+      .addCase(removeItem.rejected, rejected())
+      .addCase(removeItem.fulfilled, (state, action) => {
+        fulfilled()(state)
+        state.items = action.payload?.items || state.items
+      })
+      // clearBackendCart
+      .addCase(clearBackendCart.pending, pending())
+      .addCase(clearBackendCart.rejected, rejected())
+      .addCase(clearBackendCart.fulfilled, (state) => {
+        fulfilled()(state)
+        state.items = []
+        saveCart([])
+      })
   },
 })
 

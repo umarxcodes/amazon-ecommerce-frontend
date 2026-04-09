@@ -1,58 +1,61 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   useAppDispatch,
   useCartItems,
-  useProducts,
+  useCartCount,
+  useCartTotal,
+  useCartStatus,
+  useShippingAddress,
+  useIsAuthenticated,
+  useFetchCart,
+  useUpdateQty,
+  useRemoveItem,
+  useCreateOrder,
+  useStartCheckout,
+  useCreateOrderStatus,
 } from '../../hooks/customHooks'
-import {
-  removeFromCart,
-  updateCartQuantity,
-} from '../../features/cart/cartSlice'
-import { addToCart } from '../../features/cart/cartSlice'
 import { addToast } from '../../features/ui/uiSlice'
+import LoadingSpinner from '../../components/UI/LoadingSpinner'
+import EmptyState from '../../components/UI/EmptyState'
 import { formatCurrency } from '../../utils/helpers'
 
-function CartItemRow({ item, checked, onToggle }) {
+function CartItemRow({ item }) {
+  const updateQty = useUpdateQty()
+  const removeItem = useRemoveItem()
   const dispatch = useAppDispatch()
 
-  const handleQuantityChange = (quantity) => {
-    if (quantity < 1) {
-      dispatch(removeFromCart(item.productId))
-    } else {
-      dispatch(updateCartQuantity({ productId: item.productId, quantity }))
+  const handleQuantityChange = (newQty) => {
+    if (newQty < 1) {
+      handleDelete()
+      return
     }
+    updateQty({ productId: item.productId, quantity: newQty })
   }
 
   const handleDelete = () => {
-    dispatch(removeFromCart(item.productId))
+    removeItem(item.productId)
     dispatch(
       addToast({
         title: 'Item removed',
-        message: `${item.title} has been removed from your cart.`,
+        message: `${item.title || item.name} has been removed from your cart.`,
         type: 'info',
       })
     )
   }
 
   const lineTotal = item.price * item.quantity
-  const quantities = Array.from({ length: 10 }, (_, i) => i + 1)
 
   return (
     <div className="cart-item-row">
-      <div className="cart-item-row__check">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={onToggle}
-          className="cart-checkbox"
-          aria-label={`Select ${item.title}`}
-        />
-      </div>
-
       <div className="cart-item-row__image">
         <Link to={`/products/${item.productId}`}>
-          <img src={item.image} alt={item.title} />
+          <img
+            src={item.image || '/placeholder-product.png'}
+            alt={item.title || item.name}
+            width="120"
+            height="120"
+          />
         </Link>
       </div>
 
@@ -61,182 +64,96 @@ function CartItemRow({ item, checked, onToggle }) {
           to={`/products/${item.productId}`}
           className="cart-item-row__title"
         >
-          {item.title}
+          {item.title || item.name}
         </Link>
         <span className="cart-item-row__stock">In Stock</span>
-        <label className="cart-item-row__gift">
-          <input type="checkbox" className="cart-checkbox" />
-          <span>This is a gift</span>
-          <span className="cart-item-row__gift-learn">Learn more</span>
-        </label>
+        <span className="cart-item-row__shipped">
+          Shipped from: {item.seller || 'Amazon.com'}
+        </span>
+        <div className="cart-item-row__actions">
+          <Link
+            to="#"
+            className="cart-action-link"
+            onClick={(e) => {
+              e.preventDefault()
+              handleDelete()
+            }}
+          >
+            Delete
+          </Link>
+          <span className="cart-action-link cart-action-link--disabled">
+            Save for later
+          </span>
+          <span className="cart-action-link cart-action-link--disabled">
+            Compare with similar items
+          </span>
+          <span className="cart-action-link cart-action-link--disabled">
+            Share
+          </span>
+        </div>
       </div>
 
-      <div className="cart-item-row__qty">
-        <select
-          value={item.quantity}
-          onChange={(e) => handleQuantityChange(Number(e.target.value))}
-          className="cart-qty-select"
-          aria-label={`Quantity for ${item.title}`}
-        >
-          {quantities.map((n) => (
-            <option key={n} value={n}>
-              Qty: {n}
-            </option>
-          ))}
-          {item.quantity > 10 && (
-            <option value={item.quantity}>Qty: {item.quantity}</option>
-          )}
-        </select>
+      <div className="cart-item-row__center">
+        <div className="cart-qty-control">
+          <button
+            type="button"
+            className="cart-qty-btn cart-qty-btn--remove"
+            onClick={handleDelete}
+            aria-label="Remove item"
+            title="Delete"
+          >
+            🗑️
+          </button>
+          <input
+            type="number"
+            className="cart-qty-input"
+            value={item.quantity}
+            min="1"
+            onChange={(e) => handleQuantityChange(Number(e.target.value))}
+            aria-label={`Quantity for ${item.title || item.name}`}
+          />
+          <button
+            type="button"
+            className="cart-qty-btn cart-qty-btn--add"
+            onClick={() => handleQuantityChange(item.quantity + 1)}
+            aria-label="Increase quantity"
+          >
+            +
+          </button>
+        </div>
       </div>
 
       <div className="cart-item-row__price">
-        <div className="cart-item-row__unit">
-          <span>Unit price:</span>
-          <strong>{formatCurrency(item.price)}</strong>
-        </div>
-        <div className="cart-item-row__total">
-          <span>Total:</span>
-          <strong>{formatCurrency(lineTotal)}</strong>
-        </div>
-      </div>
-
-      <div className="cart-item-row__actions">
-        <button
-          type="button"
-          className="cart-delete-link"
-          onClick={handleDelete}
-        >
-          Delete
-        </button>
+        <strong>{formatCurrency(lineTotal)}</strong>
       </div>
     </div>
   )
 }
 
-function CheckoutBox({ itemCount, subtotal, onProceed }) {
-  const [isGift, setIsGift] = useState(false)
-
+function OrderSummary({ itemCount, subtotal, onCheckout, checkoutDisabled }) {
   return (
-    <div className="cart-checkout-box">
-      <div className="cart-checkout-box__subtotal">
-        <span>
-          Subtotal ({itemCount} item{itemCount !== 1 ? 's' : ''}):
-        </span>
+    <div className="order-summary-box">
+      <h3 className="order-summary-box__subtotal">
+        Subtotal ({itemCount} item{itemCount !== 1 ? 's' : ''}):{' '}
         <strong>{formatCurrency(subtotal)}</strong>
-      </div>
-
-      <label className="cart-checkout-box__gift">
-        <input
-          type="checkbox"
-          checked={isGift}
-          onChange={(e) => setIsGift(e.target.checked)}
-          className="cart-checkbox"
-        />
-        <span>This order contains a gift</span>
-      </label>
-
+      </h3>
+      <p className="order-summary-box__free-delivery">
+        Your order qualifies for FREE Delivery
+      </p>
       <button
         type="button"
-        className="cart-checkout-box__proceed-btn"
-        onClick={onProceed}
+        className="order-summary-box__checkout"
+        onClick={onCheckout}
+        disabled={checkoutDisabled}
       >
         Proceed to checkout
       </button>
-    </div>
-  )
-}
-
-function CompareSection({ items, currentIds }) {
-  const dispatch = useAppDispatch()
-  const suggestions = items.filter((p) => !currentIds.has(p._id)).slice(0, 4)
-
-  if (!suggestions.length) return null
-
-  return (
-    <div className="cart-compare">
-      <h2 className="cart-compare__title">Compare with similar items</h2>
-      <div className="cart-compare__scroll">
-        {suggestions.map((product) => (
-          <div key={product._id} className="cart-compare__card">
-            <Link to={`/products/${product._id}`}>
-              <img src={product.image} alt={product.title} loading="lazy" />
-            </Link>
-            <div className="cart-compare__card-info">
-              <Link
-                to={`/products/${product._id}`}
-                className="cart-compare__card-title"
-              >
-                {product.title}
-              </Link>
-              <div className="cart-compare__rating">
-                <span className="cart-compare__stars">
-                  {'★'.repeat(Math.round(product.rating || 0))}
-                  {'☆'.repeat(5 - Math.round(product.rating || 0))}
-                </span>
-                <span>{(product.reviewsCount || 0).toLocaleString()}</span>
-              </div>
-              <div className="cart-compare__price">
-                {formatCurrency(product.salePrice || product.price)}
-              </div>
-              <div className="cart-compare__prime">
-                <span className="cart-compare__prime-badge">✓</span>
-                <span>
-                  Get it by <strong>Tomorrow</strong>
-                </span>
-              </div>
-              <button
-                type="button"
-                className="cart-compare__add-btn"
-                onClick={() => {
-                  dispatch(
-                    addToCart({
-                      productId: product._id,
-                      title: product.title,
-                      image: product.image,
-                      category: product.category,
-                      price: product.salePrice || product.price,
-                      quantity: 1,
-                    })
-                  )
-                  dispatch(
-                    addToast({
-                      title: 'Added to cart',
-                      message: `${product.title} has been added.`,
-                      type: 'success',
-                    })
-                  )
-                }}
-              >
-                Add to Cart
-              </button>
-            </div>
-          </div>
-        ))}
+      <div className="order-summary-box__or">
+        <span>Or</span>
       </div>
-    </div>
-  )
-}
-
-function BrowsingHistory() {
-  const allProducts = useProducts()
-  const recent = allProducts.slice(0, 6)
-
-  if (!recent.length) return null
-
-  return (
-    <div className="cart-browsing">
-      <h2 className="cart-browsing__title">Your Browsing History</h2>
-      <div className="cart-browsing__scroll">
-        {recent.map((product) => (
-          <Link
-            key={product._id}
-            to={`/products/${product._id}`}
-            className="cart-browsing__card"
-          >
-            <img src={product.image} alt={product.title} loading="lazy" />
-          </Link>
-        ))}
-      </div>
+      <Link to="/products" className="order-summary-box__continue">
+        Continue shopping
+      </Link>
     </div>
   )
 }
@@ -245,101 +162,152 @@ export default function CartPage() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const items = useCartItems()
-  const allProducts = useProducts()
+  const cartCount = useCartCount()
+  const cartTotal = useCartTotal()
+  const cartStatus = useCartStatus()
+  const shippingAddress = useShippingAddress()
+  const isAuthenticated = useIsAuthenticated()
+  const fetchCart = useFetchCart()
+  const createOrder = useCreateOrder()
+  const startCheckoutFn = useStartCheckout()
+  const createOrderStatus = useCreateOrderStatus()
 
-  const [checkedItems, setCheckedItems] = useState(
-    items.reduce((acc, item) => ({ ...acc, [item.productId]: true }), {})
-  )
+  const [shippingDismissed, setShippingDismissed] = useState(false)
 
-  const subtotal = items.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  )
-  const itemCount = items.reduce((total, item) => total + item.quantity, 0)
-  const currentIds = new Set(items.map((i) => i.productId))
+  // Fetch cart from backend on mount if logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCart()
+    }
+  }, [isAuthenticated, fetchCart])
 
-  const toggleItem = (productId) => {
-    setCheckedItems((prev) => ({ ...prev, [productId]: !prev[productId] }))
+  const handleCheckout = async () => {
+    if (!shippingAddress.addressLine1 || !shippingAddress.city) {
+      dispatch(
+        addToast({
+          title: 'Shipping address required',
+          message: 'Please set your shipping address before checkout.',
+          type: 'error',
+        })
+      )
+      navigate('/checkout')
+      return
+    }
+
+    const result = await dispatch(
+      createOrder({
+        address: shippingAddress.addressLine1,
+        city: shippingAddress.city,
+        postalCode: shippingAddress.postalCode,
+        country: shippingAddress.country,
+      })
+    )
+
+    if (createOrder.fulfilled.match(result)) {
+      const orderId =
+        result.payload.order?._id || result.payload._id || result.payload.id
+      if (orderId) {
+        dispatch(startCheckoutFn(orderId))
+      }
+    } else {
+      dispatch(
+        addToast({
+          title: 'Order creation failed',
+          message:
+            result.payload || 'Unable to create order. Please try again.',
+          type: 'error',
+        })
+      )
+    }
   }
 
-  const toggleAll = () => {
-    const allChecked = items.every((item) => checkedItems[item.productId])
-    setCheckedItems(
-      items.reduce(
-        (acc, item) => ({ ...acc, [item.productId]: !allChecked }),
-        {}
-      )
+  if (cartStatus === 'loading' && !items.length) {
+    return (
+      <div className="cart-page">
+        <LoadingSpinner label="Loading your cart..." />
+      </div>
     )
   }
 
   if (!items.length) {
     return (
       <div className="cart-page">
-        <div className="cart-empty">
-          <h1 className="cart-empty__title">Your Amazon Cart is empty</h1>
-          <p className="cart-empty__text">
-            Your shopping cart is waiting. Give it purpose — add some items.
-          </p>
-          <Link to="/" className="cart-empty__btn">
-            Continue shopping
-          </Link>
-        </div>
+        <EmptyState
+          title="Your Amazon Cart is empty"
+          description="Your shopping cart is waiting. Give it purpose — add some items."
+          action={
+            <Link to="/products" className="cart-empty__btn">
+              Continue Shopping
+            </Link>
+          }
+        />
       </div>
     )
   }
 
   return (
     <div className="cart-page">
-      <div className="cart-page__inner">
-        {/* Left column */}
-        <div className="cart-main">
-          <div className="cart-header">
-            <div className="cart-header__left">
-              <h1 className="cart-header__title">Shopping Cart</h1>
-              <label className="cart-header__select-all">
-                <input
-                  type="checkbox"
-                  className="cart-checkbox"
-                  checked={items.every((i) => checkedItems[i.productId])}
-                  onChange={toggleAll}
-                />
-                <span>Select all</span>
-              </label>
-            </div>
-            <div className="cart-header__right">
-              <span className="cart-header__price-label">Price</span>
-            </div>
+      {/* Shipping notice banner */}
+      {!shippingDismissed && (
+        <div className="cart-shipping-notice">
+          <p>
+            We're showing items that ship to your location. To see items that
+            ship to a different country, change your delivery address.
+          </p>
+          <div className="cart-shipping-notice__actions">
+            <button
+              type="button"
+              className="cart-shipping-notice__dismiss"
+              onClick={() => setShippingDismissed(true)}
+            >
+              Dismiss
+            </button>
+            <Link to="/checkout" className="cart-shipping-notice__change">
+              Change Address
+            </Link>
           </div>
+        </div>
+      )}
 
+      <div className="cart-page__inner">
+        {/* Left column — Cart items */}
+        <div className="cart-main">
+          <h1 className="cart-main__title">Shopping Cart</h1>
           <div className="cart-items-list">
             {items.map((item) => (
-              <CartItemRow
-                key={item.productId}
-                item={item}
-                checked={!!checkedItems[item.productId]}
-                onToggle={() => toggleItem(item.productId)}
-              />
+              <CartItemRow key={item.productId || item._id} item={item} />
             ))}
           </div>
 
           <div className="cart-bottom-subtotal">
-            Subtotal ({itemCount} item{itemCount !== 1 ? 's' : ''}):{' '}
-            <strong>{formatCurrency(subtotal)}</strong>
+            Subtotal ({cartCount} item{cartCount !== 1 ? 's' : ''}):{' '}
+            <strong>{formatCurrency(cartTotal)}</strong>
           </div>
-
-          <CompareSection items={allProducts} currentIds={currentIds} />
-          <BrowsingHistory />
         </div>
 
-        {/* Right column — sticky checkout */}
+        {/* Right column — Sticky order summary */}
         <div className="cart-sidebar">
-          <CheckoutBox
-            itemCount={itemCount}
-            subtotal={subtotal}
-            onProceed={() => navigate('/checkout')}
+          <OrderSummary
+            itemCount={cartCount}
+            subtotal={cartTotal}
+            onCheckout={handleCheckout}
+            checkoutDisabled={createOrderStatus === 'loading'}
           />
         </div>
       </div>
+
+      {/* Logged out section */}
+      {!isAuthenticated && (
+        <div className="cart-logged-out-section">
+          <h3>See personalized recommendations</h3>
+          <Link to="/login" className="cart-signin-btn">
+            Sign in
+          </Link>
+          <p>
+            New customer? <Link to="/register">Start here.</Link>
+          </p>
+        </div>
+      )}
     </div>
   )
 }

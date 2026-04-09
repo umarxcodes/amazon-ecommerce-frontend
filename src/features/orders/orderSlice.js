@@ -1,5 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { fetchOrderByIdAPI, fetchOrdersAPI } from './orderAPI'
+import {
+  fetchOrderByIdAPI,
+  fetchOrdersAPI,
+  createOrderAPI,
+  createCheckoutSessionAPI,
+} from './orderAPI'
 import { getErrorMessage } from '../../utils/helpers'
 import { fulfilled, pending, rejected } from '../../app/sliceHelpers'
 
@@ -8,6 +13,8 @@ const initialState = {
   selectedOrder: null,
   status: 'idle',
   detailStatus: 'idle',
+  checkoutStatus: 'idle',
+  createOrderStatus: 'idle',
   error: null,
 }
 
@@ -37,6 +44,37 @@ export const fetchOrderById = createAsyncThunk(
   }
 )
 
+export const createOrder = createAsyncThunk(
+  'orders/createOrder',
+  async (shippingAddress, thunkApi) => {
+    try {
+      return await createOrderAPI(shippingAddress)
+    } catch (error) {
+      return thunkApi.rejectWithValue(
+        getErrorMessage(error, 'Unable to create order')
+      )
+    }
+  }
+)
+
+export const startCheckout = createAsyncThunk(
+  'orders/startCheckout',
+  async (orderId, thunkApi) => {
+    try {
+      const result = await createCheckoutSessionAPI(orderId)
+      // Redirect to Stripe checkout URL
+      if (result.url) {
+        window.location.href = result.url
+      }
+      return result
+    } catch (error) {
+      return thunkApi.rejectWithValue(
+        getErrorMessage(error, 'Unable to start checkout')
+      )
+    }
+  }
+)
+
 const orderSlice = createSlice({
   name: 'orders',
   initialState,
@@ -61,6 +99,16 @@ const orderSlice = createSlice({
         fulfilled('detailStatus')(state)
         state.selectedOrder = action.payload.order || action.payload
       })
+      .addCase(createOrder.pending, pending('createOrderStatus'))
+      .addCase(createOrder.rejected, rejected('createOrderStatus'))
+      .addCase(createOrder.fulfilled, (state, action) => {
+        fulfilled('createOrderStatus')(state)
+        const newOrder = action.payload.order || action.payload
+        state.items.unshift(newOrder)
+      })
+      .addCase(startCheckout.pending, pending('checkoutStatus'))
+      .addCase(startCheckout.rejected, rejected('checkoutStatus'))
+      .addCase(startCheckout.fulfilled, fulfilled('checkoutStatus'))
   },
 })
 
@@ -73,3 +121,5 @@ export const selectSelectedOrder = (state) => state.orders.selectedOrder
 export const selectOrderStatus = (state) => state.orders.status
 export const selectDetailStatus = (state) => state.orders.detailStatus
 export const selectOrderError = (state) => state.orders.error
+export const selectCreateOrderStatus = (state) => state.orders.createOrderStatus
+export const selectCheckoutStatus = (state) => state.orders.checkoutStatus

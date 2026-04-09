@@ -83,6 +83,8 @@ import {
   selectOrderStatus,
   selectDetailStatus as selectOrderDetailStatus,
   selectOrderError,
+  selectCreateOrderStatus,
+  selectCheckoutStatus as selectOrderCheckoutStatus,
 } from '../features/orders/orderSlice'
 
 export const useOrders = () => useAppSelector(selectAllOrders)
@@ -91,6 +93,10 @@ export const useOrderStatus = () => useAppSelector(selectOrderStatus)
 export const useOrderDetailStatus = () =>
   useAppSelector(selectOrderDetailStatus)
 export const useOrderError = () => useAppSelector(selectOrderError)
+export const useCreateOrderStatus = () =>
+  useAppSelector(selectCreateOrderStatus)
+export const useOrderCheckoutStatus = () =>
+  useAppSelector(selectOrderCheckoutStatus)
 
 // ─── Admin Hooks ──────────────────────────────────────────
 import {
@@ -107,6 +113,67 @@ export const useAdminMutationStatus = () =>
 export const useAdminError = () => useAppSelector(selectAdminError)
 
 // ─── UI Hooks ─────────────────────────────────────────────
-import { selectToasts } from '../features/ui/uiSlice'
+import { selectToasts, selectIsRedirecting } from '../features/ui/uiSlice'
 
 export const useToasts = () => useAppSelector(selectToasts)
+export const useIsRedirecting = () => useAppSelector(selectIsRedirecting)
+
+// ─── Cart Backend Hooks ───────────────────────────────────
+import {
+  fetchCart,
+  addItemToCart,
+  updateItemQuantity,
+  removeItem,
+  clearBackendCart,
+} from '../features/cart/cartSlice'
+
+export const useFetchCart = () => {
+  const dispatch = useAppDispatch()
+  return () => dispatch(fetchCart())
+}
+
+export const useAddToCart = () => {
+  const dispatch = useAppDispatch()
+  return (payload) => dispatch(addItemToCart(payload))
+}
+
+export const useUpdateQty = () => {
+  const dispatch = useAppDispatch()
+  return (payload) => dispatch(updateItemQuantity(payload))
+}
+
+export const useRemoveItem = () => {
+  const dispatch = useAppDispatch()
+  return (id) => dispatch(removeItem(id))
+}
+
+export const useClearCart = () => {
+  const dispatch = useAppDispatch()
+  return () => dispatch(clearBackendCart())
+}
+
+// ─── Order Hooks ──────────────────────────────────────────
+import { createOrder, startCheckout } from '../features/orders/orderSlice'
+
+export const useCreateOrder = () => {
+  const dispatch = useAppDispatch()
+  return (addr) => dispatch(createOrder(addr))
+}
+
+export const useStartCheckout = () => {
+  const dispatch = useAppDispatch()
+  return (id) => dispatch(startCheckout(id))
+}
+
+// ─── Admin Action Hooks ───────────────────────────────────
+import { deactivateUser, createAdmin } from '../features/admin/adminSlice'
+
+export const useDeactivateUser = () => {
+  const dispatch = useAppDispatch()
+  return (id) => dispatch(deactivateUser(id))
+}
+
+export const useCreateAdmin = () => {
+  const dispatch = useAppDispatch()
+  return (payload) => dispatch(createAdmin(payload))
+}

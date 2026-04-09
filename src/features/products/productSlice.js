@@ -128,12 +128,15 @@ const productSlice = createSlice({
       .addCase(createProduct.rejected, rejected('mutationStatus'))
       .addCase(createProduct.fulfilled, (state, action) => {
         fulfilled('mutationStatus')(state)
-        state.items.unshift(action.payload.product || action.payload)
+        const newProduct =
+          action.payload.product || action.payload.data || action.payload
+        if (newProduct) state.items.unshift(newProduct)
       })
       .addCase(updateProduct.pending, pending('mutationStatus'))
       .addCase(updateProduct.rejected, rejected('mutationStatus'))
       .addCase(updateProduct.fulfilled, (state, action) => {
-        const updated = action.payload.product || action.payload
+        const updated =
+          action.payload.product || action.payload.data || action.payload
         fulfilled('mutationStatus')(state)
         state.items = state.items.map((item) =>
           item._id === updated._id ? updated : item
