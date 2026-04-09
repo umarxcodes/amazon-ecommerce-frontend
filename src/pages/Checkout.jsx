@@ -1,7 +1,15 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAppDispatch, useAppSelector } from '../app/hooks'
-import { clearCart, createCheckoutSession, setShippingAddress } from '../features/cart/cartSlice'
+import {
+  useAppDispatch,
+  useCartItems,
+  useCheckoutStatus,
+} from '../hooks/customHooks'
+import {
+  clearCart,
+  createCheckoutSession,
+  setShippingAddress,
+} from '../features/cart/cartSlice'
 import { addToast } from '../features/ui/uiSlice'
 import OrderSummary from '../features/cart/components/OrderSummary'
 import Field from '../components/UI/Field'
@@ -18,8 +26,8 @@ const defaultForm = {
 export default function Checkout() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const items = useAppSelector((state) => state.cart.items)
-  const checkoutStatus = useAppSelector((state) => state.cart.checkoutStatus)
+  const items = useCartItems()
+  const checkoutStatus = useCheckoutStatus()
   const [formData, setFormData] = useState(defaultForm)
 
   const handleSubmit = async () => {
@@ -52,7 +60,9 @@ export default function Checkout() {
     dispatch(
       addToast({
         title: 'Checkout failed',
-        message: result.payload || 'Please review your shipping information and try again.',
+        message:
+          result.payload ||
+          'Please review your shipping information and try again.',
         type: 'error',
       })
     )
@@ -66,7 +76,10 @@ export default function Checkout() {
             <span className="eyebrow">Checkout</span>
             <h1>Shipping and payment handoff</h1>
           </div>
-          <p>Structured form fields, clearer labels, and a stronger handoff into secure payment.</p>
+          <p>
+            Structured form fields, clearer labels, and a stronger handoff into
+            secure payment.
+          </p>
         </div>
 
         <div className="form-grid">
@@ -76,7 +89,10 @@ export default function Checkout() {
                 className="field__control"
                 value={value}
                 onChange={(event) =>
-                  setFormData((current) => ({ ...current, [key]: event.target.value }))
+                  setFormData((current) => ({
+                    ...current,
+                    [key]: event.target.value,
+                  }))
                 }
               />
             </Field>
@@ -86,7 +102,11 @@ export default function Checkout() {
 
       <OrderSummary
         items={items}
-        ctaLabel={checkoutStatus === 'loading' ? 'Creating session...' : 'Continue to Stripe'}
+        ctaLabel={
+          checkoutStatus === 'loading'
+            ? 'Creating session...'
+            : 'Continue to Stripe'
+        }
         onSubmit={handleSubmit}
         disabled={checkoutStatus === 'loading' || !items.length}
       />

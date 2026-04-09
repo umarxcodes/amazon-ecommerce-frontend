@@ -4,7 +4,6 @@ import { Outlet } from 'react-router-dom'
 // ===*style*===
 import './Layout.css'
 
-const Sign = lazy(() => import('../components/Sign_in/Sign_in'))
 const Header = lazy(() => import('../components/Header/Header'))
 const Footer = lazy(() => import('../components/Footer/Footer'))
 
@@ -20,11 +19,8 @@ export default function Layout() {
         <Outlet />
       </main>
       <Suspense fallback={null}>
-        <Sign />
-      </Suspense>
-      <Suspense fallback={null}>
         <Footer
-          linkGroups={[
+          columns={[
             {
               title: 'Get to Know Us',
               links: [
@@ -50,7 +46,7 @@ export default function Layout() {
                 'Amazon Business Card',
                 'Shop with Points',
                 'Reload Your Balance',
-                'Currency Converter',
+                'Amazon Currency Converter',
               ],
             },
             {

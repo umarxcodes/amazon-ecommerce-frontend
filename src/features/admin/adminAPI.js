@@ -1,28 +1,23 @@
-import api from '../../services/axiosInstance'
-import { mockUsers } from '../../utils/mockData'
+import axiosInstance from '../../services/axiosInstance'
 
-const useMocks = import.meta.env.VITE_ENABLE_MOCKS === 'true'
-let mockTeam = [...mockUsers]
-
-export async function fetchUsersAPI() {
-  if (useMocks) {
-    return {
-      users: mockTeam,
-    }
-  }
-
-  const { data } = await api.get('/admin/users')
+export const fetchUsersAPI = async () => {
+  const { data } = await axiosInstance.get('/admin/users')
   return data
 }
 
-export async function updateUserRoleAPI({ userId, role }) {
-  if (useMocks) {
-    const currentUser = mockTeam.find((user) => user._id === userId)
-    const updatedUser = { ...currentUser, role }
-    mockTeam = mockTeam.map((user) => (user._id === userId ? updatedUser : user))
-    return updatedUser
-  }
+export const updateUserRoleAPI = async ({ id, role }) => {
+  const { data } = await axiosInstance.patch(`/admin/users/${id}/role`, {
+    role,
+  })
+  return data
+}
 
-  const { data } = await api.patch(`/admin/users/${userId}`, { role })
+export const deactivateUserAPI = async (id) => {
+  const { data } = await axiosInstance.patch(`/admin/users/${id}/deactivate`)
+  return data
+}
+
+export const createAdminAPI = async (payload) => {
+  const { data } = await axiosInstance.post('/admin/create-admin', payload)
   return data
 }

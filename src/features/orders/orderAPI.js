@@ -1,24 +1,21 @@
-import api from '../../services/axiosInstance'
-import { mockOrders } from '../../utils/mockData'
+import axiosInstance from '../../services/axiosInstance'
 
-const useMocks = import.meta.env.VITE_ENABLE_MOCKS === 'true'
-
-export async function fetchOrdersAPI() {
-  if (useMocks) {
-    return {
-      orders: mockOrders,
-    }
-  }
-
-  const { data } = await api.get('/orders')
+export const fetchOrdersAPI = async () => {
+  const { data } = await axiosInstance.get('/orders/my')
   return data
 }
 
-export async function fetchOrderByIdAPI(orderId) {
-  if (useMocks) {
-    return mockOrders.find((order) => order._id === orderId)
-  }
+export const fetchOrderByIdAPI = async (orderId) => {
+  const { data } = await axiosInstance.get(`/orders/${orderId}`)
+  return data
+}
 
-  const { data } = await api.get(`/orders/${orderId}`)
+export const createOrderAPI = async (shippingAddress) => {
+  const { data } = await axiosInstance.post('/orders', { shippingAddress })
+  return data
+}
+
+export const createCheckoutSessionAPI = async (orderId) => {
+  const { data } = await axiosInstance.post('/payment/checkout', { orderId })
   return data
 }

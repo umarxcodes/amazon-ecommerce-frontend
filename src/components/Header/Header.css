@@ -306,6 +306,52 @@ body {
   top: 10px;
 }
 /* Secondary Navigation Bar */
+/* Account Dropdown */
+.account-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 200px;
+  padding: 8px 0;
+}
+
+.account-dropdown__link {
+  display: block;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #0f1111;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.account-dropdown__link:hover {
+  background: #f0f2f2;
+  color: #0f1111;
+  text-decoration: none;
+}
+
+.account-dropdown__signout {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #0f1111;
+  padding: 10px 16px;
+}
+
+.account-dropdown__signout:hover {
+  background: #f0f2f2;
+  color: #b12704;
+}
+
+/* Secondary Navigation Bar */
 .navbar-secondary {
   background-color: #232f3e;
   color: white;

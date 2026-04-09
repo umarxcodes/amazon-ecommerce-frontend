@@ -1,38 +1,37 @@
 import axios from 'axios'
-import { clearSession, loadSession } from '../utils/helpers'
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+const axiosInstance = axios.create({
+  baseURL: 'https://amazon-ecommerce-backend.vercel.app/api',
+  headers: { 'Content-Type': 'application/json' },
   timeout: 15000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
-api.interceptors.request.use((config) => {
-  const session = loadSession()
-
-  if (session?.token) {
-    config.headers.Authorization = `Bearer ${session.token}`
+// Attach JWT token to every request automatically
+axiosInstance.interceptors.request.use((config) => {
+  const session = localStorage.getItem('session')
+  if (session) {
+    const { token } = JSON.parse(session)
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
   }
-
   return config
 })
 
-api.interceptors.response.use(
+// Global error handling
+axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      clearSession()
-    }
+    const status = error.response?.status
+    const message = error.response?.data?.message || error.message
 
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      'Something went wrong. Please try again.'
+    if (status === 401) {
+      localStorage.removeItem('session')
+      window.location.href = '/login'
+    }
 
     return Promise.reject(new Error(message))
   }
 )
 
-export default api
+export default axiosInstance
