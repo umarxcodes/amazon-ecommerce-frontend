@@ -3,7 +3,7 @@
 /* Provides typed selectors and dispatchers across the app */
 
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 // Base hooks
 export const useAppDispatch = useDispatch
@@ -126,43 +126,46 @@ import {
 } from '../features/cart/cartSlice'
 export const useFetchCart = () => {
   const dispatch = useAppDispatch()
-  return () => dispatch(fetchCart())
+  return useCallback(() => dispatch(fetchCart()), [dispatch])
 }
 export const useAddToCart = () => {
   const dispatch = useAppDispatch()
-  return (payload) => dispatch(addItemToCart(payload))
+  return useCallback((payload) => dispatch(addItemToCart(payload)), [dispatch])
 }
 export const useUpdateQty = () => {
   const dispatch = useAppDispatch()
-  return (payload) => dispatch(updateItemQuantity(payload))
+  return useCallback(
+    (payload) => dispatch(updateItemQuantity(payload)),
+    [dispatch]
+  )
 }
 export const useRemoveItem = () => {
   const dispatch = useAppDispatch()
-  return (id) => dispatch(removeItem(id))
+  return useCallback((id) => dispatch(removeItem(id)), [dispatch])
 }
 export const useClearCart = () => {
   const dispatch = useAppDispatch()
-  return () => dispatch(clearBackendCart())
+  return useCallback(() => dispatch(clearBackendCart()), [dispatch])
 }
 
 // Order action hooks
 import { createOrder, startCheckout } from '../features/orders/orderSlice'
 export const useCreateOrder = () => {
   const dispatch = useAppDispatch()
-  return (addr) => dispatch(createOrder(addr))
+  return useCallback((addr) => dispatch(createOrder(addr)), [dispatch])
 }
 export const useStartCheckout = () => {
   const dispatch = useAppDispatch()
-  return (id) => dispatch(startCheckout(id))
+  return useCallback((id) => dispatch(startCheckout(id)), [dispatch])
 }
 
 // Admin action hooks
 import { deactivateUser, createAdmin } from '../features/admin/adminSlice'
 export const useDeactivateUser = () => {
   const dispatch = useAppDispatch()
-  return (id) => dispatch(deactivateUser(id))
+  return useCallback((id) => dispatch(deactivateUser(id)), [dispatch])
 }
 export const useCreateAdmin = () => {
   const dispatch = useAppDispatch()
-  return (payload) => dispatch(createAdmin(payload))
+  return useCallback((payload) => dispatch(createAdmin(payload)), [dispatch])
 }

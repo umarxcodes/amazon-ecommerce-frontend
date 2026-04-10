@@ -77,17 +77,19 @@ const authSlice = createSlice({
       .addCase(login.rejected, rejected())
       .addCase(login.fulfilled, (state, action) => {
         fulfilled()(state)
-        state.user = action.payload.user
-        state.token = action.payload.token
-        saveSession({ user: action.payload.user, token: action.payload.token })
+        const { user, accessToken } = action.payload.data
+        state.user = user
+        state.token = accessToken
+        saveSession({ user, token: accessToken })
       })
       .addCase(register.pending, pending())
       .addCase(register.rejected, rejected())
       .addCase(register.fulfilled, (state, action) => {
         fulfilled()(state)
-        state.user = action.payload.user
-        state.token = action.payload.token
-        saveSession({ user: action.payload.user, token: action.payload.token })
+        const { user, accessToken } = action.payload.data
+        state.user = user
+        state.token = accessToken
+        saveSession({ user, token: accessToken })
       })
       .addCase(getProfile.pending, pending('profileStatus'))
       .addCase(getProfile.rejected, rejected('profileStatus'))

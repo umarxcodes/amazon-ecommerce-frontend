@@ -117,6 +117,7 @@ export default function RegisterPage() {
             fullWidth
             type="submit"
             disabled={status === 'loading'}
+            icon={status === 'loading' ? '' : 'fas fa-user-plus'}
           >
             {status === 'loading'
               ? 'Creating...'

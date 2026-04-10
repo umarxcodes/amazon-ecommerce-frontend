@@ -85,6 +85,7 @@ export default function LoginPage() {
             fullWidth
             type="submit"
             disabled={status === 'loading'}
+            icon={status === 'loading' ? '' : 'fas fa-sign-in-alt'}
           >
             {status === 'loading' ? 'Signing in...' : 'Sign in'}
           </Button>
