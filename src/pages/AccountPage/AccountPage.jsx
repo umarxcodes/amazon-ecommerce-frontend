@@ -21,25 +21,25 @@ const SECTIONS = [
     title: 'Your Orders',
     desc: 'Track, return, or buy again',
     link: '/orders',
-    icon: '📦',
+    icon: 'fas fa-box-open',
   },
   {
     title: 'Payment Settings',
     desc: 'Manage payment methods',
     link: '/checkout',
-    icon: '💳',
+    icon: 'fas fa-credit-card',
   },
   {
     title: 'Your Addresses',
     desc: 'Edit addresses for orders',
     link: '/checkout',
-    icon: '📍',
+    icon: 'fas fa-map-marker-alt',
   },
   {
     title: 'Browse Products',
     desc: 'Discover new items daily',
     link: '/products',
-    icon: '🛍️',
+    icon: 'fas fa-store',
   },
 ]
 
@@ -76,7 +76,7 @@ export default function AccountPage() {
       <div className="account-page__grid">
         {SECTIONS.map((s) => (
           <Link key={s.title} to={s.link} className="account-section-card">
-            <span className="account-section-card__icon">{s.icon}</span>
+            <i className={`account-section-card__icon ${s.icon}`} />
             <h3 className="account-section-card__title">{s.title}</h3>
             <p className="account-section-card__desc">{s.desc}</p>
           </Link>
@@ -85,20 +85,26 @@ export default function AccountPage() {
 
       {isAdmin && (
         <div className="account-page__admin">
-          <h2>Admin</h2>
+          <h2>
+            <i className="fas fa-user-shield" /> Admin Dashboard
+          </h2>
           <div className="account-page__admin-links">
             <Link to="/admin/products" className="btn btn--ghost">
-              Manage Products
+              <i className="fas fa-box" /> Manage Products
             </Link>
             <Link to="/admin/users" className="btn btn--ghost">
-              Manage Users
+              <i className="fas fa-users" /> Manage Users
             </Link>
           </div>
         </div>
       )}
 
       <div className="account-page__signout">
-        <Button variant="danger" onClick={handleLogout}>
+        <Button
+          variant="danger"
+          onClick={handleLogout}
+          icon="fas fa-sign-out-alt"
+        >
           Sign Out
         </Button>
       </div>

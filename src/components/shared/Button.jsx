@@ -1,6 +1,6 @@
 /* ===== REUSABLE BUTTON COMPONENT ===== */
-/* Versatile button supporting variants, sizes, and Link rendering */
-/* Used across all pages for consistent button styling */
+/* Versatile button supporting variants, sizes, icons, and Link rendering */
+/* Amazon-style gradients, hover animations, and icon integration */
 
 import { forwardRef } from 'react'
 import { Link } from 'react-router-dom'
@@ -20,6 +20,8 @@ const Button = forwardRef(
       onClick,
       type = 'button',
       className = '',
+      icon = null,
+      iconRight = false,
       ...rest
     },
     ref
@@ -30,6 +32,7 @@ const Button = forwardRef(
       `btn--${size}`,
       fullWidth ? 'btn--full' : '',
       disabled ? 'btn--disabled' : '',
+      icon ? 'btn--with-icon' : '',
       className,
     ]
       .filter(Boolean)
@@ -37,24 +40,32 @@ const Button = forwardRef(
 
     const props = { ref, className: classes, onClick, disabled, ...rest }
 
+    const iconElement = icon ? <i className={`btn__icon ${icon}`} /> : null
+
     if (as === 'link' && to) {
       return (
         <Link to={to} {...props}>
-          {children}
+          {icon && !iconRight && iconElement}
+          <span className="btn__text">{children}</span>
+          {iconRight && iconElement}
         </Link>
       )
     }
     if (as === 'a' && href) {
       return (
         <a href={href} {...props}>
-          {children}
+          {icon && !iconRight && iconElement}
+          <span className="btn__text">{children}</span>
+          {iconRight && iconElement}
         </a>
       )
     }
 
     return (
       <button type={type} {...props}>
-        {children}
+        {icon && !iconRight && iconElement}
+        <span className="btn__text">{children}</span>
+        {iconRight && iconElement}
       </button>
     )
   }
