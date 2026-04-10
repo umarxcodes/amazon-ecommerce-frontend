@@ -17,10 +17,10 @@ import SkeletonCard from '../../components/shared/SkeletonCard'
 import './HomePage.css'
 
 const CAROUSEL_IMAGES = [
-  'https://images.unsplash.com/photo-1607082349566-187342175e2f?auto=format&fit=crop&w=1600&q=80',
-  'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1600&q=80',
-  'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1600&q=80',
-  'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?auto=format&fit=crop&w=1600&q=80',
+  'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775711803/banner4_iaccwu.jpg',
+  'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775711802/banner3_bdjt7k.jpg',
+  'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775711802/banner1_hki4sl.jpg',
+  'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775711802/banner2_gkbkhc.jpg',
 ]
 
 const FEATURED_COUNT = 8
