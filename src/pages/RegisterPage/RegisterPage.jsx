@@ -1,3 +1,7 @@
+/* ===== REGISTRATION PAGE ===== */
+/* New user account creation form */
+/* Validates password match and minimum length */
+
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAuthStatus, useAuthToken } from '../../hooks'

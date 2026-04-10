@@ -1,3 +1,7 @@
+/* ===== ORDERS PAGE ===== */
+/* Displays user's order history with date filtering */
+/* Protected route - requires authentication */
+
 import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useOrders, useOrderStatus, useFetchCart } from '../../hooks'

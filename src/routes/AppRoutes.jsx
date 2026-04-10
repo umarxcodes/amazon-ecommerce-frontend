@@ -1,3 +1,6 @@
+/* ===== APPLICATION ROUTES ===== */
+/* Defines all routes with lazy loading and route guards (Protected/Admin) */
+
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from '../layout/Layout'
@@ -31,6 +34,9 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route element={<Layout />}>
+        {/* ===== PUBLIC ROUTES ===== */}
+        {/* These routes are accessible without authentication */}
+
         <Route
           index
           element={
@@ -80,6 +86,9 @@ export default function AppRoutes() {
           }
         />
 
+        {/* ===== PROTECTED ROUTES ===== */}
+        {/* These routes require authentication (ProtectedRoute guard) */}
+
         <Route element={<ProtectedRoute />}>
           <Route
             path="/cart"
@@ -115,6 +124,9 @@ export default function AppRoutes() {
           />
         </Route>
 
+        {/* ===== ADMIN ROUTES ===== */}
+        {/* These routes require admin role (AdminRoute guard) */}
+
         <Route element={<AdminRoute />}>
           <Route
             path="/admin/products"
@@ -133,6 +145,9 @@ export default function AppRoutes() {
             }
           />
         </Route>
+
+        {/* ===== FALLBACK ROUTES ===== */}
+        {/* Catch-all route redirects to 404 page */}
       </Route>
 
       <Route path="/404" element={<NotFoundPage />} />

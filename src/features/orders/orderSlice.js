@@ -1,3 +1,7 @@
+/* ===== ORDERS SLICE ===== */
+/* Manages user orders and payment checkout flow */
+/* Integrates with payment gateway for order processing */
+
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import {
   createOrderAPI,

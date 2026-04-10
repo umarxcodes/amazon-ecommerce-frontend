@@ -1,3 +1,7 @@
+/* ===== SHOPPING CART PAGE ===== */
+/* Displays cart items with quantity controls */
+/* Protected route - requires authentication */
+
 import { useEffect, memo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {

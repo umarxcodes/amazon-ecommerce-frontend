@@ -1,3 +1,7 @@
+/* ===== UI STATE SLICE ===== */
+/* Manages global UI state (toast notifications, loading states) */
+/* Provides toast notifications across the application */
+
 import { createSlice, nanoid } from '@reduxjs/toolkit'
 
 const initialState = {
@@ -13,10 +17,16 @@ const uiSlice = createSlice({
       prepare({ title, message, type = 'info', duration = 3500 }) {
         return { payload: { id: nanoid(), title, message, type, duration } }
       },
-      reducer(state, action) { state.toasts.push(action.payload) },
+      reducer(state, action) {
+        state.toasts.push(action.payload)
+      },
     },
-    removeToast(state, action) { state.toasts = state.toasts.filter((t) => t.id !== action.payload) },
-    setRedirecting(state, action) { state.isRedirecting = action.payload },
+    removeToast(state, action) {
+      state.toasts = state.toasts.filter((t) => t.id !== action.payload)
+    },
+    setRedirecting(state, action) {
+      state.isRedirecting = action.payload
+    },
   },
 })
 

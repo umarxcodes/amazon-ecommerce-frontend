@@ -1,3 +1,7 @@
+/* ===== SKELETON LOADING CARD ===== */
+/* Placeholder UI during data fetching */
+/* Mimics ProductCard layout for smooth loading transition */
+
 import './SkeletonCard.css'
 
 export default function SkeletonCard() {

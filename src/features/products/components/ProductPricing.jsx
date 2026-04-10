@@ -1,3 +1,7 @@
+/* ===== PRODUCT PRICING DISPLAY ===== */
+/* Shows price, sale price, discount percentage */
+/* Used on ProductDetailPage */
+
 import { formatCurrency } from '../../../utils/helpers'
 import './ProductPricing.css'
 

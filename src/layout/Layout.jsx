@@ -1,3 +1,7 @@
+/* ===== MAIN LAYOUT COMPONENT ===== */
+/* Wraps all pages with Header, Main Content Area, and Footer */
+/* Uses React Router Outlet to render child pages */
+
 import { Suspense, lazy } from 'react'
 import { Outlet } from 'react-router-dom'
 import LoadingSpinner from '../components/shared/LoadingSpinner'

@@ -1,3 +1,7 @@
+/* ===== AUTHENTICATION SLICE ===== */
+/* Manages user authentication state (login, register, logout, profile) */
+/* Persists session in localStorage for persistent login */
+
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { loginAPI, registerAPI, fetchProfileAPI } from './authAPI'
 import {

@@ -1,3 +1,7 @@
+/* ===== EMPTY STATE COMPONENT ===== */
+/* Displays when no data is available (no products, orders, etc.) */
+/* Optional action button for user recovery */
+
 import './EmptyState.css'
 
 export default function EmptyState({ icon, title, description, action }) {

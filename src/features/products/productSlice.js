@@ -1,3 +1,7 @@
+/* ===== PRODUCTS SLICE ===== */
+/* Manages product catalog, filtering, sorting, and pagination */
+/* Supports CRUD operations (admin only for mutations) */
+
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import {
   createProductAPI,

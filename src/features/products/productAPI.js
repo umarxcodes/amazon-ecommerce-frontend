@@ -1,3 +1,7 @@
+/* ===== PRODUCTS API ===== */
+/* Product CRUD with pagination and filtering support */
+/* Supports multipart form data for image uploads */
+
 import axiosInstance from '../../services/axiosInstance'
 
 export const fetchProductsAPI = async (params) => {
