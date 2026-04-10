@@ -44,7 +44,7 @@ function CartItemRow({ item }) {
     dispatch(
       addToast({
         title: 'Removed',
-        message: `${item.title} removed from cart.`,
+        message: `${item.title || 'Product'} removed from cart.`,
         type: 'info',
       })
     )
@@ -55,7 +55,7 @@ function CartItemRow({ item }) {
       <Link to={`/products/${item.productId}`} className="cart-item__img-link">
         <img
           src={item.image || 'https://placehold.co/120x120'}
-          alt={item.title}
+          alt={item.title || 'Product'}
           loading="lazy"
         />
       </Link>
@@ -105,7 +105,7 @@ function CartItemRow({ item }) {
       </div>
 
       <div className="cart-item__price">
-        <strong>{formatCurrency(item.price * item.quantity)}</strong>
+        <strong>{formatCurrency((item.price || 0) * item.quantity)}</strong>
       </div>
     </div>
   )

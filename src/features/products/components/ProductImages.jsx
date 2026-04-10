@@ -10,7 +10,9 @@ const PLACEHOLDER = 'https://placehold.co/600x600/f6f7f8/111?text=No+Image'
 export default function ProductImages({ product }) {
   const images = product.images?.length
     ? product.images
-    : [product.image || PLACEHOLDER]
+    : product.image
+      ? [product.image]
+      : [PLACEHOLDER]
   const [active, setActive] = useState(0)
 
   return (

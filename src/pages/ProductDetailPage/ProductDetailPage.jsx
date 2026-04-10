@@ -51,7 +51,7 @@ export default function ProductDetailPage() {
     dispatch(
       addToast({
         title: 'Added',
-        message: `${payload.title || product?.title} added to cart.`,
+        message: `${payload.title || product?.title || 'Product'} added to cart.`,
         type: 'success',
       })
     )

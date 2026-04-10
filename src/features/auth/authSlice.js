@@ -106,7 +106,7 @@ export default authSlice.reducer
 export const selectCurrentUser = (s) => s.auth.user
 export const selectAuthToken = (s) => s.auth.token
 export const selectIsAuthenticated = (s) => !!s.auth.token
-export const selectIsAdmin = (s) => s.auth.user?.role === 'admin'
+export const selectIsAdmin = (s) => s.auth.user?.role?.toLowerCase() === 'admin'
 export const selectAuthStatus = (s) => s.auth.status
 export const selectProfileStatus = (s) => s.auth.profileStatus
 export const selectAuthError = (s) => s.auth.error

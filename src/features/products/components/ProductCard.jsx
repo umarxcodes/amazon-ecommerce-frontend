@@ -17,11 +17,11 @@ function ProductCard({ product, onAddToCart }) {
       <Link to={`/products/${product._id}`} className="product-card__img-wrap">
         <img
           src={
-            imgErr
+            imgErr || !product.image
               ? 'https://placehold.co/300x300'
-              : product.image || 'https://placehold.co/300x300'
+              : product.image
           }
-          alt={product.title}
+          alt={product.title || 'Product'}
           onError={() => setImgErr(true)}
           loading="lazy"
         />

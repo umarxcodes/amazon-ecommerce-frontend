@@ -2,7 +2,7 @@
 /* User authentication form (email + password) */
 /* Redirects to home on successful login */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAuthStatus, useAuthToken } from '../../hooks'
 import { login } from '../../features/auth/authSlice'
@@ -19,7 +19,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPwd, setShowPwd] = useState(false)
 
-  if (hasToken) navigate('/')
+  useEffect(() => {
+    if (hasToken) {
+      navigate('/')
+    }
+  }, [hasToken, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

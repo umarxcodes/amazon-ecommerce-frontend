@@ -56,7 +56,7 @@ export default function HomePage() {
       dispatch(
         addToast({
           title: 'Added',
-          message: `${product.title} added to cart.`,
+          message: `${product.title || 'Product'} added to cart.`,
           type: 'success',
         })
       )

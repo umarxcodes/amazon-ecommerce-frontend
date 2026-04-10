@@ -227,4 +227,4 @@ export const selectCartError = (s) => s.cart.error
 export const selectCartCount = (s) =>
   s.cart.items.reduce((t, i) => t + i.quantity, 0)
 export const selectCartTotal = (s) =>
-  s.cart.items.reduce((t, i) => t + i.price * i.quantity, 0)
+  s.cart.items.reduce((t, i) => t + (i.price || 0) * i.quantity, 0)
