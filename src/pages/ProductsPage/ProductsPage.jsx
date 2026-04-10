@@ -1,3 +1,7 @@
+/* ===== PRODUCTS CATALOG PAGE ===== */
+/* Displays products with search, filtering, sorting, and pagination */
+/* URL-driven state (query params for filters) */
+
 import { useCallback, useEffect, useState, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {

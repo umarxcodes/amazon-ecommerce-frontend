@@ -1,3 +1,7 @@
+/* ===== LOGIN PAGE ===== */
+/* User authentication form (email + password) */
+/* Redirects to home on successful login */
+
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAuthStatus, useAuthToken } from '../../hooks'

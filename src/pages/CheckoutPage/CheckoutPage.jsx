@@ -1,3 +1,7 @@
+/* ===== CHECKOUT PAGE ===== */
+/* Shipping address form and order placement */
+/* Protected route - redirects to payment gateway on success */
+
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {

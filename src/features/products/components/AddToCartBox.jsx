@@ -1,3 +1,7 @@
+/* ===== ADD TO CART BUYBOX ===== */
+/* Right-side purchase box with price, quantity selector, and Buy buttons */
+/* Amazon-style checkout box with security indicators */
+
 import { useState } from 'react'
 import { useAppDispatch, useIsAuthenticated } from '../../../hooks'
 import { addToast } from '../../ui/uiSlice'

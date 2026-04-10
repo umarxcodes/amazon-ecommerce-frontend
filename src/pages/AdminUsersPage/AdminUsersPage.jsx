@@ -1,3 +1,7 @@
+/* ===== ADMIN USERS PAGE ===== */
+/* Admin-only user management (role changes, deactivate users) */
+/* Admin Route - requires admin role */
+
 import { useEffect, useCallback } from 'react'
 import {
   useAppDispatch,

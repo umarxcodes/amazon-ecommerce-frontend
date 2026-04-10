@@ -1,3 +1,6 @@
+/* ===== AUTHENTICATION API ===== */
+/* Login, Register, and Profile fetch endpoints */
+
 import axiosInstance from '../../services/axiosInstance'
 
 export const loginAPI = async (credentials) => {

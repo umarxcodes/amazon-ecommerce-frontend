@@ -1,3 +1,7 @@
+/* ===== FOOTER COMPONENT ===== */
+/* Amazon-style footer with navigation links and legal information */
+/* Displays company info, help links, and back-to-top button */
+
 import { Link } from 'react-router-dom'
 import './Footer.css'
 

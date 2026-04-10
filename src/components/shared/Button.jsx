@@ -1,3 +1,7 @@
+/* ===== REUSABLE BUTTON COMPONENT ===== */
+/* Versatile button supporting variants, sizes, and Link rendering */
+/* Used across all pages for consistent button styling */
+
 import { forwardRef } from 'react'
 import { Link } from 'react-router-dom'
 import './Button.css'
@@ -34,13 +38,25 @@ const Button = forwardRef(
     const props = { ref, className: classes, onClick, disabled, ...rest }
 
     if (as === 'link' && to) {
-      return <Link to={to} {...props}>{children}</Link>
+      return (
+        <Link to={to} {...props}>
+          {children}
+        </Link>
+      )
     }
     if (as === 'a' && href) {
-      return <a href={href} {...props}>{children}</a>
+      return (
+        <a href={href} {...props}>
+          {children}
+        </a>
+      )
     }
 
-    return <button type={type} {...props}>{children}</button>
+    return (
+      <button type={type} {...props}>
+        {children}
+      </button>
+    )
   }
 )
 

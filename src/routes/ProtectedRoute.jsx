@@ -1,3 +1,7 @@
+/* ===== PROTECTED ROUTE GUARD ===== */
+/* Redirects unauthenticated users to login page */
+/* Used for: Cart, Checkout, Orders */
+
 import { useSelector } from 'react-redux'
 import { Navigate, Outlet } from 'react-router-dom'
 

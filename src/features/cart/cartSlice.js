@@ -1,3 +1,7 @@
+/* ===== SHOPPING CART SLICE ===== */
+/* Manages cart items, shipping address, and checkout flow */
+/* Syncs local cart with backend on authentication */
+
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import {
   fetchCartAPI,

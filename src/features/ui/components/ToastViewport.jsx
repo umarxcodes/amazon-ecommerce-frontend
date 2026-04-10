@@ -1,3 +1,7 @@
+/* ===== TOAST NOTIFICATION SYSTEM ===== */
+/* Renders toast notifications globally */
+/* Auto-dismisses toasts after configured duration */
+
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { removeToast, selectToasts } from '../uiSlice'

@@ -1,3 +1,7 @@
+/* ===== 404 NOT FOUND PAGE ===== */
+/* Displays when user navigates to non-existent routes */
+/* Provides links back to home, products, or login */
+
 import { Link } from 'react-router-dom'
 import './NotFoundPage.css'
 

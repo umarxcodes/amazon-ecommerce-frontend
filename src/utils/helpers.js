@@ -1,3 +1,7 @@
+/* ===== UTILITY FUNCTIONS ===== */
+/* Shared helpers for formatting, storage, debounce, error messages */
+/* Used across components and Redux slices */
+
 const SESSION_KEY = 'amazon_clone_session'
 const CART_KEY = 'amazon_clone_cart'
 

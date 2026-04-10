@@ -1,10 +1,10 @@
+/* ===== RELATED PRODUCTS COMPONENT ===== */
+/* Shows similar products in same category */
+/* Displayed at bottom of ProductDetailPage */
+
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  useAppDispatch,
-  useProducts,
-  useProductStatus,
-} from '../../../hooks'
+import { useAppDispatch, useProducts, useProductStatus } from '../../../hooks'
 import { fetchProducts } from '../productSlice'
 import { formatCurrency } from '../../../utils/helpers'
 import StarRating from '../../../components/shared/StarRating'

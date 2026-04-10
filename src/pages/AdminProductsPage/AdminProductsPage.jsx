@@ -1,3 +1,7 @@
+/* ===== ADMIN PRODUCTS PAGE ===== */
+/* Admin-only product CRUD interface (create, edit, delete products) */
+/* Admin Route - requires admin role */
+
 import { useEffect, useState, useCallback } from 'react'
 import {
   useAppDispatch,

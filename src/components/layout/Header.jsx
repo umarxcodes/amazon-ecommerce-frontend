@@ -1,3 +1,7 @@
+/* ===== HEADER COMPONENT ===== */
+/* Amazon-style navigation header with search, account, and cart */
+/* Provides site-wide navigation and user account dropdown */
+
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {

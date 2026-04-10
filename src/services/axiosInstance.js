@@ -1,7 +1,13 @@
+/* ===== AXIOS HTTP CLIENT ===== */
+/* Pre-configured Axios instance with JWT interceptor */
+/* Auto-attaches token to requests, handles 401 by redirecting to login */
+
 import axios from 'axios'
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://amazon-ecommerce-backend.vercel.app/api',
+  baseURL:
+    import.meta.env.VITE_API_URL ||
+    'https://amazon-ecommerce-backend.vercel.app/api',
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 })
@@ -12,8 +18,11 @@ axiosInstance.interceptors.request.use((config) => {
   if (raw) {
     try {
       const session = JSON.parse(raw)
-      if (session?.token) config.headers.Authorization = `Bearer ${session.token}`
-    } catch { /* ignore corrupt session */ }
+      if (session?.token)
+        config.headers.Authorization = `Bearer ${session.token}`
+    } catch {
+      /* ignore corrupt session */
+    }
   }
   return config
 })

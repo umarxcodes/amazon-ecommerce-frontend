@@ -1,3 +1,7 @@
+/* ===== PRODUCT DETAIL PAGE ===== */
+/* Displays full product information, images, and purchase options */
+/* Includes related products section */
+
 import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {

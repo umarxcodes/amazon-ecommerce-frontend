@@ -1,3 +1,7 @@
+/* ===== IMAGE CAROUSEL COMPONENT ===== */
+/* Auto-playing image slider with manual controls */
+/* Used on HomePage for hero banners */
+
 import { useCallback, useEffect, useRef, useState, memo } from 'react'
 import './Carousel.css'
 

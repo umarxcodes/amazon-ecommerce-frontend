@@ -1,3 +1,7 @@
+/* ===== PRODUCT CARD COMPONENT ===== */
+/* Displays single product in catalog/grid views */
+/* Shows price, rating, stock status, and Add to Cart button */
+
 import { memo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { formatCurrency } from '../../../utils/helpers'

@@ -1,3 +1,7 @@
+/* ===== ADMIN SLICE ===== */
+/* Manages admin operations (user management, product management) */
+/* Restricted to users with admin role */
+
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import {
   createAdminAPI,

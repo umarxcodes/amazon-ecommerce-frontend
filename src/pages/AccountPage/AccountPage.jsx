@@ -1,3 +1,7 @@
+/* ===== ACCOUNT PAGE ===== */
+/* User account dashboard with quick links to orders, addresses, payments */
+/* Shows admin links if user has admin role */
+
 import { Link, useNavigate } from 'react-router-dom'
 import {
   useCurrentUser,

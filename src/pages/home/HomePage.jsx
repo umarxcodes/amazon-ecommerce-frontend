@@ -1,3 +1,7 @@
+/* ===== HOME PAGE ===== */
+/* Landing page with hero carousel and featured products */
+/* Public route - no authentication required */
+
 import { useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
