@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import StarRating from '../../../components/ui/StarRating'
+import StarRating from '../../../components/shared/StarRating'
 import ProductPricing from './ProductPricing'
 import ProductTabs from './ProductTabs'
 import './ProductInfo.css'

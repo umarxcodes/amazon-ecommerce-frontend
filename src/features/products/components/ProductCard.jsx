@@ -1,7 +1,7 @@
 import { memo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { formatCurrency } from '../../../utils/helpers'
-import StarRating from '../../../components/ui/StarRating'
+import StarRating from '../../../components/shared/StarRating'
 import './ProductCard.css'
 
 function ProductCard({ product, onAddToCart }) {

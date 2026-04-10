@@ -1,7 +1,0 @@
-.product-detail-page { max-width: 1400px; margin: 0 auto; padding: 1.5rem 1rem; }
-.product-detail-layout { display: grid; grid-template-columns: 1fr 1.2fr 300px; gap: 1.5rem; }
-.product-detail-layout__left { min-width: 0; }
-.product-detail-layout__center { min-width: 0; }
-.product-detail-layout__right { min-width: 0; }
-@media (max-width: 1180px) { .product-detail-layout { grid-template-columns: 1fr 1fr; } .product-detail-layout__right { grid-column: 1 / -1; max-width: 400px; justify-self: center; } }
-@media (max-width: 820px) { .product-detail-layout { grid-template-columns: 1fr; } .product-detail-layout__right { max-width: none; } }

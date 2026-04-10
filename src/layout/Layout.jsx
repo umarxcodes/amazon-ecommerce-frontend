@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react'
 import { Outlet } from 'react-router-dom'
-import LoadingSpinner from '../components/ui/LoadingSpinner'
+import LoadingSpinner from '../components/shared/LoadingSpinner'
 import './Layout.css'
 
 const Header = lazy(() => import('../components/layout/Header'))

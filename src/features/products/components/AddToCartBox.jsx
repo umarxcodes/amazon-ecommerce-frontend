@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAppDispatch, useIsAuthenticated } from '../../../hooks'
 import { addToast } from '../../ui/uiSlice'
 import { formatCurrency } from '../../../utils/helpers'
-import Button from '../../../components/ui/Button'
+import Button from '../../../components/shared/Button'
 import './AddToCartBox.css'
 
 export default function AddToCartBox({ product, onAddToCart }) {
