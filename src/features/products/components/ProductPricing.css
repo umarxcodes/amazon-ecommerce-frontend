@@ -1,7 +1,0 @@
-.product-pricing { display: flex; flex-direction: column; gap: 0.25rem; position: relative; }
-.product-pricing__discount { position: absolute; top: -8px; left: -8px; background: #cc0c39; color: #fff; font-size: 0.75rem; font-weight: 600; padding: 0.125rem 0.5rem; border-radius: 3px; }
-.product-pricing__amount { display: flex; align-items: baseline; gap: 2px; }
-.product-pricing__symbol { font-size: 0.875rem; color: #0f1111; vertical-align: top; }
-.product-pricing__value { font-size: 1.75rem; font-weight: 400; color: #0f1111; }
-.product-pricing__was { font-size: 0.8125rem; color: #565959; }
-.product-pricing__per-unit { font-size: 0.75rem; color: #565959; margin-top: 0.25rem; }

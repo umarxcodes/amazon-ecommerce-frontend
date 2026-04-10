@@ -1,1 +1,0 @@
-import{j as n,L as o}from"./index-DOWyyBMF.js";import"./Button-DrKmAU3e.js";function e(){return n.jsxs("div",{className:"not-found",children:[n.jsx("h1",{className:"not-found__code",children:"404"}),n.jsx("p",{className:"not-found__text",children:"Page not found"}),n.jsx(o,{to:"/",className:"btn btn--primary",children:"Back to Home"})]})}export{e as default};
