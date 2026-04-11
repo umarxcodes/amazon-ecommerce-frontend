@@ -1,12 +1,13 @@
 /* ===== LOGIN PAGE ===== */
-/* User authentication form (email + password) */
-/* Redirects to home on successful login */
+/* User authentication form (email + password) with Yup validation */
+/* Redirects to home on successful login, handles 401 errors */
 
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAppDispatch, useAuthStatus, useAuthToken } from '../../hooks'
 import { login } from '../../features/auth/authSlice'
 import { addToast } from '../../features/ui/uiSlice'
+import { loginSchema } from '../../features/auth/authSchemas'
 import Button from '../../components/shared/Button'
 import './AuthPage.css'
 
@@ -15,42 +16,58 @@ export default function LoginPage() {
   const dispatch = useAppDispatch()
   const status = useAuthStatus()
   const hasToken = useAuthToken()
+  const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPwd, setShowPwd] = useState(false)
-  const [emailError, setEmailError] = useState('')
+  const [errors, setErrors] = useState({})
+
+  const redirectPath = searchParams.get('redirect') || '/'
 
   useEffect(() => {
     if (hasToken) {
-      navigate('/')
+      navigate(redirectPath, { replace: true })
     }
-  }, [hasToken, navigate])
+  }, [hasToken, navigate, redirectPath])
 
-  const validateEmail = (value) => {
-    if (!value) {
-      setEmailError('Email is required.')
-      return false
+  const validateField = async (name) => {
+    try {
+      await loginSchema.validateAt(name, { email, password })
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[name]
+        return next
+      })
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, [name]: err.message }))
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      setEmailError('Please enter a valid email address.')
-      return false
+  }
+
+  const handleChange = (field, value) => {
+    if (field === 'email') setEmail(value)
+    else setPassword(value)
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
     }
-    setEmailError('')
-    return true
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!validateEmail(email)) {
-      dispatch(
-        addToast({
-          title: 'Validation error',
-          message: emailError,
-          type: 'error',
-        })
-      )
+    try {
+      await loginSchema.validate({ email, password }, { abortEarly: false })
+    } catch (err) {
+      const fieldErrors = {}
+      err.inner.forEach((e) => {
+        fieldErrors[e.path] = e.message
+      })
+      setErrors(fieldErrors)
       return
     }
+
     const result = await dispatch(login({ email, password }))
     if (login.fulfilled.match(result)) {
       dispatch(
@@ -60,12 +77,24 @@ export default function LoginPage() {
           type: 'success',
         })
       )
-      navigate('/')
+      navigate(redirectPath, { replace: true })
     } else {
+      const msg = result.payload ?? 'Invalid credentials.'
+      // Handle 401 specifically
+      if (
+        msg.toLowerCase().includes('unauthorized') ||
+        msg.toLowerCase().includes('invalid')
+      ) {
+        setErrors({
+          form: 'Invalid credentials. Please check your email and password.',
+        })
+      } else {
+        setErrors({ form: msg })
+      }
       dispatch(
         addToast({
           title: 'Sign in failed',
-          message: result.payload ?? 'Invalid credentials.',
+          message: msg,
           type: 'error',
         })
       )
@@ -76,23 +105,27 @@ export default function LoginPage() {
     <div className="auth-page">
       <div className="auth-card">
         <h1 className="auth-card__title">Sign in</h1>
-        <form onSubmit={handleSubmit} className="auth-card__form">
+        {errors.form && (
+          <div className="auth-card__error-banner">{errors.form}</div>
+        )}
+        <form onSubmit={handleSubmit} className="auth-card__form" noValidate>
           <div className="auth-field">
             <label htmlFor="auth-email">Email</label>
             <input
               id="auth-email"
               type="email"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value)
-                if (emailError) setEmailError('')
-              }}
-              onBlur={() => validateEmail(email)}
+              onChange={(e) => handleChange('email', e.target.value)}
+              onBlur={() => validateField('email', email)}
               required
               autoComplete="email"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? 'email-error' : undefined}
             />
-            {emailError && (
-              <span className="auth-field__error">{emailError}</span>
+            {errors.email && (
+              <span className="auth-field__error" id="email-error" role="alert">
+                {errors.email}
+              </span>
             )}
           </div>
           <div className="auth-field">
@@ -102,9 +135,13 @@ export default function LoginPage() {
                 id="auth-password"
                 type={showPwd ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => handleChange('password', e.target.value)}
                 required
                 autoComplete="current-password"
+                aria-invalid={!!errors.password}
+                aria-describedby={
+                  errors.password ? 'password-error' : undefined
+                }
               />
               <button
                 type="button"
@@ -114,6 +151,15 @@ export default function LoginPage() {
                 {showPwd ? 'Hide' : 'Show'}
               </button>
             </div>
+            {errors.password && (
+              <span
+                className="auth-field__error"
+                id="password-error"
+                role="alert"
+              >
+                {errors.password}
+              </span>
+            )}
           </div>
           <Button
             variant="primary"

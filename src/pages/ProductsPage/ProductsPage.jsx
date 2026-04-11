@@ -62,6 +62,9 @@ export default function ProductsPage() {
       search: searchParams.get('search') ?? '',
       category: searchParams.get('category') ?? 'all',
       sortBy: searchParams.get('sortBy') ?? 'featured',
+      minPrice: searchParams.get('minPrice') ?? '',
+      maxPrice: searchParams.get('maxPrice') ?? '',
+      rating: searchParams.get('rating') ?? '',
       page: Number(searchParams.get('page')) || 1,
       limit: 12,
     }),
@@ -90,8 +93,11 @@ export default function ProductsPage() {
     (newFilters) => {
       const params = new URLSearchParams(searchParams)
       Object.entries(newFilters).forEach(([key, value]) => {
-        if (value && value !== 'all') params.set(key, String(value))
-        else params.delete(key)
+        if (value && value !== 'all' && value !== '') {
+          params.set(key, String(value))
+        } else {
+          params.delete(key)
+        }
       })
       params.set('page', '1')
       setSearchParams(params)
@@ -100,28 +106,113 @@ export default function ProductsPage() {
   )
 
   const handleAddToCart = useCallback(
-    (product) => {
+    async (product) => {
       if (!isAuthenticated) {
         dispatch(
           addToast({
             title: 'Sign in required',
-            message: 'Please sign in first.',
+            message: 'Please sign in to add items to cart.',
             type: 'info',
           })
         )
         return
       }
-      addToCart({ productId: product._id, quantity: 1 })
-      dispatch(
-        addToast({
-          title: 'Added',
-          message: `${product.title ?? 'Product'} added to cart.`,
-          type: 'success',
-        })
-      )
+      const result = await addToCart({ productId: product._id, quantity: 1 })
+      if (addToCart.fulfilled.match(result)) {
+        dispatch(
+          addToast({
+            title: 'Added',
+            message: `${product.title ?? 'Product'} added to cart.`,
+            type: 'success',
+          })
+        )
+      } else {
+        dispatch(
+          addToast({
+            title: 'Failed to add',
+            message: result.payload ?? 'Could not add product to cart.',
+            type: 'error',
+          })
+        )
+      }
     },
     [dispatch, isAuthenticated, addToCart]
   )
+
+  const handlePageChange = useCallback(
+    (page) => {
+      const params = new URLSearchParams(searchParams)
+      params.set('page', String(page))
+      setSearchParams(params)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    },
+    [searchParams, setSearchParams]
+  )
+
+  const renderPagination = () => {
+    if (pages <= 1) return null
+    const currentPage = filters.page
+    const delta = 2
+    const range = []
+    const rangeWithDots = []
+
+    for (
+      let i = Math.max(2, currentPage - delta);
+      i <= Math.min(pages - 1, currentPage + delta);
+      i++
+    ) {
+      range.push(i)
+    }
+
+    if (currentPage - delta > 2) rangeWithDots.push(1, '...')
+    else rangeWithDots.push(1)
+
+    rangeWithDots.push(...range)
+
+    if (currentPage + delta < pages - 1) rangeWithDots.push('...', pages)
+    else if (pages > 1) rangeWithDots.push(pages)
+
+    return (
+      <div className="products-page__pagination">
+        {currentPage > 1 && (
+          <button
+            type="button"
+            className="products-page__page-btn"
+            onClick={() => handlePageChange(currentPage - 1)}
+          >
+            ‹ Prev
+          </button>
+        )}
+        {rangeWithDots.map((item, idx) =>
+          typeof item === 'string' ? (
+            <span key={`dots-${idx}`} className="products-page__page-ellipsis">
+              …
+            </span>
+          ) : (
+            <button
+              key={item}
+              type="button"
+              className={`products-page__page-btn ${
+                currentPage === item ? 'products-page__page-btn--active' : ''
+              }`}
+              onClick={() => handlePageChange(item)}
+            >
+              {item}
+            </button>
+          )
+        )}
+        {currentPage < pages && (
+          <button
+            type="button"
+            className="products-page__page-btn"
+            onClick={() => handlePageChange(currentPage + 1)}
+          >
+            Next ›
+          </button>
+        )}
+      </div>
+    )
+  }
 
   if (status === 'loading' && !products.length) {
     return (
@@ -152,6 +243,55 @@ export default function ProductsPage() {
               onClick={() => changeFilter({ category: category.toLowerCase() })}
             >
               {category}
+            </button>
+          ))}
+        </div>
+
+        <div className="products-page__filter-group">
+          <h3>Price Range</h3>
+          <div className="products-page__price-inputs">
+            <input
+              type="number"
+              placeholder="Min"
+              value={filters.minPrice}
+              onChange={(e) => changeFilter({ minPrice: e.target.value })}
+              className="products-page__price-input"
+              min="0"
+              aria-label="Minimum price"
+            />
+            <span>—</span>
+            <input
+              type="number"
+              placeholder="Max"
+              value={filters.maxPrice}
+              onChange={(e) => changeFilter({ maxPrice: e.target.value })}
+              className="products-page__price-input"
+              min="0"
+              aria-label="Maximum price"
+            />
+          </div>
+        </div>
+
+        <div className="products-page__filter-group">
+          <h3>Customer Rating</h3>
+          {[4, 3, 2, 1].map((stars) => (
+            <button
+              key={stars}
+              type="button"
+              className={`products-page__filter-btn ${
+                filters.rating === String(stars)
+                  ? 'products-page__filter-btn--active'
+                  : ''
+              }`}
+              onClick={() =>
+                changeFilter({
+                  rating: filters.rating === String(stars) ? '' : String(stars),
+                })
+              }
+            >
+              {'★'.repeat(stars)}
+              {'☆'.repeat(4 - stars)}
+              {' & Up'}
             </button>
           ))}
         </div>
@@ -190,7 +330,9 @@ export default function ProductsPage() {
             className="products-page__search"
             aria-label="Search products"
           />
-          <span className="products-page__count">{total} results</span>
+          <span className="products-page__count">
+            {total} result{total !== 1 ? 's' : ''}
+          </span>
         </div>
 
         {products.length === 0 ? (
@@ -214,27 +356,7 @@ export default function ProductsPage() {
                 />
               ))}
             </div>
-
-            {pages > 1 && (
-              <div className="products-page__pagination">
-                {Array.from({ length: pages }, (_, index) => index + 1).map(
-                  (pageNumber) => (
-                    <button
-                      key={pageNumber}
-                      type="button"
-                      className={`products-page__page-btn ${
-                        filters.page === pageNumber
-                          ? 'products-page__page-btn--active'
-                          : ''
-                      }`}
-                      onClick={() => changeFilter({ page: pageNumber })}
-                    >
-                      {pageNumber}
-                    </button>
-                  )
-                )}
-              </div>
-            )}
+            {renderPagination()}
           </>
         )}
       </main>

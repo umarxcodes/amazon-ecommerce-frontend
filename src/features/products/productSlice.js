@@ -87,8 +87,10 @@ export const deleteProduct = createAsyncThunk(
   'products/deleteProduct',
   async (id, thunkApi) => {
     try {
-      await deleteProductAPI(id)
-      return id
+      const data = await deleteProductAPI(id)
+      // Return the product ID from the response or the data itself
+      const productId = data?.product?._id ?? data?._id ?? data?.id ?? id
+      return productId
     } catch (err) {
       return thunkApi.rejectWithValue(
         getErrorMessage(err, 'Unable to delete product')

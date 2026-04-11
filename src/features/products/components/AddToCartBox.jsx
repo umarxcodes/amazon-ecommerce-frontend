@@ -4,6 +4,8 @@
 
 import { useState, useCallback } from 'react'
 import { useIsAuthenticated } from '../../../hooks'
+import { useAppDispatch } from '../../../hooks'
+import { addToast } from '../../../features/ui/uiSlice'
 import { formatCurrency } from '../../../utils/helpers'
 import Button from '../../../components/shared/Button'
 import './AddToCartBox.css'
@@ -11,12 +13,22 @@ import './AddToCartBox.css'
 export default function AddToCartBox({ product, onAddToCart }) {
   const [qty, setQty] = useState(1)
   const isAuthenticated = useIsAuthenticated()
+  const dispatch = useAppDispatch()
   const stock = product.stock ?? 0
   const inStock = stock > 0
   const price = product.salePrice ?? product.price
 
   const handleAdd = useCallback(() => {
-    if (!isAuthenticated) return
+    if (!isAuthenticated) {
+      dispatch(
+        addToast({
+          title: 'Sign in required',
+          message: 'Please sign in to add items to your cart.',
+          type: 'info',
+        })
+      )
+      return
+    }
     onAddToCart?.({
       productId: product._id,
       title: product.title,
@@ -26,6 +38,7 @@ export default function AddToCartBox({ product, onAddToCart }) {
     })
   }, [
     isAuthenticated,
+    dispatch,
     onAddToCart,
     product._id,
     product.title,
@@ -35,8 +48,18 @@ export default function AddToCartBox({ product, onAddToCart }) {
   ])
 
   const handleBuy = useCallback(() => {
+    if (!isAuthenticated) {
+      dispatch(
+        addToast({
+          title: 'Sign in required',
+          message: 'Please sign in to buy now.',
+          type: 'info',
+        })
+      )
+      return
+    }
     handleAdd()
-  }, [handleAdd])
+  }, [handleAdd, isAuthenticated, dispatch])
 
   return (
     <div className="buybox">

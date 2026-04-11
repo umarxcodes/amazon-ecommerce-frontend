@@ -23,7 +23,14 @@ export const createProductAPI = async (payload) => {
 }
 
 export const updateProductAPI = async (payload) => {
-  const { id, ...body } = payload
+  const { id, formData, ...body } = payload
+  // If formData is provided, use it directly (multipart update)
+  if (formData instanceof FormData) {
+    const { data } = await axiosInstance.put(`/products/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return data
+  }
   const isMultipart = body instanceof FormData
   const { data } = await axiosInstance.put(`/products/${id}`, body, {
     headers: isMultipart ? { 'Content-Type': 'multipart/form-data' } : {},
@@ -33,5 +40,5 @@ export const updateProductAPI = async (payload) => {
 
 export const deleteProductAPI = async (id) => {
   const { data } = await axiosInstance.delete(`/products/${id}`)
-  return id
+  return data
 }

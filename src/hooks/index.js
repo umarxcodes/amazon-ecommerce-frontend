@@ -29,7 +29,6 @@ import {
   selectAuthError,
   login,
   register,
-  getProfile,
   logout,
 } from '../features/auth/authSlice'
 export const useCurrentUser = () => useAppSelector(selectCurrentUser)

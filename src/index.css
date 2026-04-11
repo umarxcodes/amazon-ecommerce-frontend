@@ -1,4 +1,10 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 :root {
   --color-primary: #131921;
@@ -20,13 +26,15 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-  --shadow-md: 0 2px 8px rgba(0,0,0,0.1);
-  --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
-  --font-family: "Amazon Ember", Arial, sans-serif;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --font-family: 'Amazon Ember', Arial, sans-serif;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   font-family: var(--font-family);
@@ -38,20 +46,115 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-a { color: var(--color-link); text-decoration: none; }
-a:hover { color: var(--color-link-hover); text-decoration: underline; }
+a {
+  color: var(--color-link);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
+}
 
-img { max-width: 100%; height: auto; display: block; }
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
 
-button { font-family: inherit; }
+button {
+  font-family: inherit;
+}
 
-input, select, textarea { font-family: inherit; }
+input,
+select,
+textarea {
+  font-family: inherit;
+}
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: #f0f0f0; }
-::-webkit-scrollbar-thumb { background: #c0c0c0; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #a0a0a0; }
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
 
 /* Selection */
-::selection { background: #fde6c9; }
+::selection {
+  background: #fde6c9;
+}
+
+/* ===== RESPONSIVE UTILITIES ===== */
+/* Ensure pages work at 375px mobile width */
+@media (max-width: 420px) {
+  body {
+    font-size: 14px;
+  }
+
+  /* Prevent horizontal overflow on small screens */
+  html,
+  body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Stack tables horizontally on mobile */
+  .admin-table table {
+    font-size: 0.75rem;
+  }
+  .admin-table th,
+  .admin-table td {
+    padding: 0.5rem;
+  }
+
+  /* Reduce modal padding on mobile */
+  .admin-modal {
+    padding: 1.25rem;
+    max-width: 95vw;
+    margin: 0 auto;
+  }
+
+  /* Stack modal rows on mobile */
+  .admin-modal__row {
+    grid-template-columns: 1fr;
+  }
+
+  /* Product grid on mobile */
+  .products-page {
+    padding: 1rem 0.5rem;
+  }
+  .products-page__grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+
+  /* Cart on mobile */
+  .cart-page {
+    padding: 1rem 0.5rem;
+  }
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Order detail on mobile */
+  .order-detail-page {
+    padding: 1rem 0.5rem;
+  }
+  .order-detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  /* Checkout on mobile */
+  .checkout-page {
+    padding: 1rem 0.5rem;
+  }
+}

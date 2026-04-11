@@ -8,6 +8,7 @@ import {
   useCartCount,
   useCurrentUser,
   useIsAuthenticated,
+  useIsAdmin,
   useAppDispatch,
   useLogout,
 } from '../../hooks'
@@ -21,6 +22,7 @@ export default function Header() {
   const cartCount = useCartCount()
   const user = useCurrentUser()
   const isAuthenticated = useIsAuthenticated()
+  const isAdmin = useIsAdmin()
   const logout = useLogout()
   const [searchInput, setSearchInput] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -119,6 +121,37 @@ export default function Header() {
                     <NavLink to="/account" className="nav-account__link">
                       Your Account
                     </NavLink>
+                    {isAdmin && (
+                      <>
+                        <hr
+                          style={{
+                            margin: '0.5rem 0',
+                            border: 'none',
+                            borderTop: '1px solid #e3e6e6',
+                          }}
+                        />
+                        <NavLink
+                          to="/admin/products"
+                          className="nav-account__link"
+                        >
+                          <i
+                            className="fas fa-box"
+                            style={{ marginRight: '0.375rem' }}
+                          />
+                          Manage Products
+                        </NavLink>
+                        <NavLink
+                          to="/admin/users"
+                          className="nav-account__link"
+                        >
+                          <i
+                            className="fas fa-users"
+                            style={{ marginRight: '0.375rem' }}
+                          />
+                          Manage Users
+                        </NavLink>
+                      </>
+                    )}
                     <button
                       type="button"
                       className="nav-account__link nav-account__signout"

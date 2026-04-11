@@ -28,6 +28,10 @@ export const fetchOrders = createAsyncThunk(
     try {
       return await fetchOrdersAPI()
     } catch (err) {
+      // Handle 403 forbidden
+      if (err.response?.status === 403) {
+        return thunkApi.rejectWithValue('Access denied.')
+      }
       return thunkApi.rejectWithValue(
         getErrorMessage(err, 'Unable to fetch orders')
       )
@@ -41,6 +45,14 @@ export const fetchOrderById = createAsyncThunk(
     try {
       return await fetchOrderByIdAPI(id)
     } catch (err) {
+      // Handle 403 forbidden
+      if (err.response?.status === 403) {
+        return thunkApi.rejectWithValue('Access denied.')
+      }
+      // Handle 404 not found
+      if (err.response?.status === 404) {
+        return thunkApi.rejectWithValue('Order not found.')
+      }
       return thunkApi.rejectWithValue(
         getErrorMessage(err, 'Unable to fetch order')
       )
@@ -54,6 +66,11 @@ export const createOrder = createAsyncThunk(
     try {
       return await createOrderAPI(payload)
     } catch (err) {
+      // Handle 400 cart empty
+      if (err.response?.status === 400) {
+        const msg = getErrorMessage(err, 'Cart is empty.')
+        return thunkApi.rejectWithValue(msg)
+      }
       return thunkApi.rejectWithValue(
         getErrorMessage(err, 'Unable to create order')
       )
@@ -71,6 +88,16 @@ export const startCheckout = createAsyncThunk(
       if (url) window.location.href = url
       return result
     } catch (err) {
+      // Handle 400 already paid
+      if (err.response?.status === 400) {
+        return thunkApi.rejectWithValue(
+          getErrorMessage(err, 'This order has already been paid.')
+        )
+      }
+      // Handle 403 forbidden
+      if (err.response?.status === 403) {
+        return thunkApi.rejectWithValue('Access denied.')
+      }
       return thunkApi.rejectWithValue(
         getErrorMessage(err, 'Unable to start checkout')
       )
