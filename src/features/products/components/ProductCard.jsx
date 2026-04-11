@@ -11,6 +11,7 @@ function ProductCard({ product, onAddToCart }) {
   const [imgErr, setImgErr] = useState(false)
   const stock = product.stock ?? 0
   const inStock = stock > 0
+  const title = product.title ?? product.name ?? 'Product'
   // Backend returns images as array — use images[0], fall back to single image field
   const thumbSrc = product.images?.[0] ?? product.image ?? ''
 
@@ -19,7 +20,7 @@ function ProductCard({ product, onAddToCart }) {
       <Link to={`/products/${product._id}`} className="product-card__img-wrap">
         <img
           src={imgErr || !thumbSrc ? 'https://placehold.co/300x300' : thumbSrc}
-          alt={product.title ?? 'Product'}
+          alt={title}
           onError={() => setImgErr(true)}
           loading="lazy"
           width="300"
@@ -30,7 +31,7 @@ function ProductCard({ product, onAddToCart }) {
         )}
       </Link>
       <Link to={`/products/${product._id}`} className="product-card__title">
-        {product.title}
+        {title}
       </Link>
       <StarRating rating={product.rating} count={product.reviewsCount} />
       <div className="product-card__price">
@@ -57,7 +58,13 @@ function ProductCard({ product, onAddToCart }) {
           className="product-card__add-btn"
           onClick={(e) => {
             e.preventDefault()
-            onAddToCart?.(product)
+            onAddToCart?.({
+              productId: product._id,
+              title,
+              image: thumbSrc,
+              price: product.salePrice ?? product.price ?? 0,
+              quantity: 1,
+            })
           }}
         >
           Add to Cart

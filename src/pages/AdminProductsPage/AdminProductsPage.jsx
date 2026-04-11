@@ -134,8 +134,9 @@ function ProductFormModal({ mode, product, onSubmit, onClose, isSubmitting }) {
           formData.append(key, value)
         }
       })
+      // Backend expects field name 'image' (singular)
       imageFiles.forEach((file) => {
-        formData.append('images', file)
+        formData.append('image', file)
       })
       // Also include existing image URLs if editing
       if (mode === 'edit' && form.images.length > 0) {

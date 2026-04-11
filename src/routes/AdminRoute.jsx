@@ -13,5 +13,9 @@ export default function AdminRoute() {
     return <Navigate to="/login" replace />
   }
 
-  return isAdmin ? <Outlet /> : <Navigate to="/" replace />
+  if (!isAdmin) {
+    return <Navigate to="/" replace />
+  }
+
+  return <Outlet />
 }

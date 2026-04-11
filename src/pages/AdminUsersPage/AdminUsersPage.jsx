@@ -304,12 +304,33 @@ export default function AdminUsersPage() {
   if (status === 'loading' && !users.length)
     return <LoadingSpinner label="Loading users..." fullScreen />
 
-  if (!users.length)
+  if (status === 'failed')
     return (
       <EmptyState
-        title="No users found"
-        description="User management will appear here."
+        title="Failed to load users"
+        description="There was an error fetching the users. Please try again."
       />
+    )
+
+  if (!users.length)
+    return (
+      <div className="admin-page">
+        <div className="admin-page__header">
+          <h1>Manage Users</h1>
+          <Button variant="accent" onClick={() => setShowCreateAdmin(true)}>
+            Create Admin
+          </Button>
+        </div>
+        <EmptyState
+          title="No users found"
+          description="No users are registered yet. Create an admin to get started!"
+          action={
+            <Button variant="primary" onClick={() => setShowCreateAdmin(true)}>
+              Create First Admin
+            </Button>
+          }
+        />
+      </div>
     )
 
   return (

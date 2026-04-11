@@ -71,3 +71,27 @@ export function debounce(fn, delay = 300) {
     timer = setTimeout(() => fn(...args), delay)
   }
 }
+
+/**
+ * Normalize a cart item from the backend response into the shape the UI expects.
+ * Backend: { _id, product: { _id, name, price, images[], stock }, quantity }
+ * UI expects: { productId, title, image, price, quantity, stock }
+ */
+export function normalizeCartItem(item) {
+  if (!item) return item
+  // If already normalized (has productId), return as-is
+  if (item.productId) return item
+  // If it has product nested (backend format), flatten it
+  if (item.product) {
+    return {
+      ...item,
+      productId: item.product._id,
+      title: item.product.name ?? item.product.title ?? 'Product',
+      image: item.product.images?.[0] ?? item.product.image ?? '',
+      price: item.product.price ?? 0,
+      stock: item.product.stock ?? 0,
+      inStock: (item.product.stock ?? 0) > 0,
+    }
+  }
+  return item
+}

@@ -21,16 +21,9 @@ import Button from '../../components/shared/Button'
 import './CheckoutPage.css'
 
 const FIELDS = [
-  { key: 'fullName', label: 'Full name', type: 'text', required: true },
-  { key: 'addressLine1', label: 'Address', type: 'text', required: true },
+  { key: 'address', label: 'Address', type: 'text', required: true },
   { key: 'city', label: 'City', type: 'text', required: true },
-  { key: 'state', label: 'State / Province', type: 'text', required: false },
-  {
-    key: 'postalCode',
-    label: 'ZIP / Postal code',
-    type: 'text',
-    required: true,
-  },
+  { key: 'postalCode', label: 'Postal code', type: 'text', required: true },
   { key: 'country', label: 'Country', type: 'text', required: true },
 ]
 
@@ -109,18 +102,15 @@ export default function CheckoutPage() {
         const result = await dispatch(
           createOrderThunk({
             shippingAddress: {
-              fullName: form.fullName,
-              addressLine1: form.addressLine1,
+              address: form.address,
               city: form.city,
-              state: form.state,
               postalCode: form.postalCode,
               country: form.country,
             },
-            items: cartItems,
-            totalAmount: cartTotal,
           })
         )
         if (createOrder.fulfilled.match(result)) {
+          // Backend returns: { success: true, order: { _id, items, ... } }
           const order =
             result.payload.order ?? result.payload.data ?? result.payload
           const id = order?._id ?? order?.id

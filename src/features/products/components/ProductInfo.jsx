@@ -16,26 +16,26 @@ const DEFAULT_FEATURES = [
 ]
 
 export default function ProductInfo({ product }) {
-  const features = product.features || DEFAULT_FEATURES
-  const inStock = product.stock > 0
+  const features = product?.features || DEFAULT_FEATURES
+  const inStock = (product?.stock ?? 0) > 0
+  const title = product?.title ?? product?.name ?? 'Product'
+  const category = product?.category ?? 'Unknown'
 
   return (
     <div className="product-info">
       <nav className="product-info__breadcrumbs">
         <Link to="/">Home</Link> <span>/</span>
-        <Link to={`/products?category=${product.category}`}>
-          {product.category}
+        <Link to={`/products?category=${encodeURIComponent(category)}`}>
+          {category}
         </Link>{' '}
         <span>/</span>
-        <span className="product-info__breadcrumbs--current">
-          {product.title}
-        </span>
+        <span className="product-info__breadcrumbs--current">{title}</span>
       </nav>
 
-      <span className="product-info__category">{product.category}</span>
-      <h1 className="product-info__title">{product.title}</h1>
+      <span className="product-info__category">{category}</span>
+      <h1 className="product-info__title">{title}</h1>
 
-      {product.brand && (
+      {product?.brand && (
         <Link
           to={`/products?brand=${product.brand}`}
           className="product-info__brand"
@@ -45,8 +45,8 @@ export default function ProductInfo({ product }) {
       )}
 
       <StarRating
-        rating={product.rating}
-        count={product.reviewsCount}
+        rating={product?.rating}
+        count={product?.reviewsCount}
         size="lg"
       />
 
@@ -66,7 +66,7 @@ export default function ProductInfo({ product }) {
         />
         <span>
           {inStock
-            ? `In Stock — ${product.stock} available`
+            ? `In Stock — ${product?.stock} available`
             : 'Currently unavailable'}
         </span>
       </div>

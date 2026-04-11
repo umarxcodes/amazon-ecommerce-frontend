@@ -6,8 +6,8 @@ import { formatCurrency } from '../../../utils/helpers'
 import './ProductPricing.css'
 
 export default function ProductPricing({ product }) {
-  const price = product.salePrice || product.price
-  const hasDiscount = product.salePrice && product.salePrice < product.price
+  const price = product?.salePrice || product?.price
+  const hasDiscount = product?.salePrice && product?.salePrice < product?.price
   const discountPercent = hasDiscount
     ? Math.round(((product.price - product.salePrice) / product.price) * 100)
     : 0
@@ -25,7 +25,7 @@ export default function ProductPricing({ product }) {
       </div>
       {hasDiscount && (
         <div className="product-pricing__was">
-          List Price: <s>{formatCurrency(product.price)}</s>
+          List Price: <s>{formatCurrency(product?.price)}</s>
         </div>
       )}
       <div className="product-pricing__per-unit">

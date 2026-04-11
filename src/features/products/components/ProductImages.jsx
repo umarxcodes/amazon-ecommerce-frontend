@@ -8,12 +8,13 @@ import './ProductImages.css'
 const PLACEHOLDER = 'https://placehold.co/600x600/f6f7f8/111?text=No+Image'
 
 export default function ProductImages({ product }) {
-  const images = product.images?.length
+  const images = product?.images?.length
     ? product.images
-    : product.image
+    : product?.image
       ? [product.image]
       : [PLACEHOLDER]
   const [active, setActive] = useState(0)
+  const title = product?.title ?? product?.name ?? 'Product'
 
   return (
     <div className="product-images">
@@ -31,7 +32,7 @@ export default function ProductImages({ product }) {
         ))}
       </div>
       <div className="product-images__main">
-        <img src={images[active] || PLACEHOLDER} alt={product.title} />
+        <img src={images[active] || PLACEHOLDER} alt={title} />
       </div>
     </div>
   )
