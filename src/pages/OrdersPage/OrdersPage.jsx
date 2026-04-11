@@ -4,12 +4,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  useOrders,
-  useOrderStatus,
-  useFetchOrders,
-  useOrderDetailStatus,
-} from '../../hooks'
+import { useOrders, useOrderStatus, useFetchOrders } from '../../hooks'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import EmptyState from '../../components/shared/EmptyState'
 import { formatCurrency, formatDate } from '../../utils/helpers'
@@ -87,7 +82,6 @@ const OrderCard = function OrderCard({ order }) {
 export default function OrdersPage() {
   const orders = useOrders()
   const status = useOrderStatus()
-  const detailStatus = useOrderDetailStatus()
   const fetchOrders = useFetchOrders()
   const [activeFilter, setActiveFilter] = useState('all')
 

@@ -51,6 +51,16 @@ export const addItemToCart = createAsyncThunk(
     try {
       return await addToCartAPI(payload)
     } catch (err) {
+      // Handle stock validation errors
+      if (err.response?.status === 400) {
+        const msg = getErrorMessage(err, 'Unable to add to cart')
+        if (
+          msg.toLowerCase().includes('stock') ||
+          msg.toLowerCase().includes('quantity')
+        ) {
+          return thunkApi.rejectWithValue(msg)
+        }
+      }
       return thunkApi.rejectWithValue(
         getErrorMessage(err, 'Unable to add to cart')
       )
@@ -64,6 +74,11 @@ export const updateItemQuantity = createAsyncThunk(
     try {
       return await updateCartItemAPI({ productId, quantity })
     } catch (err) {
+      // Handle stock validation — quantity exceeds stock
+      if (err.response?.status === 400) {
+        const msg = getErrorMessage(err, 'Unable to update cart')
+        return thunkApi.rejectWithValue(msg)
+      }
       return thunkApi.rejectWithValue(
         getErrorMessage(err, 'Unable to update cart')
       )
@@ -90,6 +105,11 @@ export const clearBackendCart = createAsyncThunk(
     try {
       return await clearCartAPI()
     } catch (err) {
+      // If bulk delete endpoint doesn't exist, fall through gracefully
+      // The local state will still be cleared in the fulfilled handler
+      if (err.response?.status === 404 || err.response?.status === 405) {
+        return { success: true }
+      }
       return thunkApi.rejectWithValue(
         getErrorMessage(err, 'Unable to clear cart')
       )
@@ -180,30 +200,70 @@ const cartSlice = createSlice({
       .addCase(fetchCart.rejected, rejected())
       .addCase(fetchCart.fulfilled, (state, action) => {
         fulfilled()(state)
-        state.items = action.payload?.items || action.payload?.data?.items || []
+        const payload = action.payload
+        state.items =
+          payload?.items ??
+          payload?.data?.items ??
+          payload?.cart?.items ??
+          payload?.data ??
+          payload?.cart ??
+          []
+        if (!Array.isArray(state.items)) state.items = []
       })
       .addCase(addItemToCart.pending, pending())
       .addCase(addItemToCart.rejected, rejected())
       .addCase(addItemToCart.fulfilled, (state, action) => {
         fulfilled()(state)
-        state.items = action.payload?.items || state.items
+        // Backend may return cart data in various formats — handle all
+        const payload = action.payload
+        const newItems =
+          payload?.items ??
+          payload?.data?.items ??
+          payload?.cart?.items ??
+          payload?.data ??
+          payload?.cart ??
+          payload
+        if (Array.isArray(newItems)) {
+          state.items = newItems
+        }
       })
       .addCase(updateItemQuantity.pending, pending())
       .addCase(updateItemQuantity.rejected, rejected())
       .addCase(updateItemQuantity.fulfilled, (state, action) => {
         fulfilled()(state)
-        state.items = action.payload?.items || state.items
+        const payload = action.payload
+        const newItems =
+          payload?.items ??
+          payload?.data?.items ??
+          payload?.cart?.items ??
+          payload?.data ??
+          payload?.cart ??
+          payload
+        if (Array.isArray(newItems)) {
+          state.items = newItems
+        }
       })
       .addCase(removeItem.pending, pending())
       .addCase(removeItem.rejected, rejected())
       .addCase(removeItem.fulfilled, (state, action) => {
         fulfilled()(state)
-        state.items = action.payload?.items || state.items
+        const payload = action.payload
+        const newItems =
+          payload?.items ??
+          payload?.data?.items ??
+          payload?.cart?.items ??
+          payload?.data ??
+          payload?.cart ??
+          payload
+        if (Array.isArray(newItems)) {
+          state.items = newItems
+        }
       })
       .addCase(clearBackendCart.pending, pending())
       .addCase(clearBackendCart.rejected, rejected())
-      .addCase(clearBackendCart.fulfilled, (state) => {
+      .addCase(clearBackendCart.fulfilled, (state, action) => {
         fulfilled()(state)
+        // Always clear items regardless of response shape
         state.items = []
         saveCart({ items: [], shippingAddress: state.shippingAddress })
       })

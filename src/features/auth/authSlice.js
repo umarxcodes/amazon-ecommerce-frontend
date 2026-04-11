@@ -29,7 +29,12 @@ export const login = createAsyncThunk(
     try {
       return await loginAPI(credentials)
     } catch (err) {
-      return thunkApi.rejectWithValue(getErrorMessage(err, 'Login failed'))
+      const msg = getErrorMessage(err, 'Login failed')
+      // Normalize 401 errors
+      if (err.response?.status === 401) {
+        return thunkApi.rejectWithValue('Invalid credentials.')
+      }
+      return thunkApi.rejectWithValue(msg)
     }
   }
 )
@@ -40,9 +45,12 @@ export const register = createAsyncThunk(
     try {
       return await registerAPI(credentials)
     } catch (err) {
-      return thunkApi.rejectWithValue(
-        getErrorMessage(err, 'Registration failed')
-      )
+      const msg = getErrorMessage(err, 'Registration failed')
+      // Normalize 409 conflicts
+      if (err.response?.status === 409) {
+        return thunkApi.rejectWithValue('Email already exists.')
+      }
+      return thunkApi.rejectWithValue(msg)
     }
   }
 )

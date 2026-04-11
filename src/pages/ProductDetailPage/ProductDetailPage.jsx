@@ -1,6 +1,6 @@
 /* ===== PRODUCT DETAIL PAGE ===== */
 /* Displays full product information, images, and purchase options */
-/* Includes related products section */
+/* Includes related products section, handles 400/404 errors */
 
 import { useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
@@ -8,10 +8,12 @@ import {
   useAppDispatch,
   useSelectedProduct,
   useProductDetailStatus,
+  useProductError,
   useAddToCart,
   useIsAuthenticated,
   useFetchProductById,
 } from '../../hooks'
+import { resetSelectedProduct } from '../../features/products/productSlice'
 import { addToast } from '../../features/ui/uiSlice'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import EmptyState from '../../components/shared/EmptyState'
@@ -28,43 +30,102 @@ export default function ProductDetailPage() {
   const dispatch = useAppDispatch()
   const product = useSelectedProduct()
   const status = useProductDetailStatus()
+  const error = useProductError()
   const addToCart = useAddToCart()
   const isAuthenticated = useIsAuthenticated()
   const navigate = useNavigate()
   const fetchProductById = useFetchProductById()
 
   useEffect(() => {
-    if (productId) fetchProductById(productId)
+    if (productId) {
+      dispatch(resetSelectedProduct())
+      fetchProductById(productId)
+    }
   }, [dispatch, productId, fetchProductById])
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      dispatch(resetSelectedProduct())
+    }
+  }, [dispatch])
+
   const handleAddToCart = useCallback(
-    (payload) => {
+    async (payload) => {
       if (!isAuthenticated) {
         dispatch(
           addToast({
             title: 'Sign in required',
-            message: 'Please sign in first.',
+            message: 'Please sign in to add items to cart.',
             type: 'info',
           })
         )
         return
       }
-      addToCart(payload)
-      dispatch(
-        addToast({
-          title: 'Added',
-          message: `${product?.title ?? 'Product'} added to cart.`,
-          type: 'success',
-        })
-      )
+      const result = await addToCart(payload)
+      if (addToCart.fulfilled.match(result)) {
+        dispatch(
+          addToast({
+            title: 'Added',
+            message: `${product?.title ?? 'Product'} added to cart.`,
+            type: 'success',
+          })
+        )
+      } else {
+        dispatch(
+          addToast({
+            title: 'Failed to add',
+            message: result.payload ?? 'Could not add product to cart.',
+            type: 'error',
+          })
+        )
+      }
     },
     [dispatch, isAuthenticated, addToCart, product?.title]
   )
 
-  if (!productId) return null
+  if (!productId) {
+    return (
+      <EmptyState
+        title="Invalid product ID"
+        description="The product ID is not valid."
+        action={
+          <Button variant="primary" onClick={() => navigate('/products')}>
+            Browse Products
+          </Button>
+        }
+      />
+    )
+  }
+
   if (status === 'loading')
     return <LoadingSpinner label="Loading product..." fullScreen />
-  if (status === 'failed' || !product)
+
+  // Handle 400/404 errors
+  if (status === 'failed') {
+    const isNotFound =
+      error?.toLowerCase().includes('not found') ||
+      error?.toLowerCase().includes('invalid') ||
+      error?.toLowerCase().includes('bad request')
+
+    return (
+      <EmptyState
+        title={isNotFound ? 'Product not found' : 'Error loading product'}
+        description={
+          isNotFound
+            ? "We couldn't find this product. It may have been removed or doesn't exist."
+            : (error ?? 'An unexpected error occurred.')
+        }
+        action={
+          <Button variant="primary" onClick={() => navigate('/products')}>
+            Browse Products
+          </Button>
+        }
+      />
+    )
+  }
+
+  if (!product && status === 'succeeded') {
     return (
       <EmptyState
         title="Product not found"
@@ -76,6 +137,7 @@ export default function ProductDetailPage() {
         }
       />
     )
+  }
 
   return (
     <div className="product-detail-page">
@@ -94,7 +156,7 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {product.category && (
+      {product?.category && (
         <RelatedProducts
           currentProductId={product._id}
           category={product.category}

@@ -64,6 +64,9 @@ export const createAdmin = createAsyncThunk(
     try {
       return await createAdminAPI(payload)
     } catch (err) {
+      if (err.response?.status === 409) {
+        return thunkApi.rejectWithValue('Email already exists.')
+      }
       return thunkApi.rejectWithValue(
         getErrorMessage(err, 'Unable to create admin')
       )
