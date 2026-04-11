@@ -203,9 +203,7 @@ export default function OrderDetailPage() {
                 onClick={handleRetryPayment}
                 disabled={checkoutStatus === 'loading'}
               >
-                {checkoutStatus === 'loading'
-                  ? 'Processing...'
-                  : 'Retry Payment'}
+                {checkoutStatus === 'loading' ? 'Processing...' : 'Pay Now'}
               </Button>
             )}
           </div>

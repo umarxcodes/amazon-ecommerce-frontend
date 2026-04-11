@@ -300,6 +300,10 @@ export default function CartPage() {
               <strong>{formatCurrency(cartTotal)}</strong>
             </span>
           </div>
+
+          <Link to="/products" className="cart-page__continue-shopping">
+            ← Continue shopping
+          </Link>
         </div>
 
         <aside className="cart-summary-box">

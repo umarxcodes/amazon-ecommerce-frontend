@@ -2,8 +2,8 @@
 /* Displays full product information, images, and purchase options */
 /* Includes related products section, handles 400/404 errors */
 
-import { useEffect, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useEffect, useCallback, useMemo } from 'react'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import {
   useAppDispatch,
   useSelectedProduct,
@@ -34,7 +34,22 @@ export default function ProductDetailPage() {
   const addToCart = useAddToCart()
   const isAuthenticated = useIsAuthenticated()
   const navigate = useNavigate()
+  const location = useLocation()
   const fetchProductById = useFetchProductById()
+
+  // Store the current products URL (with filters) in sessionStorage so "Back" preserves them
+  useEffect(() => {
+    if (location.pathname.startsWith('/products') && location.search) {
+      sessionStorage.setItem(
+        'lastProductsUrl',
+        location.pathname + location.search
+      )
+    }
+  }, [location])
+
+  const backToProductsUrl = useMemo(() => {
+    return sessionStorage.getItem('lastProductsUrl') || '/products'
+  }, [])
 
   useEffect(() => {
     if (productId) {
@@ -141,6 +156,49 @@ export default function ProductDetailPage() {
 
   return (
     <div className="product-detail-page">
+      {/* Breadcrumb + Back button */}
+      <nav className="product-detail-page__breadcrumb">
+        <button
+          type="button"
+          className="product-detail-page__back-btn"
+          onClick={() => navigate(backToProductsUrl)}
+        >
+          ← Back to Products
+        </button>
+        <span className="product-detail-page__breadcrumb-sep">›</span>
+        <a href="/" className="product-detail-page__breadcrumb-link">
+          Home
+        </a>
+        <span className="product-detail-page__breadcrumb-sep">›</span>
+        <button
+          type="button"
+          className="product-detail-page__breadcrumb-link"
+          onClick={() => navigate(backToProductsUrl)}
+        >
+          Products
+        </button>
+        {product?.category && (
+          <>
+            <span className="product-detail-page__breadcrumb-sep">›</span>
+            <button
+              type="button"
+              className="product-detail-page__breadcrumb-link"
+              onClick={() =>
+                navigate(
+                  `/products?category=${encodeURIComponent(product.category)}`
+                )
+              }
+            >
+              {product.category}
+            </button>
+          </>
+        )}
+        <span className="product-detail-page__breadcrumb-sep">›</span>
+        <span className="product-detail-page__breadcrumb-current">
+          {product?.title ?? 'Product'}
+        </span>
+      </nav>
+
       <div className="product-detail-layout">
         <div className="product-detail-layout__gallery">
           <ProductImages product={product} />

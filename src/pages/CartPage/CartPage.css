@@ -193,6 +193,20 @@
   font-weight: 700;
 }
 
+.cart-page__continue-shopping {
+  display: block;
+  text-align: right;
+  color: #007185;
+  font-size: 14px;
+  text-decoration: none;
+  padding: 8px 0;
+}
+
+.cart-page__continue-shopping:hover {
+  color: #c7511f;
+  text-decoration: underline;
+}
+
 /* ===== CHECKOUT SUMMARY BOX (right side) ===== */
 .cart-summary-box {
   background: #f3f3f3;

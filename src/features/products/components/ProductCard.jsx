@@ -11,16 +11,14 @@ function ProductCard({ product, onAddToCart }) {
   const [imgErr, setImgErr] = useState(false)
   const stock = product.stock ?? 0
   const inStock = stock > 0
+  // Backend returns images as array — use images[0], fall back to single image field
+  const thumbSrc = product.images?.[0] ?? product.image ?? ''
 
   return (
     <div className="product-card">
       <Link to={`/products/${product._id}`} className="product-card__img-wrap">
         <img
-          src={
-            imgErr || !product.image
-              ? 'https://placehold.co/300x300'
-              : product.image
-          }
+          src={imgErr || !thumbSrc ? 'https://placehold.co/300x300' : thumbSrc}
           alt={product.title ?? 'Product'}
           onError={() => setImgErr(true)}
           loading="lazy"
