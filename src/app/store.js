@@ -19,6 +19,17 @@ export const store = configureStore({
     admin: adminReducer,
     ui: uiReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Ignore these action types for non-serializable payloads
+        ignoredActions: [
+          'auth/login/fulfilled',
+          'auth/register/fulfilled',
+          'cart/addItemToCart/fulfilled',
+        ],
+      },
+    }),
 })
 
 export default store

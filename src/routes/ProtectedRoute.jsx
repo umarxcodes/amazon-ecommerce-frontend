@@ -1,11 +1,11 @@
 /* ===== PROTECTED ROUTE GUARD ===== */
 /* Redirects unauthenticated users to login page */
-/* Used for: Cart, Checkout, Orders */
+/* Used for: Cart, Checkout, Orders, Account */
 
-import { useSelector } from 'react-redux'
 import { Navigate, Outlet } from 'react-router-dom'
+import { useIsAuthenticated } from '../hooks'
 
 export default function ProtectedRoute() {
-  const token = useSelector((s) => s.auth.token)
-  return token ? <Outlet /> : <Navigate to="/login" replace />
+  const isAuthenticated = useIsAuthenticated()
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />
 }

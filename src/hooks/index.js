@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState, useCallback } from 'react'
 
 // Base hooks
-export const useAppDispatch = useDispatch
+export const useAppDispatch = () => useDispatch()
 export const useAppSelector = useSelector
 
 export function useDebouncedValue(value, delay = 300) {
@@ -27,6 +27,10 @@ import {
   selectAuthStatus,
   selectProfileStatus,
   selectAuthError,
+  login,
+  register,
+  getProfile,
+  logout,
 } from '../features/auth/authSlice'
 export const useCurrentUser = () => useAppSelector(selectCurrentUser)
 export const useAuthToken = () => useAppSelector(selectAuthToken)
@@ -35,6 +39,22 @@ export const useIsAdmin = () => useAppSelector(selectIsAdmin)
 export const useAuthStatus = () => useAppSelector(selectAuthStatus)
 export const useProfileStatus = () => useAppSelector(selectProfileStatus)
 export const useAuthError = () => useAppSelector(selectAuthError)
+
+export const useLogin = () => {
+  const dispatch = useAppDispatch()
+  return useCallback((credentials) => dispatch(login(credentials)), [dispatch])
+}
+export const useRegister = () => {
+  const dispatch = useAppDispatch()
+  return useCallback(
+    (credentials) => dispatch(register(credentials)),
+    [dispatch]
+  )
+}
+export const useLogout = () => {
+  const dispatch = useAppDispatch()
+  return useCallback(() => dispatch(logout()), [dispatch])
+}
 
 // Cart hooks
 import {
@@ -45,6 +65,11 @@ import {
   selectCartError,
   selectCartCount,
   selectCartTotal,
+  fetchCart,
+  addItemToCart,
+  updateItemQuantity,
+  removeItem,
+  clearBackendCart,
 } from '../features/cart/cartSlice'
 export const useCartItems = () => useAppSelector(selectCartItems)
 export const useShippingAddress = () => useAppSelector(selectShippingAddress)
@@ -54,76 +79,6 @@ export const useCartError = () => useAppSelector(selectCartError)
 export const useCartCount = () => useAppSelector(selectCartCount)
 export const useCartTotal = () => useAppSelector(selectCartTotal)
 
-// Products hooks
-import {
-  selectAllProducts,
-  selectSelectedProduct,
-  selectProductFilters,
-  selectProductTotal,
-  selectProductPages,
-  selectProductStatus,
-  selectDetailStatus,
-  selectMutationStatus,
-  selectProductError,
-} from '../features/products/productSlice'
-export const useProducts = () => useAppSelector(selectAllProducts)
-export const useSelectedProduct = () => useAppSelector(selectSelectedProduct)
-export const useProductFilters = () => useAppSelector(selectProductFilters)
-export const useProductTotal = () => useAppSelector(selectProductTotal)
-export const useProductPages = () => useAppSelector(selectProductPages)
-export const useProductStatus = () => useAppSelector(selectProductStatus)
-export const useProductDetailStatus = () => useAppSelector(selectDetailStatus)
-export const useProductMutationStatus = () =>
-  useAppSelector(selectMutationStatus)
-export const useProductError = () => useAppSelector(selectProductError)
-
-// Orders hooks
-import {
-  selectAllOrders,
-  selectSelectedOrder,
-  selectOrderStatus,
-  selectDetailStatus as selectOrderDetailStatus,
-  selectOrderError,
-  selectCreateOrderStatus,
-  selectCheckoutStatus as selectOrderCheckoutStatus,
-} from '../features/orders/orderSlice'
-export const useOrders = () => useAppSelector(selectAllOrders)
-export const useSelectedOrder = () => useAppSelector(selectSelectedOrder)
-export const useOrderStatus = () => useAppSelector(selectOrderStatus)
-export const useOrderDetailStatus = () =>
-  useAppSelector(selectOrderDetailStatus)
-export const useOrderError = () => useAppSelector(selectOrderError)
-export const useCreateOrderStatus = () =>
-  useAppSelector(selectCreateOrderStatus)
-export const useOrderCheckoutStatus = () =>
-  useAppSelector(selectOrderCheckoutStatus)
-
-// Admin hooks
-import {
-  selectAllUsers,
-  selectUsersStatus,
-  selectMutationStatus as selectAdminMutationStatus,
-  selectAdminError,
-} from '../features/admin/adminSlice'
-export const useAllUsers = () => useAppSelector(selectAllUsers)
-export const useUsersStatus = () => useAppSelector(selectUsersStatus)
-export const useAdminMutationStatus = () =>
-  useAppSelector(selectAdminMutationStatus)
-export const useAdminError = () => useAppSelector(selectAdminError)
-
-// UI hooks
-import { selectToasts, selectIsRedirecting } from '../features/ui/uiSlice'
-export const useToasts = () => useAppSelector(selectToasts)
-export const useIsRedirecting = () => useAppSelector(selectIsRedirecting)
-
-// Cart action hooks
-import {
-  fetchCart,
-  addItemToCart,
-  updateItemQuantity,
-  removeItem,
-  clearBackendCart,
-} from '../features/cart/cartSlice'
 export const useFetchCart = () => {
   const dispatch = useAppDispatch()
   return useCallback(() => dispatch(fetchCart()), [dispatch])
@@ -148,19 +103,123 @@ export const useClearCart = () => {
   return useCallback(() => dispatch(clearBackendCart()), [dispatch])
 }
 
-// Order action hooks
-import { createOrder, startCheckout } from '../features/orders/orderSlice'
+// Products hooks
+import {
+  selectAllProducts,
+  selectSelectedProduct,
+  selectProductFilters,
+  selectProductTotal,
+  selectProductPages,
+  selectProductStatus,
+  selectDetailStatus as selectProductDetailStatus,
+  selectMutationStatus as selectProductMutationStatus,
+  selectProductError,
+  fetchProducts,
+  fetchProductById,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from '../features/products/productSlice'
+export const useProducts = () => useAppSelector(selectAllProducts)
+export const useSelectedProduct = () => useAppSelector(selectSelectedProduct)
+export const useProductFilters = () => useAppSelector(selectProductFilters)
+export const useProductTotal = () => useAppSelector(selectProductTotal)
+export const useProductPages = () => useAppSelector(selectProductPages)
+export const useProductStatus = () => useAppSelector(selectProductStatus)
+export const useProductDetailStatus = () =>
+  useAppSelector(selectProductDetailStatus)
+export const useProductMutationStatus = () =>
+  useAppSelector(selectProductMutationStatus)
+export const useProductError = () => useAppSelector(selectProductError)
+
+export const useFetchProducts = () => {
+  const dispatch = useAppDispatch()
+  return useCallback((params) => dispatch(fetchProducts(params)), [dispatch])
+}
+export const useFetchProductById = () => {
+  const dispatch = useAppDispatch()
+  return useCallback((id) => dispatch(fetchProductById(id)), [dispatch])
+}
+export const useCreateProduct = () => {
+  const dispatch = useAppDispatch()
+  return useCallback((payload) => dispatch(createProduct(payload)), [dispatch])
+}
+export const useUpdateProduct = () => {
+  const dispatch = useAppDispatch()
+  return useCallback((payload) => dispatch(updateProduct(payload)), [dispatch])
+}
+export const useDeleteProduct = () => {
+  const dispatch = useAppDispatch()
+  return useCallback((id) => dispatch(deleteProduct(id)), [dispatch])
+}
+
+// Orders hooks
+import {
+  selectAllOrders,
+  selectSelectedOrder,
+  selectOrderStatus,
+  selectDetailStatus as selectOrderDetailStatus,
+  selectOrderError,
+  selectCreateOrderStatus,
+  selectCheckoutStatus as selectOrderCheckoutStatus,
+  fetchOrders,
+  fetchOrderById,
+  createOrder,
+  startCheckout,
+} from '../features/orders/orderSlice'
+export const useOrders = () => useAppSelector(selectAllOrders)
+export const useSelectedOrder = () => useAppSelector(selectSelectedOrder)
+export const useOrderStatus = () => useAppSelector(selectOrderStatus)
+export const useOrderDetailStatus = () =>
+  useAppSelector(selectOrderDetailStatus)
+export const useOrderError = () => useAppSelector(selectOrderError)
+export const useCreateOrderStatus = () =>
+  useAppSelector(selectCreateOrderStatus)
+export const useOrderCheckoutStatus = () =>
+  useAppSelector(selectOrderCheckoutStatus)
+
+export const useFetchOrders = () => {
+  const dispatch = useAppDispatch()
+  return useCallback(() => dispatch(fetchOrders()), [dispatch])
+}
+export const useFetchOrderById = () => {
+  const dispatch = useAppDispatch()
+  return useCallback((id) => dispatch(fetchOrderById(id)), [dispatch])
+}
 export const useCreateOrder = () => {
   const dispatch = useAppDispatch()
-  return useCallback((addr) => dispatch(createOrder(addr)), [dispatch])
+  return useCallback((payload) => dispatch(createOrder(payload)), [dispatch])
 }
 export const useStartCheckout = () => {
   const dispatch = useAppDispatch()
   return useCallback((id) => dispatch(startCheckout(id)), [dispatch])
 }
 
-// Admin action hooks
-import { deactivateUser, createAdmin } from '../features/admin/adminSlice'
+// Admin hooks
+import {
+  selectAllUsers,
+  selectUsersStatus,
+  selectMutationStatus as selectAdminMutationStatus,
+  selectAdminError,
+  fetchUsers,
+  updateUserRole,
+  deactivateUser,
+  createAdmin,
+} from '../features/admin/adminSlice'
+export const useAllUsers = () => useAppSelector(selectAllUsers)
+export const useUsersStatus = () => useAppSelector(selectUsersStatus)
+export const useAdminMutationStatus = () =>
+  useAppSelector(selectAdminMutationStatus)
+export const useAdminError = () => useAppSelector(selectAdminError)
+
+export const useFetchUsers = () => {
+  const dispatch = useAppDispatch()
+  return useCallback(() => dispatch(fetchUsers()), [dispatch])
+}
+export const useUpdateUserRole = () => {
+  const dispatch = useAppDispatch()
+  return useCallback((payload) => dispatch(updateUserRole(payload)), [dispatch])
+}
 export const useDeactivateUser = () => {
   const dispatch = useAppDispatch()
   return useCallback((id) => dispatch(deactivateUser(id)), [dispatch])
@@ -169,3 +228,8 @@ export const useCreateAdmin = () => {
   const dispatch = useAppDispatch()
   return useCallback((payload) => dispatch(createAdmin(payload)), [dispatch])
 }
+
+// UI hooks
+import { selectToasts, selectIsRedirecting } from '../features/ui/uiSlice'
+export const useToasts = () => useAppSelector(selectToasts)
+export const useIsRedirecting = () => useAppSelector(selectIsRedirecting)

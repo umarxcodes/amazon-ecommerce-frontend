@@ -4,13 +4,13 @@
 
 import { memo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { formatCurrency } from '../../../utils/helpers'
 import StarRating from '../../../components/shared/StarRating'
 import './ProductCard.css'
 
 function ProductCard({ product, onAddToCart }) {
   const [imgErr, setImgErr] = useState(false)
-  const inStock = product.stock > 0
+  const stock = product.stock ?? 0
+  const inStock = stock > 0
 
   return (
     <div className="product-card">
@@ -21,9 +21,11 @@ function ProductCard({ product, onAddToCart }) {
               ? 'https://placehold.co/300x300'
               : product.image
           }
-          alt={product.title || 'Product'}
+          alt={product.title ?? 'Product'}
           onError={() => setImgErr(true)}
           loading="lazy"
+          width="300"
+          height="300"
         />
         {product.featured && (
           <span className="product-card__badge">Featured</span>
@@ -41,15 +43,15 @@ function ProductCard({ product, onAddToCart }) {
       </div>
       {product.salePrice && product.salePrice < product.price && (
         <div className="product-card__was">
-          <s>{formatCurrency(product.price)}</s>
+          <s>${Number(product.price).toFixed(2)}</s>
         </div>
       )}
       {product.prime && <span className="product-card__prime">✓ prime</span>}
       {!inStock && (
         <span className="product-card__out">Currently unavailable</span>
       )}
-      {inStock && product.stock < 5 && (
-        <span className="product-card__stock">Only {product.stock} left</span>
+      {inStock && stock < 5 && (
+        <span className="product-card__stock">Only {stock} left</span>
       )}
       {inStock && (
         <button

@@ -30,124 +30,121 @@ const AdminUsersPage = lazy(
 )
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage'))
 
+const SuspensePage = ({ children }) => (
+  <Suspense fallback={<LoadingSpinner fullScreen />}>{children}</Suspense>
+)
+
 export default function AppRoutes() {
   return (
     <Routes>
       <Route element={<Layout />}>
         {/* ===== PUBLIC ROUTES ===== */}
-        {/* These routes are accessible without authentication */}
-
         <Route
           index
           element={
-            <Suspense fallback={<LoadingSpinner fullScreen />}>
+            <SuspensePage>
               <HomePage />
-            </Suspense>
+            </SuspensePage>
           }
         />
         <Route
           path="/login"
           element={
-            <Suspense fallback={<LoadingSpinner fullScreen />}>
+            <SuspensePage>
               <LoginPage />
-            </Suspense>
+            </SuspensePage>
           }
         />
         <Route
           path="/register"
           element={
-            <Suspense fallback={<LoadingSpinner fullScreen />}>
+            <SuspensePage>
               <RegisterPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/account"
-          element={
-            <Suspense fallback={<LoadingSpinner fullScreen />}>
-              <AccountPage />
-            </Suspense>
+            </SuspensePage>
           }
         />
         <Route
           path="/products"
           element={
-            <Suspense fallback={<LoadingSpinner fullScreen />}>
+            <SuspensePage>
               <ProductsPage />
-            </Suspense>
+            </SuspensePage>
           }
         />
         <Route
           path="/products/:productId"
           element={
-            <Suspense fallback={<LoadingSpinner fullScreen />}>
+            <SuspensePage>
               <ProductDetailPage />
-            </Suspense>
+            </SuspensePage>
           }
         />
 
         {/* ===== PROTECTED ROUTES ===== */}
-        {/* These routes require authentication (ProtectedRoute guard) */}
-
         <Route element={<ProtectedRoute />}>
+          <Route
+            path="/account"
+            element={
+              <SuspensePage>
+                <AccountPage />
+              </SuspensePage>
+            }
+          />
           <Route
             path="/cart"
             element={
-              <Suspense fallback={<LoadingSpinner fullScreen />}>
+              <SuspensePage>
                 <CartPage />
-              </Suspense>
+              </SuspensePage>
             }
           />
           <Route
             path="/checkout"
             element={
-              <Suspense fallback={<LoadingSpinner fullScreen />}>
+              <SuspensePage>
                 <CheckoutPage />
-              </Suspense>
+              </SuspensePage>
             }
           />
           <Route
             path="/orders"
             element={
-              <Suspense fallback={<LoadingSpinner fullScreen />}>
+              <SuspensePage>
                 <OrdersPage />
-              </Suspense>
+              </SuspensePage>
             }
           />
           <Route
             path="/orders/:orderId"
             element={
-              <Suspense fallback={<LoadingSpinner fullScreen />}>
+              <SuspensePage>
                 <OrderDetailPage />
-              </Suspense>
+              </SuspensePage>
             }
           />
         </Route>
 
         {/* ===== ADMIN ROUTES ===== */}
-        {/* These routes require admin role (AdminRoute guard) */}
-
         <Route element={<AdminRoute />}>
           <Route
             path="/admin/products"
             element={
-              <Suspense fallback={<LoadingSpinner fullScreen />}>
+              <SuspensePage>
                 <AdminProductsPage />
-              </Suspense>
+              </SuspensePage>
             }
           />
           <Route
             path="/admin/users"
             element={
-              <Suspense fallback={<LoadingSpinner fullScreen />}>
+              <SuspensePage>
                 <AdminUsersPage />
-              </Suspense>
+              </SuspensePage>
             }
           />
         </Route>
 
         {/* ===== FALLBACK ROUTES ===== */}
-        {/* Catch-all route redirects to 404 page */}
       </Route>
 
       <Route path="/404" element={<NotFoundPage />} />

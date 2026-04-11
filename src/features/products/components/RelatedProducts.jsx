@@ -2,12 +2,12 @@
 /* Shows similar products in same category */
 /* Displayed at bottom of ProductDetailPage */
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useAppDispatch, useProducts, useProductStatus } from '../../../hooks'
 import { fetchProducts } from '../productSlice'
-import { formatCurrency } from '../../../utils/helpers'
 import StarRating from '../../../components/shared/StarRating'
+import SkeletonCard from '../../../components/shared/SkeletonCard'
 import './RelatedProducts.css'
 
 export default function RelatedProducts({ currentProductId, category }) {
@@ -16,12 +16,32 @@ export default function RelatedProducts({ currentProductId, category }) {
   const status = useProductStatus()
 
   useEffect(() => {
-    if (status === 'idle' && !allProducts.length) dispatch(fetchProducts())
+    if (status === 'idle' && !allProducts.length) {
+      dispatch(fetchProducts({ limit: 50 }))
+    }
   }, [dispatch, status, allProducts.length])
 
-  const related = allProducts.filter(
-    (p) => p._id !== currentProductId && p.category === category
+  const related = useMemo(
+    () =>
+      allProducts.filter(
+        (p) => p._id !== currentProductId && p.category === category
+      ),
+    [allProducts, currentProductId, category]
   )
+
+  if (status === 'loading') {
+    return (
+      <section className="related-products">
+        <h2 className="related-products__title">Customers also viewed</h2>
+        <div className="related-products__scroll">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
   if (!related.length) return null
 
   return (
@@ -35,14 +55,16 @@ export default function RelatedProducts({ currentProductId, category }) {
             className="related-products__card"
           >
             <img
-              src={p.image || 'https://placehold.co/200x200'}
-              alt={p.title}
+              src={p.image ?? 'https://placehold.co/200x200'}
+              alt={p.title ?? 'Product'}
               loading="lazy"
+              width="200"
+              height="200"
             />
             <h3 className="related-products__card-title">{p.title}</h3>
             <StarRating rating={p.rating} />
             <strong className="related-products__card-price">
-              {formatCurrency(p.salePrice || p.price)}
+              ${(p.salePrice ?? p.price ?? 0).toFixed(2)}
             </strong>
           </Link>
         ))}

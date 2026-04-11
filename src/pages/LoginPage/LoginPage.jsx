@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPwd, setShowPwd] = useState(false)
+  const [emailError, setEmailError] = useState('')
 
   useEffect(() => {
     if (hasToken) {
@@ -25,14 +26,37 @@ export default function LoginPage() {
     }
   }, [hasToken, navigate])
 
+  const validateEmail = (value) => {
+    if (!value) {
+      setEmailError('Email is required.')
+      return false
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      setEmailError('Please enter a valid email address.')
+      return false
+    }
+    setEmailError('')
+    return true
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!validateEmail(email)) {
+      dispatch(
+        addToast({
+          title: 'Validation error',
+          message: emailError,
+          type: 'error',
+        })
+      )
+      return
+    }
     const result = await dispatch(login({ email, password }))
     if (login.fulfilled.match(result)) {
       dispatch(
         addToast({
           title: 'Welcome back',
-          message: `Signed in as ${result.payload.user?.name || email}.`,
+          message: `Signed in as ${result.payload.data?.user?.name ?? email}.`,
           type: 'success',
         })
       )
@@ -41,7 +65,7 @@ export default function LoginPage() {
       dispatch(
         addToast({
           title: 'Sign in failed',
-          message: result.payload || 'Invalid credentials.',
+          message: result.payload ?? 'Invalid credentials.',
           type: 'error',
         })
       )
@@ -59,10 +83,17 @@ export default function LoginPage() {
               id="auth-email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                if (emailError) setEmailError('')
+              }}
+              onBlur={() => validateEmail(email)}
               required
               autoComplete="email"
             />
+            {emailError && (
+              <span className="auth-field__error">{emailError}</span>
+            )}
           </div>
           <div className="auth-field">
             <label htmlFor="auth-password">Password</label>

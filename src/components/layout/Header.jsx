@@ -9,8 +9,8 @@ import {
   useCurrentUser,
   useIsAuthenticated,
   useAppDispatch,
+  useLogout,
 } from '../../hooks'
-import { logout } from '../../features/auth/authSlice'
 import { clearCart } from '../../features/cart/cartSlice'
 import { addToast } from '../../features/ui/uiSlice'
 import './Header.css'
@@ -21,6 +21,7 @@ export default function Header() {
   const cartCount = useCartCount()
   const user = useCurrentUser()
   const isAuthenticated = useIsAuthenticated()
+  const logout = useLogout()
   const [searchInput, setSearchInput] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -31,8 +32,8 @@ export default function Header() {
   }
 
   const handleLogout = () => {
-    dispatch(logout())
     dispatch(clearCart())
+    logout()
     dispatch(
       addToast({
         title: 'Signed out',
@@ -107,7 +108,7 @@ export default function Header() {
                   className="nav-account__trigger"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
-                  <span>Hello, {user?.name || 'User'}</span>
+                  <span>Hello, {user?.name ?? 'User'}</span>
                   <span>Account & Lists ▾</span>
                 </button>
                 {dropdownOpen && (

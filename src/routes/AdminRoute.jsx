@@ -2,11 +2,16 @@
 /* Redirects non-admin users to home page */
 /* Used for: Admin Products Management, Admin Users Management */
 
-import { useSelector } from 'react-redux'
 import { Navigate, Outlet } from 'react-router-dom'
+import { useIsAuthenticated, useIsAdmin } from '../hooks'
 
 export default function AdminRoute() {
-  const user = useSelector((s) => s.auth.user)
-  const isAdmin = user?.role?.toLowerCase() === 'admin'
+  const isAuthenticated = useIsAuthenticated()
+  const isAdmin = useIsAdmin()
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
   return isAdmin ? <Outlet /> : <Navigate to="/" replace />
 }

@@ -2,18 +2,18 @@
 /* User account dashboard with quick links to orders, addresses, payments */
 /* Shows admin links if user has admin role */
 
+import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   useCurrentUser,
   useIsAuthenticated,
   useIsAdmin,
   useAppDispatch,
+  useLogout,
 } from '../../hooks'
-import { logout } from '../../features/auth/authSlice'
 import { clearCart } from '../../features/cart/cartSlice'
 import { addToast } from '../../features/ui/uiSlice'
 import Button from '../../components/shared/Button'
-import SurfaceCard from '../../components/shared/SurfaceCard'
 import './AccountPage.css'
 
 const SECTIONS = [
@@ -49,15 +49,19 @@ export default function AccountPage() {
   const user = useCurrentUser()
   const isAuthenticated = useIsAuthenticated()
   const isAdmin = useIsAdmin()
+  const logout = useLogout()
 
-  if (!isAuthenticated) {
-    navigate('/login')
-    return null
-  }
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login')
+    }
+  }, [isAuthenticated, navigate])
+
+  if (!isAuthenticated) return null
 
   const handleLogout = () => {
-    dispatch(logout())
     dispatch(clearCart())
+    logout()
     dispatch(
       addToast({
         title: 'Signed out',
@@ -71,7 +75,7 @@ export default function AccountPage() {
   return (
     <div className="account-page">
       <h1 className="account-page__title">Your Account</h1>
-      <p className="account-page__subtitle">Hello, {user?.name || 'User'}</p>
+      <p className="account-page__subtitle">Hello, {user?.name ?? 'User'}</p>
 
       <div className="account-page__grid">
         {SECTIONS.map((s) => (
@@ -89,10 +93,10 @@ export default function AccountPage() {
             <i className="fas fa-user-shield" /> Admin Dashboard
           </h2>
           <div className="account-page__admin-links">
-            <Link to="/admin/products" className="btn btn--ghost">
+            <Link to="/admin/products" className="btn--ghost">
               <i className="fas fa-box" /> Manage Products
             </Link>
-            <Link to="/admin/users" className="btn btn--ghost">
+            <Link to="/admin/users" className="btn--ghost">
               <i className="fas fa-users" /> Manage Users
             </Link>
           </div>

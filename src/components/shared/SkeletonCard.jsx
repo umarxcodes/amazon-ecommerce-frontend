@@ -2,9 +2,10 @@
 /* Placeholder UI during data fetching */
 /* Mimics ProductCard layout for smooth loading transition */
 
+import { memo } from 'react'
 import './SkeletonCard.css'
 
-export default function SkeletonCard() {
+function SkeletonCard() {
   return (
     <div className="skeleton-card" aria-hidden="true">
       <div className="skeleton-card__image" />
@@ -14,3 +15,5 @@ export default function SkeletonCard() {
     </div>
   )
 }
+
+export default memo(SkeletonCard)

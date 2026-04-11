@@ -1,8 +1,11 @@
 /* ===== AXIOS HTTP CLIENT ===== */
 /* Pre-configured Axios instance with JWT interceptor */
-/* Auto-attaches token to requests, handles 401 by redirecting to login */
+/* Auto-attaches token from Redux store, handles 401 by clearing auth */
 
 import axios from 'axios'
+import { store } from '../app/store'
+import { logout } from '../features/auth/authSlice'
+import { clearSession } from '../utils/helpers'
 
 const axiosInstance = axios.create({
   baseURL:
@@ -12,27 +15,23 @@ const axiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// Attach JWT to every request
+// Attach JWT to every request — read from Redux store for single source of truth
 axiosInstance.interceptors.request.use((config) => {
-  const raw = localStorage.getItem('amazon_clone_session')
-  if (raw) {
-    try {
-      const session = JSON.parse(raw)
-      if (session?.token)
-        config.headers.Authorization = `Bearer ${session.token}`
-    } catch {
-      /* ignore corrupt session */
-    }
+  const token = store.getState()?.auth?.token
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
 
-// Handle 401 globally — force re-login
+// Handle 401 globally — clear auth state and dispatch logout
 axiosInstance.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.removeItem('amazon_clone_session')
+      clearSession()
+      store.dispatch(logout())
+      // Use history API for SPA navigation (no full reload)
       window.location.href = '/login'
     }
     return Promise.reject(err)

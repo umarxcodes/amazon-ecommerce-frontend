@@ -8,11 +8,14 @@ export const pending =
     state[key] = 'loading'
     state.error = null
   }
+
 export const fulfilled =
   (key = 'status') =>
   (state) => {
     state[key] = 'succeeded'
+    state.error = null
   }
+
 export const rejected =
   (key = 'status') =>
   (state, action) => {

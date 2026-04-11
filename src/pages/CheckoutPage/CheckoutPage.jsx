@@ -2,18 +2,17 @@
 /* Shipping address form and order placement */
 /* Protected route - redirects to payment gateway on success */
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   useAppDispatch,
   useShippingAddress,
   useCreateOrder,
   useStartCheckout,
-  useCreateOrderStatus,
 } from '../../hooks'
 import { setShippingAddress } from '../../features/cart/cartSlice'
+import { createOrder } from '../../features/orders/orderSlice'
 import { addToast } from '../../features/ui/uiSlice'
-import { formatCurrency } from '../../utils/helpers'
 import Button from '../../components/shared/Button'
 import './CheckoutPage.css'
 
@@ -30,40 +29,68 @@ export default function CheckoutPage() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const existing = useShippingAddress()
-  const createOrder = useCreateOrder()
+  const createOrderThunk = useCreateOrder()
   const startCheckout = useStartCheckout()
-  const status = useCreateOrderStatus()
   const [form, setForm] = useState(() => ({ ...existing }))
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const update = (key, val) => setForm((f) => ({ ...f, [key]: val }))
+  const update = useCallback((key, val) => {
+    setForm((f) => ({ ...f, [key]: val }))
+  }, [])
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!form.fullName || !form.addressLine1 || !form.city) {
-      dispatch(
-        addToast({
-          title: 'Missing info',
-          message: 'Please fill required fields.',
-          type: 'error',
-        })
-      )
-      return
-    }
-    dispatch(setShippingAddress(form))
-    const result = await dispatch(createOrder(form))
-    if (createOrder.fulfilled.match(result)) {
-      const id = result.payload.order?._id || result.payload._id
-      if (id) startCheckout(id)
-    } else {
-      dispatch(
-        addToast({
-          title: 'Order failed',
-          message: result.payload || 'Could not create order.',
-          type: 'error',
-        })
-      )
-    }
-  }
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault()
+      if (!form.fullName || !form.addressLine1 || !form.city) {
+        dispatch(
+          addToast({
+            title: 'Missing info',
+            message: 'Please fill in all required fields.',
+            type: 'error',
+          })
+        )
+        return
+      }
+      dispatch(setShippingAddress(form))
+      setIsSubmitting(true)
+      try {
+        const result = await dispatch(
+          createOrderThunk({
+            shippingAddress: form,
+            totalAmount: 0,
+          })
+        )
+        if (createOrder.fulfilled.match(result)) {
+          const order =
+            result.payload.order ?? result.payload.data ?? result.payload
+          const id = order?._id ?? order?.id
+          if (id) {
+            startCheckout(id)
+          } else {
+            dispatch(
+              addToast({
+                title: 'Order created',
+                message: 'Your order has been placed successfully.',
+                type: 'success',
+              })
+            )
+            navigate('/orders')
+          }
+        } else {
+          dispatch(
+            addToast({
+              title: 'Order failed',
+              message: result.payload ?? 'Could not create order.',
+              type: 'error',
+            })
+          )
+        }
+      } finally {
+        setIsSubmitting(false)
+      }
+    },
+    [dispatch, form, createOrderThunk, startCheckout, navigate]
+  )
 
   return (
     <div className="checkout-page">
@@ -79,7 +106,7 @@ export default function CheckoutPage() {
               <input
                 id={f.key}
                 type={f.type}
-                value={form[f.key] || ''}
+                value={form[f.key] ?? ''}
                 onChange={(e) => update(f.key, e.target.value)}
                 required={!['state', 'country'].includes(f.key)}
               />
@@ -91,10 +118,10 @@ export default function CheckoutPage() {
           <Button
             variant="primary"
             fullWidth
-            disabled={status === 'loading'}
+            disabled={isSubmitting}
             type="submit"
           >
-            Place Order & Pay
+            {isSubmitting ? 'Placing Order...' : 'Place Order & Pay'}
           </Button>
           <Button
             variant="ghost"

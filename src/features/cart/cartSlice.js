@@ -2,7 +2,7 @@
 /* Manages cart items, shipping address, and checkout flow */
 /* Syncs local cart with backend on authentication */
 
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice, createSelector } from '@reduxjs/toolkit'
 import {
   fetchCartAPI,
   addToCartAPI,
@@ -18,8 +18,8 @@ import { fulfilled, pending, rejected } from '../../app/sliceHelpers'
 const persistedCart = loadCart()
 
 const initialState = {
-  items: persistedCart,
-  shippingAddress: {
+  items: persistedCart?.items || persistedCart || [],
+  shippingAddress: persistedCart?.shippingAddress || {
     fullName: '',
     addressLine1: '',
     city: '',
@@ -60,9 +60,9 @@ export const addItemToCart = createAsyncThunk(
 
 export const updateItemQuantity = createAsyncThunk(
   'cart/updateItemQuantity',
-  async (payload, thunkApi) => {
+  async ({ productId, quantity }, thunkApi) => {
     try {
-      return await updateCartItemAPI(payload)
+      return await updateCartItemAPI({ productId, quantity })
     } catch (err) {
       return thunkApi.rejectWithValue(
         getErrorMessage(err, 'Unable to update cart')
@@ -138,13 +138,13 @@ const cartSlice = createSlice({
       } else {
         state.items.push({ ...incoming, quantity: incoming.quantity || 1 })
       }
-      saveCart(state.items)
+      saveCart({ items: state.items, shippingAddress: state.shippingAddress })
     },
     removeFromCart(state, action) {
       state.items = state.items.filter(
         (item) => item.productId !== action.payload
       )
-      saveCart(state.items)
+      saveCart({ items: state.items, shippingAddress: state.shippingAddress })
     },
     updateCartQuantity(state, action) {
       const { productId, quantity } = action.payload
@@ -152,14 +152,15 @@ const cartSlice = createSlice({
       if (item) {
         item.quantity = Math.max(1, quantity)
       }
-      saveCart(state.items)
+      saveCart({ items: state.items, shippingAddress: state.shippingAddress })
     },
     clearCart(state) {
       state.items = []
-      saveCart([])
+      saveCart({ items: [], shippingAddress: state.shippingAddress })
     },
     setShippingAddress(state, action) {
       state.shippingAddress = { ...state.shippingAddress, ...action.payload }
+      saveCart({ items: state.items, shippingAddress: state.shippingAddress })
     },
     resetCartStatus(state) {
       state.status = 'idle'
@@ -179,7 +180,7 @@ const cartSlice = createSlice({
       .addCase(fetchCart.rejected, rejected())
       .addCase(fetchCart.fulfilled, (state, action) => {
         fulfilled()(state)
-        state.items = action.payload?.items || []
+        state.items = action.payload?.items || action.payload?.data?.items || []
       })
       .addCase(addItemToCart.pending, pending())
       .addCase(addItemToCart.rejected, rejected())
@@ -204,7 +205,7 @@ const cartSlice = createSlice({
       .addCase(clearBackendCart.fulfilled, (state) => {
         fulfilled()(state)
         state.items = []
-        saveCart([])
+        saveCart({ items: [], shippingAddress: state.shippingAddress })
       })
   },
 })
@@ -219,12 +220,31 @@ export const {
 } = cartSlice.actions
 export default cartSlice.reducer
 
-export const selectCartItems = (s) => s.cart.items
-export const selectShippingAddress = (s) => s.cart.shippingAddress
-export const selectCartStatus = (s) => s.cart.status
-export const selectCheckoutStatus = (s) => s.cart.checkoutStatus
-export const selectCartError = (s) => s.cart.error
-export const selectCartCount = (s) =>
-  s.cart.items.reduce((t, i) => t + i.quantity, 0)
-export const selectCartTotal = (s) =>
-  s.cart.items.reduce((t, i) => t + (i.price || 0) * i.quantity, 0)
+// Memoized selectors
+const selectCartState = (s) => s.cart
+export const selectCartItems = createSelector(
+  [selectCartState],
+  (cart) => cart.items
+)
+export const selectShippingAddress = createSelector(
+  [selectCartState],
+  (cart) => cart.shippingAddress
+)
+export const selectCartStatus = createSelector(
+  [selectCartState],
+  (cart) => cart.status
+)
+export const selectCheckoutStatus = createSelector(
+  [selectCartState],
+  (cart) => cart.checkoutStatus
+)
+export const selectCartError = createSelector(
+  [selectCartState],
+  (cart) => cart.error
+)
+export const selectCartCount = createSelector([selectCartItems], (items) =>
+  items.reduce((t, i) => t + (i.quantity || 0), 0)
+)
+export const selectCartTotal = createSelector([selectCartItems], (items) =>
+  items.reduce((t, i) => t + (i.price || 0) * (i.quantity || 0), 0)
+)

@@ -10,8 +10,8 @@ import {
   useProductStatus,
   useAddToCart,
   useIsAuthenticated,
+  useFetchProducts,
 } from '../../hooks'
-import { fetchProducts } from '../../features/products/productSlice'
 import { addToast } from '../../features/ui/uiSlice'
 import Carousel from '../../components/shared/Carousel'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
@@ -35,10 +35,11 @@ export default function HomePage() {
   const status = useProductStatus()
   const addToCart = useAddToCart()
   const isAuthenticated = useIsAuthenticated()
+  const fetchProducts = useFetchProducts()
 
   useEffect(() => {
-    if (status === 'idle') dispatch(fetchProducts())
-  }, [dispatch, status])
+    if (status === 'idle') fetchProducts()
+  }, [dispatch, status, fetchProducts])
 
   const handleAddToCart = useCallback(
     (product) => {
@@ -56,7 +57,7 @@ export default function HomePage() {
       dispatch(
         addToast({
           title: 'Added',
-          message: `${product.title || 'Product'} added to cart.`,
+          message: `${product.title ?? 'Product'} added to cart.`,
           type: 'success',
         })
       )
@@ -82,10 +83,7 @@ export default function HomePage() {
         title="Unable to load products"
         description="Please try again later."
         action={
-          <button
-            className="btn btn--primary"
-            onClick={() => dispatch(fetchProducts())}
-          >
+          <button className="btn btn--primary" onClick={() => fetchProducts()}>
             Retry
           </button>
         }

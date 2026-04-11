@@ -8,27 +8,30 @@ import {
   useAllUsers,
   useUsersStatus,
   useAdminMutationStatus,
+  useFetchUsers,
+  useUpdateUserRole,
   useDeactivateUser,
 } from '../../hooks'
-import {
-  fetchUsers,
-  updateUserRole,
-  deactivateUser,
-} from '../../features/admin/adminSlice'
+import { updateUserRole, deactivateUser } from '../../features/admin/adminSlice'
 import { addToast } from '../../features/ui/uiSlice'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import EmptyState from '../../components/shared/EmptyState'
 import Button from '../../components/shared/Button'
 import './AdminUsersPage.css'
 
-function UserTableRow({ user, onRoleChange, onDeactivate, isMutating }) {
+const UserTableRow = function UserTableRow({
+  user,
+  onRoleChange,
+  onDeactivate,
+  isMutating,
+}) {
   return (
     <tr>
       <td>{user.name}</td>
       <td>{user.email}</td>
       <td>
         <select
-          value={user.role || 'user'}
+          value={user.role ?? 'user'}
           onChange={(e) => onRoleChange(user, e.target.value)}
           className="admin-table__select"
         >
@@ -66,16 +69,18 @@ export default function AdminUsersPage() {
   const users = useAllUsers()
   const status = useUsersStatus()
   const mutationStatus = useAdminMutationStatus()
+  const fetchUsers = useFetchUsers()
+  const updateUserRoleFn = useUpdateUserRole()
   const deactivateUserFn = useDeactivateUser()
 
   useEffect(() => {
-    dispatch(fetchUsers())
-  }, [dispatch])
+    fetchUsers()
+  }, [fetchUsers])
 
   const handleRoleChange = useCallback(
     async (user, newRole) => {
       const result = await dispatch(
-        updateUserRole({ id: user._id, role: newRole })
+        updateUserRoleFn({ id: user._id, role: newRole })
       )
       if (updateUserRole.fulfilled.match(result)) {
         dispatch(
@@ -87,13 +92,13 @@ export default function AdminUsersPage() {
         )
       }
     },
-    [dispatch]
+    [dispatch, updateUserRoleFn]
   )
 
   const handleDeactivate = useCallback(
     async (id) => {
       if (!window.confirm('Deactivate this user?')) return
-      const result = await dispatch(deactivateUser(id))
+      const result = await dispatch(deactivateUserFn(id))
       if (deactivateUser.fulfilled.match(result)) {
         dispatch(
           addToast({
@@ -104,10 +109,10 @@ export default function AdminUsersPage() {
         )
       }
     },
-    [dispatch, deactivateUser]
+    [dispatch, deactivateUserFn]
   )
 
-  if (status === 'loading')
+  if (status === 'loading' && !users.length)
     return <LoadingSpinner label="Loading users..." fullScreen />
 
   if (!users.length)
