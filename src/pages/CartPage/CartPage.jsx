@@ -2,7 +2,7 @@
 /* Displays cart items with quantity controls */
 /* Protected route - requires authentication */
 
-import { useEffect, memo } from 'react'
+import { useEffect, memo, useCallback, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   useAppDispatch,
@@ -11,13 +11,11 @@ import {
   useCartTotal,
   useCartStatus,
   useShippingAddress,
-  useIsAuthenticated,
   useFetchCart,
   useUpdateQty,
   useRemoveItem,
   useCreateOrder,
   useStartCheckout,
-  useCreateOrderStatus,
 } from '../../hooks'
 import { addToast } from '../../features/ui/uiSlice'
 import { formatCurrency } from '../../utils/helpers'
@@ -26,37 +24,49 @@ import EmptyState from '../../components/shared/EmptyState'
 import Button from '../../components/shared/Button'
 import './CartPage.css'
 
-function CartItemRow({ item }) {
+const CartItemRow = memo(function CartItemRow({ item }) {
+  const dispatch = useAppDispatch()
   const updateQty = useUpdateQty()
   const removeItem = useRemoveItem()
-  const dispatch = useAppDispatch()
 
-  const handleQtyChange = (qty) => {
-    if (qty < 1) {
-      handleDelete()
-      return
-    }
-    updateQty({ productId: item.productId, quantity: qty })
-  }
+  const handleQtyChange = useCallback(
+    (qty) => {
+      if (qty < 1) {
+        removeItem(item.productId)
+        dispatch(
+          addToast({
+            title: 'Removed',
+            message: `${item.title ?? 'Product'} removed from cart.`,
+            type: 'info',
+          })
+        )
+        return
+      }
+      updateQty({ productId: item.productId, quantity: qty })
+    },
+    [dispatch, item.productId, item.title, removeItem, updateQty]
+  )
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     removeItem(item.productId)
     dispatch(
       addToast({
         title: 'Removed',
-        message: `${item.title} removed from cart.`,
+        message: `${item.title ?? 'Product'} removed from cart.`,
         type: 'info',
       })
     )
-  }
+  }, [dispatch, item.productId, item.title, removeItem])
 
   return (
     <div className="cart-item">
       <Link to={`/products/${item.productId}`} className="cart-item__img-link">
         <img
-          src={item.image || 'https://placehold.co/120x120'}
-          alt={item.title}
+          src={item.image ?? 'https://placehold.co/120x120'}
+          alt={item.title ?? 'Product'}
           loading="lazy"
+          width="120"
+          height="120"
         />
       </Link>
 
@@ -105,11 +115,11 @@ function CartItemRow({ item }) {
       </div>
 
       <div className="cart-item__price">
-        <strong>{formatCurrency(item.price * item.quantity)}</strong>
+        <strong>{formatCurrency((item.price ?? 0) * item.quantity)}</strong>
       </div>
     </div>
   )
-}
+})
 
 const CartSummary = memo(function CartSummary({
   cartCount,
@@ -130,7 +140,7 @@ const CartSummary = memo(function CartSummary({
         disabled={disabled}
         onClick={onCheckout}
       >
-        Proceed to Checkout
+        {disabled ? 'Processing...' : 'Proceed to Checkout'}
       </Button>
     </aside>
   )
@@ -144,22 +154,21 @@ export default function CartPage() {
   const cartTotal = useCartTotal()
   const status = useCartStatus()
   const shippingAddress = useShippingAddress()
-  const isAuthenticated = useIsAuthenticated()
   const fetchCart = useFetchCart()
   const createOrder = useCreateOrder()
   const startCheckout = useStartCheckout()
-  const createOrderStatus = useCreateOrderStatus()
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
 
   useEffect(() => {
-    if (isAuthenticated) fetchCart()
-  }, [isAuthenticated, fetchCart])
+    fetchCart()
+  }, [fetchCart])
 
-  const handleCheckout = async () => {
+  const handleCheckout = useCallback(async () => {
     if (!shippingAddress.addressLine1 || !shippingAddress.city) {
       dispatch(
         addToast({
           title: 'Address required',
-          message: 'Please set your shipping address.',
+          message: 'Please set your shipping address first.',
           type: 'error',
         })
       )
@@ -167,29 +176,60 @@ export default function CartPage() {
       return
     }
 
-    const result = await dispatch(
-      createOrder({
-        address: shippingAddress.addressLine1,
-        city: shippingAddress.city,
-        postalCode: shippingAddress.postalCode,
-        country: shippingAddress.country,
-      })
-    )
-
-    if (createOrder.fulfilled.match(result)) {
-      const id =
-        result.payload.order?._id || result.payload._id || result.payload.id
-      if (id) startCheckout(id)
-    } else {
-      dispatch(
-        addToast({
-          title: 'Order failed',
-          message: result.payload || 'Unable to create order.',
-          type: 'error',
+    setIsCheckingOut(true)
+    try {
+      const result = await dispatch(
+        createOrder({
+          shippingAddress: {
+            fullName: shippingAddress.fullName,
+            addressLine1: shippingAddress.addressLine1,
+            city: shippingAddress.city,
+            state: shippingAddress.state,
+            postalCode: shippingAddress.postalCode,
+            country: shippingAddress.country,
+          },
+          items,
+          totalAmount: cartTotal,
         })
       )
+
+      if (createOrder.fulfilled.match(result)) {
+        const order =
+          result.payload.order ?? result.payload.data ?? result.payload
+        const id = order?._id ?? order?.id
+        if (id) {
+          startCheckout(id)
+        } else {
+          dispatch(
+            addToast({
+              title: 'Order created',
+              message: 'Redirecting to payment...',
+              type: 'success',
+            })
+          )
+          navigate('/orders')
+        }
+      } else {
+        dispatch(
+          addToast({
+            title: 'Order failed',
+            message: result.payload ?? 'Unable to create order.',
+            type: 'error',
+          })
+        )
+      }
+    } finally {
+      setIsCheckingOut(false)
     }
-  }
+  }, [
+    dispatch,
+    shippingAddress,
+    items,
+    cartTotal,
+    createOrder,
+    startCheckout,
+    navigate,
+  ])
 
   if (status === 'loading' && !items.length)
     return <LoadingSpinner label="Loading cart..." fullScreen />
@@ -200,7 +240,7 @@ export default function CartPage() {
         title="Your cart is empty"
         description="Add some items to get started."
         action={
-          <Link to="/products" className="btn btn--primary">
+          <Link to="/" className="btn btn--primary">
             Shop Now
           </Link>
         }
@@ -214,29 +254,17 @@ export default function CartPage() {
       <div className="cart-page__content">
         <div className="cart-page__items">
           {items.map((item) => (
-            <CartItemRow key={item.productId || item._id} item={item} />
+            <CartItemRow key={item.productId ?? item._id} item={item} />
           ))}
         </div>
 
         <CartSummary
           cartCount={cartCount}
           cartTotal={cartTotal}
-          disabled={createOrderStatus === 'loading'}
+          disabled={isCheckingOut}
           onCheckout={handleCheckout}
         />
       </div>
-
-      {!isAuthenticated && (
-        <div className="cart-page__signin-prompt">
-          <h3>See personalized recommendations</h3>
-          <Link to="/login" className="btn btn--primary">
-            Sign in
-          </Link>
-          <p>
-            New customer? <Link to="/register">Start here.</Link>
-          </p>
-        </div>
-      )}
     </div>
   )
 }

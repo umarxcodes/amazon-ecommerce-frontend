@@ -2,9 +2,14 @@
 /* Displays user's order history with date filtering */
 /* Protected route - requires authentication */
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { useOrders, useOrderStatus, useFetchCart } from '../../hooks'
+import {
+  useOrders,
+  useOrderStatus,
+  useFetchOrders,
+  useOrderDetailStatus,
+} from '../../hooks'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import EmptyState from '../../components/shared/EmptyState'
 import { formatCurrency, formatDate } from '../../utils/helpers'
@@ -25,7 +30,7 @@ const STATUS_CLASS_MAP = {
   cancelled: 'order-card__status--cancelled',
 }
 
-function OrderCard({ order }) {
+const OrderCard = function OrderCard({ order }) {
   const status = (order.status || 'pending').toLowerCase()
   const statusClass = STATUS_CLASS_MAP[status] || STATUS_CLASS_MAP.pending
 
@@ -41,7 +46,7 @@ function OrderCard({ order }) {
           </span>
         </div>
         <span className="order-card__id">
-          Order #{order._id?.slice(-8).toUpperCase()}
+          Order #{order._id?.slice(-8).toUpperCase() ?? 'N/A'}
         </span>
       </div>
 
@@ -55,8 +60,10 @@ function OrderCard({ order }) {
             >
               <img
                 src={item.image || 'https://placehold.co/60x60'}
-                alt={item.title}
+                alt={item.title || 'Product'}
                 loading="lazy"
+                width="60"
+                height="60"
               />
             </Link>
           ))}
@@ -64,7 +71,9 @@ function OrderCard({ order }) {
 
         <div className="order-card__total">
           Total:{' '}
-          <strong>{formatCurrency(order.totalAmount || order.total)}</strong>
+          <strong>
+            {formatCurrency(order.totalAmount ?? order.total ?? 0)}
+          </strong>
         </div>
 
         <Link to={`/orders/${order._id}`} className="order-card__details-btn">
@@ -78,11 +87,13 @@ function OrderCard({ order }) {
 export default function OrdersPage() {
   const orders = useOrders()
   const status = useOrderStatus()
+  const detailStatus = useOrderDetailStatus()
+  const fetchOrders = useFetchOrders()
   const [activeFilter, setActiveFilter] = useState('all')
 
   useEffect(() => {
-    // Orders fetched via ProtectedRoute preload or manual trigger
-  }, [])
+    if (status === 'idle') fetchOrders()
+  }, [status, fetchOrders])
 
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
@@ -107,10 +118,14 @@ export default function OrdersPage() {
     })
   }, [orders, activeFilter])
 
-  if (status === 'loading')
+  const handleFilterChange = useCallback((key) => {
+    setActiveFilter(key)
+  }, [])
+
+  if (status === 'loading' && !orders.length)
     return <LoadingSpinner label="Loading orders..." fullScreen />
 
-  if (!orders.length)
+  if (!orders.length && status !== 'loading')
     return (
       <EmptyState
         title="No orders yet"
@@ -143,25 +158,27 @@ export default function OrdersPage() {
                 ? 'orders-page__filter-btn--active'
                 : ''
             }`}
-            onClick={() => setActiveFilter(filter.key)}
+            onClick={() => handleFilterChange(filter.key)}
           >
             {filter.label}
           </button>
         ))}
       </div>
 
-      <div className="orders-page__list">
-        {filteredOrders.length === 0 ? (
-          <EmptyState
-            title="No orders for this period"
-            description="Try a different date range."
-          />
-        ) : (
-          filteredOrders.map((order) => (
+      {status === 'loading' && orders.length > 0 ? (
+        <LoadingSpinner label="Refreshing orders..." />
+      ) : filteredOrders.length === 0 ? (
+        <EmptyState
+          title="No orders for this period"
+          description="Try a different date range."
+        />
+      ) : (
+        <div className="orders-page__list">
+          {filteredOrders.map((order) => (
             <OrderCard key={order._id} order={order} />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

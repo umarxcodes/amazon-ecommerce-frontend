@@ -2,7 +2,7 @@
 /* Displays full product information, images, and purchase options */
 /* Includes related products section */
 
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   useAppDispatch,
@@ -10,8 +10,8 @@ import {
   useProductDetailStatus,
   useAddToCart,
   useIsAuthenticated,
+  useFetchProductById,
 } from '../../hooks'
-import { fetchProductById } from '../../features/products/productSlice'
 import { addToast } from '../../features/ui/uiSlice'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import EmptyState from '../../components/shared/EmptyState'
@@ -31,31 +31,35 @@ export default function ProductDetailPage() {
   const addToCart = useAddToCart()
   const isAuthenticated = useIsAuthenticated()
   const navigate = useNavigate()
+  const fetchProductById = useFetchProductById()
 
   useEffect(() => {
-    if (productId) dispatch(fetchProductById(productId))
-  }, [dispatch, productId])
+    if (productId) fetchProductById(productId)
+  }, [dispatch, productId, fetchProductById])
 
-  const handleAddToCart = (payload) => {
-    if (!isAuthenticated) {
+  const handleAddToCart = useCallback(
+    (payload) => {
+      if (!isAuthenticated) {
+        dispatch(
+          addToast({
+            title: 'Sign in required',
+            message: 'Please sign in first.',
+            type: 'info',
+          })
+        )
+        return
+      }
+      addToCart(payload)
       dispatch(
         addToast({
-          title: 'Sign in required',
-          message: 'Please sign in first.',
-          type: 'info',
+          title: 'Added',
+          message: `${product?.title ?? 'Product'} added to cart.`,
+          type: 'success',
         })
       )
-      return
-    }
-    addToCart(payload)
-    dispatch(
-      addToast({
-        title: 'Added',
-        message: `${payload.title || product?.title} added to cart.`,
-        type: 'success',
-      })
-    )
-  }
+    },
+    [dispatch, isAuthenticated, addToCart, product?.title]
+  )
 
   if (!productId) return null
   if (status === 'loading')

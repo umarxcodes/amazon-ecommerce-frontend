@@ -100,3 +100,18 @@
   display: flex;
   justify-content: flex-end;
 }
+
+.btn--ghost {
+  background: transparent;
+  border: 1px solid #888;
+  color: #0f1111;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+.btn--ghost:hover {
+  background: #f0f2f2;
+  border-color: #555;
+  color: #0f1111;
+}

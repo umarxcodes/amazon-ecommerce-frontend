@@ -2,9 +2,10 @@
 /* Displays when no data is available (no products, orders, etc.) */
 /* Optional action button for user recovery */
 
+import { memo } from 'react'
 import './EmptyState.css'
 
-export default function EmptyState({ icon, title, description, action }) {
+function EmptyState({ icon, title, description, action }) {
   return (
     <div className="empty-state">
       {icon && <div className="empty-state__icon">{icon}</div>}
@@ -14,3 +15,5 @@ export default function EmptyState({ icon, title, description, action }) {
     </div>
   )
 }
+
+export default memo(EmptyState)

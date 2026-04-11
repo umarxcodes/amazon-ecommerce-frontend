@@ -2,7 +2,7 @@
 /* Manages product catalog, filtering, sorting, and pagination */
 /* Supports CRUD operations (admin only for mutations) */
 
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice, createSelector } from '@reduxjs/toolkit'
 import {
   createProductAPI,
   deleteProductAPI,
@@ -106,6 +106,7 @@ const productSlice = createSlice({
     },
     resetSelectedProduct(state) {
       state.selectedProduct = null
+      state.detailStatus = 'idle'
     },
     resetMutationStatus(state) {
       state.mutationStatus = 'idle'
@@ -118,15 +119,23 @@ const productSlice = createSlice({
       .addCase(fetchProducts.rejected, rejected())
       .addCase(fetchProducts.fulfilled, (state, action) => {
         fulfilled()(state)
-        state.items = action.payload.products || action.payload.data || []
-        state.total = action.payload.total || state.items.length
-        state.pages = action.payload.pages || 1
+        state.items =
+          action.payload.products ||
+          action.payload.data?.products ||
+          action.payload.data ||
+          []
+        state.total =
+          action.payload.total ??
+          action.payload.data?.total ??
+          state.items.length
+        state.pages = action.payload.pages ?? action.payload.data?.pages ?? 1
       })
       .addCase(fetchProductById.pending, pending('detailStatus'))
       .addCase(fetchProductById.rejected, rejected('detailStatus'))
       .addCase(fetchProductById.fulfilled, (state, action) => {
         fulfilled('detailStatus')(state)
-        state.selectedProduct = action.payload
+        state.selectedProduct =
+          action.payload.product || action.payload.data || action.payload
       })
       .addCase(createProduct.pending, pending('mutationStatus'))
       .addCase(createProduct.rejected, rejected('mutationStatus'))
@@ -139,11 +148,13 @@ const productSlice = createSlice({
       .addCase(updateProduct.pending, pending('mutationStatus'))
       .addCase(updateProduct.rejected, rejected('mutationStatus'))
       .addCase(updateProduct.fulfilled, (state, action) => {
+        fulfilled('mutationStatus')(state)
         const p =
           action.payload.product || action.payload.data || action.payload
-        fulfilled('mutationStatus')(state)
-        state.items = state.items.map((i) => (i._id === p._id ? p : i))
-        if (state.selectedProduct?._id === p._id) state.selectedProduct = p
+        if (p) {
+          state.items = state.items.map((i) => (i._id === p._id ? p : i))
+          if (state.selectedProduct?._id === p._id) state.selectedProduct = p
+        }
       })
       .addCase(deleteProduct.pending, pending('mutationStatus'))
       .addCase(deleteProduct.rejected, rejected('mutationStatus'))
@@ -158,12 +169,41 @@ export const { setProductFilters, resetSelectedProduct, resetMutationStatus } =
   productSlice.actions
 export default productSlice.reducer
 
-export const selectAllProducts = (s) => s.products.items
-export const selectSelectedProduct = (s) => s.products.selectedProduct
-export const selectProductFilters = (s) => s.products.filters
-export const selectProductTotal = (s) => s.products.total
-export const selectProductPages = (s) => s.products.pages
-export const selectProductStatus = (s) => s.products.status
-export const selectDetailStatus = (s) => s.products.detailStatus
-export const selectMutationStatus = (s) => s.products.mutationStatus
-export const selectProductError = (s) => s.products.error
+// Memoized selectors
+const selectProductState = (s) => s.products
+export const selectAllProducts = createSelector(
+  [selectProductState],
+  (products) => products.items
+)
+export const selectSelectedProduct = createSelector(
+  [selectProductState],
+  (products) => products.selectedProduct
+)
+export const selectProductFilters = createSelector(
+  [selectProductState],
+  (products) => products.filters
+)
+export const selectProductTotal = createSelector(
+  [selectProductState],
+  (products) => products.total
+)
+export const selectProductPages = createSelector(
+  [selectProductState],
+  (products) => products.pages
+)
+export const selectProductStatus = createSelector(
+  [selectProductState],
+  (products) => products.status
+)
+export const selectDetailStatus = createSelector(
+  [selectProductState],
+  (products) => products.detailStatus
+)
+export const selectMutationStatus = createSelector(
+  [selectProductState],
+  (products) => products.mutationStatus
+)
+export const selectProductError = createSelector(
+  [selectProductState],
+  (products) => products.error
+)

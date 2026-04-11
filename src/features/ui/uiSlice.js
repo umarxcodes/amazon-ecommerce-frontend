@@ -2,7 +2,7 @@
 /* Manages global UI state (toast notifications, loading states) */
 /* Provides toast notifications across the application */
 
-import { createSlice, nanoid } from '@reduxjs/toolkit'
+import { createSlice, nanoid, createSelector } from '@reduxjs/toolkit'
 
 const initialState = {
   toasts: [],
@@ -33,5 +33,9 @@ const uiSlice = createSlice({
 export const { addToast, removeToast, setRedirecting } = uiSlice.actions
 export default uiSlice.reducer
 
-export const selectToasts = (s) => s.ui.toasts
-export const selectIsRedirecting = (s) => s.ui.isRedirecting
+const selectUIState = (s) => s.ui
+export const selectToasts = createSelector([selectUIState], (ui) => ui.toasts)
+export const selectIsRedirecting = createSelector(
+  [selectUIState],
+  (ui) => ui.isRedirecting
+)

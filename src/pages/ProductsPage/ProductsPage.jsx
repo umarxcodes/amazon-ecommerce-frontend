@@ -12,11 +12,8 @@ import {
   useProductPages,
   useAddToCart,
   useIsAuthenticated,
+  useFetchProducts,
 } from '../../hooks'
-import {
-  fetchProducts,
-  setProductFilters,
-} from '../../features/products/productSlice'
 import { addToast } from '../../features/ui/uiSlice'
 import ProductCard from '../../features/products/components/ProductCard'
 import SkeletonCard from '../../components/shared/SkeletonCard'
@@ -54,25 +51,27 @@ export default function ProductsPage() {
   const pages = useProductPages()
   const addToCart = useAddToCart()
   const isAuthenticated = useIsAuthenticated()
+  const fetchProducts = useFetchProducts()
   const [searchParams, setSearchParams] = useSearchParams()
   const [searchInput, setSearchInput] = useState(
-    searchParams.get('search') || ''
+    searchParams.get('search') ?? ''
   )
 
   const filters = useMemo(
     () => ({
-      search: searchParams.get('search') || '',
-      category: searchParams.get('category') || 'all',
-      sortBy: searchParams.get('sortBy') || 'featured',
+      search: searchParams.get('search') ?? '',
+      category: searchParams.get('category') ?? 'all',
+      sortBy: searchParams.get('sortBy') ?? 'featured',
       page: Number(searchParams.get('page')) || 1,
       limit: 12,
     }),
-    [searchParams]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchParams.toString()]
   )
 
   useEffect(() => {
     dispatch(fetchProducts(filters))
-  }, [dispatch, JSON.stringify(filters)])
+  }, [dispatch, filters, fetchProducts])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -116,7 +115,7 @@ export default function ProductsPage() {
       dispatch(
         addToast({
           title: 'Added',
-          message: `${product.title} added to cart.`,
+          message: `${product.title ?? 'Product'} added to cart.`,
           type: 'success',
         })
       )

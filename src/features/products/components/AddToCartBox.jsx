@@ -2,43 +2,41 @@
 /* Right-side purchase box with price, quantity selector, and Buy buttons */
 /* Amazon-style checkout box with security indicators */
 
-import { useState } from 'react'
-import { useAppDispatch, useIsAuthenticated } from '../../../hooks'
-import { addToast } from '../../ui/uiSlice'
+import { useState, useCallback } from 'react'
+import { useIsAuthenticated } from '../../../hooks'
 import { formatCurrency } from '../../../utils/helpers'
 import Button from '../../../components/shared/Button'
 import './AddToCartBox.css'
 
 export default function AddToCartBox({ product, onAddToCart }) {
   const [qty, setQty] = useState(1)
-  const dispatch = useAppDispatch()
   const isAuthenticated = useIsAuthenticated()
-  const inStock = product.stock > 0
-  const price = product.salePrice || product.price
+  const stock = product.stock ?? 0
+  const inStock = stock > 0
+  const price = product.salePrice ?? product.price
 
-  const handleAdd = () => {
-    if (!isAuthenticated) {
-      dispatch(
-        addToast({
-          title: 'Sign in required',
-          message: 'Please sign in to add items to your cart.',
-          type: 'info',
-        })
-      )
-      return
-    }
-    onAddToCart({
+  const handleAdd = useCallback(() => {
+    if (!isAuthenticated) return
+    onAddToCart?.({
       productId: product._id,
       title: product.title,
       image: product.image,
       price,
       quantity: qty,
     })
-  }
+  }, [
+    isAuthenticated,
+    onAddToCart,
+    product._id,
+    product.title,
+    product.image,
+    price,
+    qty,
+  ])
 
-  const handleBuy = () => {
+  const handleBuy = useCallback(() => {
     handleAdd()
-  }
+  }, [handleAdd])
 
   return (
     <div className="buybox">
@@ -60,14 +58,13 @@ export default function AddToCartBox({ product, onAddToCart }) {
             onChange={(e) => setQty(Number(e.target.value))}
             className="buybox__qty-select"
           >
-            {Array.from(
-              { length: Math.min(product.stock, 10) },
-              (_, i) => i + 1
-            ).map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
+            {Array.from({ length: Math.min(stock, 10) }, (_, i) => i + 1).map(
+              (n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              )
+            )}
           </select>
         </div>
       )}
@@ -91,9 +88,9 @@ export default function AddToCartBox({ product, onAddToCart }) {
         </Button>
       </div>
 
-      {product.stock > 0 && product.stock < 5 && (
+      {inStock && stock < 5 && (
         <div className="buybox__stock-warning">
-          Only {product.stock} left in stock — order soon
+          Only {stock} left in stock — order soon
         </div>
       )}
 

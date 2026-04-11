@@ -8,9 +8,12 @@ import {
   useProducts,
   useProductStatus,
   useProductMutationStatus,
+  useFetchProducts,
+  useCreateProduct,
+  useUpdateProduct,
+  useDeleteProduct,
 } from '../../hooks'
 import {
-  fetchProducts,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -98,9 +101,9 @@ function ProductFormModal({ mode, product, onSubmit, onClose, isSubmitting }) {
               rows={3}
             />
           </label>
-          <div className="admin-modal__buttons">
+          <div className="admin-modal__actions">
             <Button variant="primary" type="submit" disabled={isSubmitting}>
-              Save
+              {isSubmitting ? 'Saving...' : 'Save'}
             </Button>
             <Button variant="ghost" type="button" onClick={onClose}>
               Cancel
@@ -117,12 +120,16 @@ export default function AdminProductsPage() {
   const products = useProducts()
   const status = useProductStatus()
   const mutationStatus = useProductMutationStatus()
+  const fetchProducts = useFetchProducts()
+  const createProductFn = useCreateProduct()
+  const updateProductFn = useUpdateProduct()
+  const deleteProductFn = useDeleteProduct()
   const [modalMode, setModalMode] = useState(null)
   const [editProductId, setEditProductId] = useState(null)
 
   useEffect(() => {
-    dispatch(fetchProducts())
-  }, [dispatch])
+    fetchProducts()
+  }, [fetchProducts])
 
   const openAdd = useCallback(() => {
     setModalMode('add')
@@ -142,9 +149,11 @@ export default function AdminProductsPage() {
   const handleSave = async (payload) => {
     let result
     if (modalMode === 'add') {
-      result = await dispatch(createProduct(payload))
+      result = await dispatch(createProductFn(payload))
     } else {
-      result = await dispatch(updateProduct({ id: editProductId, ...payload }))
+      result = await dispatch(
+        updateProductFn({ id: editProductId, ...payload })
+      )
     }
 
     if (
@@ -159,11 +168,12 @@ export default function AdminProductsPage() {
         })
       )
       closeModal()
+      fetchProducts()
     } else {
       dispatch(
         addToast({
           title: 'Failed',
-          message: result.payload || 'Could not save product.',
+          message: result.payload ?? 'Could not save product.',
           type: 'error',
         })
       )
@@ -172,7 +182,7 @@ export default function AdminProductsPage() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this product?')) return
-    const result = await dispatch(deleteProduct(id))
+    const result = await dispatch(deleteProductFn(id))
     if (deleteProduct.fulfilled.match(result)) {
       dispatch(
         addToast({
@@ -185,14 +195,14 @@ export default function AdminProductsPage() {
       dispatch(
         addToast({
           title: 'Failed',
-          message: result.payload || 'Could not delete.',
+          message: result.payload ?? 'Could not delete.',
           type: 'error',
         })
       )
     }
   }
 
-  if (status === 'loading')
+  if (status === 'loading' && !products.length)
     return <LoadingSpinner label="Loading products..." fullScreen />
 
   return (
@@ -232,10 +242,12 @@ export default function AdminProductsPage() {
                 <tr key={product._id}>
                   <td>
                     <img
-                      src={product.image || 'https://placehold.co/40x40'}
+                      src={product.image ?? 'https://placehold.co/40x40'}
                       alt=""
                       className="admin-table__img"
                       loading="lazy"
+                      width="40"
+                      height="40"
                     />
                   </td>
                   <td>{product.title}</td>

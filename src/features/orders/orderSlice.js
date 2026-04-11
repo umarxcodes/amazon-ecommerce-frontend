@@ -2,7 +2,7 @@
 /* Manages user orders and payment checkout flow */
 /* Integrates with payment gateway for order processing */
 
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice, createSelector } from '@reduxjs/toolkit'
 import {
   createOrderAPI,
   fetchOrderByIdAPI,
@@ -65,10 +65,11 @@ export const startCheckout = createAsyncThunk(
   'orders/startCheckout',
   async (orderId, thunkApi) => {
     try {
-      const { data } = await startCheckoutAPI(orderId)
-      const url = data?.url || data?.checkoutUrl
+      // startCheckoutAPI already returns data (axiosInstance.get returns data)
+      const result = await startCheckoutAPI(orderId)
+      const url = result?.url || result?.checkoutUrl
       if (url) window.location.href = url
-      return data
+      return result
     } catch (err) {
       return thunkApi.rejectWithValue(
         getErrorMessage(err, 'Unable to start checkout')
@@ -85,7 +86,11 @@ const orderSlice = createSlice({
       state.status = 'idle'
       state.detailStatus = 'idle'
       state.createOrderStatus = 'idle'
+      state.checkoutStatus = 'idle'
       state.error = null
+    },
+    setSelectedOrder(state, action) {
+      state.selectedOrder = action.payload
     },
   },
   extraReducers: (builder) => {
@@ -94,19 +99,26 @@ const orderSlice = createSlice({
       .addCase(fetchOrders.rejected, rejected())
       .addCase(fetchOrders.fulfilled, (state, action) => {
         fulfilled()(state)
-        state.items = action.payload.orders || action.payload || []
+        state.items =
+          action.payload.orders ||
+          action.payload.data?.orders ||
+          action.payload ||
+          []
       })
       .addCase(fetchOrderById.pending, pending('detailStatus'))
       .addCase(fetchOrderById.rejected, rejected('detailStatus'))
       .addCase(fetchOrderById.fulfilled, (state, action) => {
         fulfilled('detailStatus')(state)
-        state.selectedOrder = action.payload
+        state.selectedOrder =
+          action.payload.order || action.payload.data || action.payload
       })
       .addCase(createOrder.pending, pending('createOrderStatus'))
       .addCase(createOrder.rejected, rejected('createOrderStatus'))
       .addCase(createOrder.fulfilled, (state, action) => {
         fulfilled('createOrderStatus')(state)
-        state.items.unshift(action.payload)
+        const order =
+          action.payload.order || action.payload.data || action.payload
+        state.items.unshift(order)
       })
       .addCase(startCheckout.pending, pending('checkoutStatus'))
       .addCase(startCheckout.fulfilled, fulfilled('checkoutStatus'))
@@ -114,13 +126,36 @@ const orderSlice = createSlice({
   },
 })
 
-export const { resetOrderStatus } = orderSlice.actions
+export const { resetOrderStatus, setSelectedOrder } = orderSlice.actions
 export default orderSlice.reducer
 
-export const selectAllOrders = (s) => s.orders.items
-export const selectSelectedOrder = (s) => s.orders.selectedOrder
-export const selectOrderStatus = (s) => s.orders.status
-export const selectDetailStatus = (s) => s.orders.detailStatus
-export const selectOrderError = (s) => s.orders.error
-export const selectCreateOrderStatus = (s) => s.orders.createOrderStatus
-export const selectCheckoutStatus = (s) => s.orders.checkoutStatus
+// Memoized selectors
+const selectOrderState = (s) => s.orders
+export const selectAllOrders = createSelector(
+  [selectOrderState],
+  (orders) => orders.items
+)
+export const selectSelectedOrder = createSelector(
+  [selectOrderState],
+  (orders) => orders.selectedOrder
+)
+export const selectOrderStatus = createSelector(
+  [selectOrderState],
+  (orders) => orders.status
+)
+export const selectDetailStatus = createSelector(
+  [selectOrderState],
+  (orders) => orders.detailStatus
+)
+export const selectOrderError = createSelector(
+  [selectOrderState],
+  (orders) => orders.error
+)
+export const selectCreateOrderStatus = createSelector(
+  [selectOrderState],
+  (orders) => orders.createOrderStatus
+)
+export const selectCheckoutStatus = createSelector(
+  [selectOrderState],
+  (orders) => orders.checkoutStatus
+)

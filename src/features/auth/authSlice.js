@@ -3,6 +3,7 @@
 /* Persists session in localStorage for persistent login */
 
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { createSelector } from '@reduxjs/toolkit'
 import { loginAPI, registerAPI, fetchProfileAPI } from './authAPI'
 import {
   getErrorMessage,
@@ -51,8 +52,10 @@ export const getProfile = createAsyncThunk(
   async (_, thunkApi) => {
     try {
       return await fetchProfileAPI()
-    } catch {
-      return null
+    } catch (err) {
+      return thunkApi.rejectWithValue(
+        getErrorMessage(err, 'Failed to fetch profile')
+      )
     }
   }
 )
@@ -64,6 +67,8 @@ const authSlice = createSlice({
     logout(state) {
       state.user = null
       state.token = null
+      state.status = 'idle'
+      state.error = null
       clearSession()
     },
     resetAuthStatus(state) {
@@ -92,7 +97,9 @@ const authSlice = createSlice({
         saveSession({ user, token: accessToken })
       })
       .addCase(getProfile.pending, pending('profileStatus'))
-      .addCase(getProfile.rejected, rejected('profileStatus'))
+      .addCase(getProfile.rejected, (state, action) => {
+        rejected('profileStatus')(state, action)
+      })
       .addCase(getProfile.fulfilled, (state, action) => {
         fulfilled('profileStatus')(state)
         if (action.payload) state.user = action.payload.user || action.payload
@@ -103,10 +110,33 @@ const authSlice = createSlice({
 export const { logout, resetAuthStatus } = authSlice.actions
 export default authSlice.reducer
 
-export const selectCurrentUser = (s) => s.auth.user
-export const selectAuthToken = (s) => s.auth.token
-export const selectIsAuthenticated = (s) => !!s.auth.token
-export const selectIsAdmin = (s) => s.auth.user?.role === 'admin'
-export const selectAuthStatus = (s) => s.auth.status
-export const selectProfileStatus = (s) => s.auth.profileStatus
-export const selectAuthError = (s) => s.auth.error
+// Memoized selectors
+const selectAuthState = (s) => s.auth
+export const selectCurrentUser = createSelector(
+  [selectAuthState],
+  (auth) => auth.user
+)
+export const selectAuthToken = createSelector(
+  [selectAuthState],
+  (auth) => auth.token
+)
+export const selectIsAuthenticated = createSelector(
+  [selectAuthToken],
+  (token) => !!token
+)
+export const selectIsAdmin = createSelector(
+  [selectCurrentUser],
+  (user) => user?.role?.toLowerCase() === 'admin'
+)
+export const selectAuthStatus = createSelector(
+  [selectAuthState],
+  (auth) => auth.status
+)
+export const selectProfileStatus = createSelector(
+  [selectAuthState],
+  (auth) => auth.profileStatus
+)
+export const selectAuthError = createSelector(
+  [selectAuthState],
+  (auth) => auth.error
+)

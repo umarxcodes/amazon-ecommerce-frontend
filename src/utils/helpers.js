@@ -21,7 +21,9 @@ export function formatDate(dateString) {
 
 export function loadSession() {
   try {
-    return JSON.parse(localStorage.getItem(SESSION_KEY))
+    const raw = localStorage.getItem(SESSION_KEY)
+    if (!raw) return null
+    return JSON.parse(raw)
   } catch {
     return null
   }
@@ -37,14 +39,23 @@ export function clearSession() {
 
 export function loadCart() {
   try {
-    return JSON.parse(localStorage.getItem(CART_KEY)) || []
+    const raw = localStorage.getItem(CART_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    // Support both old array format and new object format
+    if (Array.isArray(parsed)) return { items: parsed, shippingAddress: null }
+    return parsed
   } catch {
-    return []
+    return null
   }
 }
 
-export function saveCart(items) {
-  localStorage.setItem(CART_KEY, JSON.stringify(items))
+export function saveCart(data) {
+  // Accept both array and object formats
+  const toSave = Array.isArray(data)
+    ? { items: data, shippingAddress: null }
+    : data
+  localStorage.setItem(CART_KEY, JSON.stringify(toSave))
 }
 
 export function getErrorMessage(error, fallback = 'Something went wrong') {

@@ -2,7 +2,7 @@
 /* New user account creation form */
 /* Validates password match and minimum length */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAuthStatus, useAuthToken } from '../../hooks'
 import { register } from '../../features/auth/authSlice'
@@ -19,26 +19,34 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [passwordError, setPasswordError] = useState('')
 
-  if (hasToken) navigate('/')
+  useEffect(() => {
+    if (hasToken) {
+      navigate('/')
+    }
+  }, [hasToken, navigate])
+
+  const validatePassword = () => {
+    if (password !== confirm) {
+      setPasswordError('Passwords do not match.')
+      return false
+    }
+    if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters.')
+      return false
+    }
+    setPasswordError('')
+    return true
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (password !== confirm) {
+    if (!validatePassword()) {
       dispatch(
         addToast({
-          title: 'Mismatch',
-          message: 'Passwords do not match.',
-          type: 'error',
-        })
-      )
-      return
-    }
-    if (password.length < 6) {
-      dispatch(
-        addToast({
-          title: 'Weak password',
-          message: 'Password must be at least 6 characters.',
+          title: 'Validation error',
+          message: passwordError,
           type: 'error',
         })
       )
@@ -58,7 +66,7 @@ export default function RegisterPage() {
       dispatch(
         addToast({
           title: 'Registration failed',
-          message: result.payload || 'Could not create account.',
+          message: result.payload ?? 'Could not create account.',
           type: 'error',
         })
       )
@@ -96,7 +104,10 @@ export default function RegisterPage() {
               id="auth-password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                if (passwordError) setPasswordError('')
+              }}
               required
               minLength={6}
             />
@@ -107,10 +118,16 @@ export default function RegisterPage() {
               id="auth-confirm"
               type="password"
               value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
+              onChange={(e) => {
+                setConfirm(e.target.value)
+                if (passwordError) setPasswordError('')
+              }}
               required
               minLength={6}
             />
+            {passwordError && (
+              <span className="auth-field__error">{passwordError}</span>
+            )}
           </div>
           <Button
             variant="primary"

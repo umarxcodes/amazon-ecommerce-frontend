@@ -8,9 +8,8 @@ import {
   useAppDispatch,
   useSelectedOrder,
   useOrderDetailStatus,
-  useFetchCart,
+  useFetchOrderById,
 } from '../../hooks'
-import { fetchOrderById } from '../../features/orders/orderSlice'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import EmptyState from '../../components/shared/EmptyState'
 import { formatCurrency, formatDate } from '../../utils/helpers'
@@ -22,10 +21,11 @@ export default function OrderDetailPage() {
   const dispatch = useAppDispatch()
   const order = useSelectedOrder()
   const status = useOrderDetailStatus()
+  const fetchOrderById = useFetchOrderById()
 
   useEffect(() => {
-    if (orderId) dispatch(fetchOrderById(orderId))
-  }, [dispatch, orderId])
+    if (orderId) fetchOrderById(orderId)
+  }, [dispatch, orderId, fetchOrderById])
 
   if (status === 'loading')
     return <LoadingSpinner label="Loading order..." fullScreen />
@@ -48,7 +48,7 @@ export default function OrderDetailPage() {
         ← Back to Orders
       </Link>
       <h1 className="order-detail-page__title">
-        Order #{order._id?.slice(-8).toUpperCase()}
+        Order #{order._id?.slice(-8).toUpperCase() ?? 'N/A'}
       </h1>
 
       <div className="order-detail-layout">
@@ -66,16 +66,16 @@ export default function OrderDetailPage() {
 
           <div className="order-detail__address">
             <h3>Shipping Address</h3>
-            <p>{order.shippingAddress?.fullName || 'N/A'}</p>
+            <p>{order.shippingAddress?.fullName ?? 'N/A'}</p>
             <p>
-              {order.shippingAddress?.addressLine1 || order.address || 'N/A'}
+              {order.shippingAddress?.addressLine1 ?? order.address ?? 'N/A'}
             </p>
             <p>
-              {order.shippingAddress?.city || order.city || ''},{' '}
-              {order.shippingAddress?.state || ''}{' '}
-              {order.shippingAddress?.postalCode || order.postalCode || ''}
+              {order.shippingAddress?.city ?? order.city ?? ''}{' '}
+              {order.shippingAddress?.state ?? ''}{' '}
+              {order.shippingAddress?.postalCode ?? order.postalCode ?? ''}
             </p>
-            <p>{order.shippingAddress?.country || order.country || 'N/A'}</p>
+            <p>{order.shippingAddress?.country ?? order.country ?? 'N/A'}</p>
           </div>
 
           <div className="order-detail__payment">
@@ -88,7 +88,7 @@ export default function OrderDetailPage() {
           <h3>Items</h3>
           {order.items?.map((item) => (
             <div
-              key={item.productId || item._id}
+              key={item.productId ?? item._id}
               className="order-detail__item"
             >
               <Link
@@ -96,8 +96,11 @@ export default function OrderDetailPage() {
                 className="order-detail__item-img"
               >
                 <img
-                  src={item.image || 'https://placehold.co/80x80'}
-                  alt={item.title}
+                  src={item.image ?? 'https://placehold.co/80x80'}
+                  alt={item.title ?? 'Product'}
+                  loading="lazy"
+                  width="80"
+                  height="80"
                 />
               </Link>
               <div className="order-detail__item-info">
@@ -112,7 +115,7 @@ export default function OrderDetailPage() {
                 </span>
               </div>
               <span className="order-detail__item-price">
-                {formatCurrency(item.price * item.quantity)}
+                {formatCurrency((item.price ?? 0) * (item.quantity ?? 0))}
               </span>
             </div>
           ))}
@@ -120,25 +123,27 @@ export default function OrderDetailPage() {
           <div className="order-detail__totals">
             <div className="order-detail__totals-row">
               <span>Subtotal</span>
-              <span>{formatCurrency(order.totalAmount || order.total)}</span>
+              <span>
+                {formatCurrency(order.totalAmount ?? order.total ?? 0)}
+              </span>
             </div>
             <div className="order-detail__totals-row">
               <span>Shipping</span>
               <span>
                 {order.shipping === 0
                   ? 'FREE'
-                  : formatCurrency(order.shipping || 0)}
+                  : formatCurrency(order.shipping ?? 0)}
               </span>
             </div>
             <div className="order-detail__totals-row">
               <span>Tax</span>
-              <span>{formatCurrency(order.tax || 0)}</span>
+              <span>{formatCurrency(order.tax ?? 0)}</span>
             </div>
             <div className="order-detail__totals-row order-detail__totals-row--total">
               <span>Order Total</span>
               <strong>
                 {formatCurrency(
-                  (order.totalAmount || order.total) + (order.tax || 0)
+                  (order.totalAmount ?? order.total ?? 0) + (order.tax ?? 0)
                 )}
               </strong>
             </div>
