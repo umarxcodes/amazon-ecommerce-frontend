@@ -197,6 +197,9 @@ export default function Header() {
             <NavLink className="nav-secondary-link" to="/products">
               Today&apos;s Deals
             </NavLink>
+            <NavLink className="nav-secondary-link" to="/gaming">
+              Gaming
+            </NavLink>
             <span className="nav-secondary-link">Customer Service</span>
             <span className="nav-secondary-link">Registry</span>
             <span className="nav-secondary-link">Gift Cards</span>

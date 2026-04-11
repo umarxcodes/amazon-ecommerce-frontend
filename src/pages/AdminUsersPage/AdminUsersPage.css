@@ -170,7 +170,13 @@
   min-height: 80px;
 }
 
-.admin-modal__buttons {
+.admin-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-modal__actions {
   display: flex;
   gap: 0.75rem;
   margin-top: 1rem;

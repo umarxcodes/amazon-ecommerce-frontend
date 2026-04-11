@@ -34,7 +34,7 @@ export default function ProductTabs({ product }) {
       <div className="product-tabs__panel">
         {active === 'description' && (
           <p className="product-tabs__desc">
-            {product.description || 'No description available.'}
+            {product?.description || 'No description available.'}
           </p>
         )}
 
@@ -43,28 +43,28 @@ export default function ProductTabs({ product }) {
             <tbody>
               <tr>
                 <th>Brand</th>
-                <td>{product.brand || 'N/A'}</td>
+                <td>{product?.brand || 'N/A'}</td>
               </tr>
               <tr>
                 <th>Category</th>
-                <td>{product.category || 'N/A'}</td>
+                <td>{product?.category || 'N/A'}</td>
               </tr>
               <tr>
                 <th>Rating</th>
                 <td>
-                  <StarRating rating={product.rating} />{' '}
-                  {Number(product.rating || 0).toFixed(1)} / 5
+                  <StarRating rating={product?.rating} />{' '}
+                  {Number(product?.rating || 0).toFixed(1)} / 5
                 </td>
               </tr>
               <tr>
                 <th>Reviews</th>
-                <td>{(product.reviewsCount || 0).toLocaleString()}</td>
+                <td>{(product?.reviewsCount || 0).toLocaleString()}</td>
               </tr>
               <tr>
                 <th>Stock</th>
-                <td>{product.stock ?? 'N/A'} units</td>
+                <td>{product?.stock ?? 'N/A'} units</td>
               </tr>
-              {product.featured && (
+              {product?.featured && (
                 <tr>
                   <th>Featured</th>
                   <td>Yes</td>
@@ -77,8 +77,8 @@ export default function ProductTabs({ product }) {
         {active === 'reviews' && (
           <div className="product-tabs__reviews">
             <StarRating
-              rating={product.rating}
-              count={product.reviewsCount}
+              rating={product?.rating}
+              count={product?.reviewsCount}
               size="lg"
             />
             <p className="product-tabs__reviews-placeholder">

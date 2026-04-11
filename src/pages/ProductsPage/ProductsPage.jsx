@@ -115,7 +115,7 @@ export default function ProductsPage() {
   )
 
   const handleAddToCart = useCallback(
-    async (product) => {
+    async (payload) => {
       if (!isAuthenticated) {
         dispatch(
           addToast({
@@ -126,12 +126,18 @@ export default function ProductsPage() {
         )
         return
       }
-      const result = await addToCart({ productId: product._id, quantity: 1 })
+      // Payload may be a product object or a normalized { productId, title, quantity }
+      const productId = payload.productId ?? payload._id
+      const productTitle = payload.title ?? payload.title ?? 'Product'
+      const result = await addToCart({
+        productId,
+        quantity: payload.quantity ?? 1,
+      })
       if (addToCart.fulfilled.match(result)) {
         dispatch(
           addToast({
             title: 'Added',
-            message: `${product.title ?? 'Product'} added to cart.`,
+            message: `${productTitle} added to cart.`,
             type: 'success',
           })
         )

@@ -51,8 +51,10 @@ export default function ProductDetailPage() {
     return sessionStorage.getItem('lastProductsUrl') || '/products'
   }, [])
 
+  const productTitle = product?.title ?? product?.name ?? 'Product'
+
   useEffect(() => {
-    if (productId) {
+    if (parseInt(productId)) {
       dispatch(resetSelectedProduct())
       fetchProductById(productId)
     }
@@ -82,7 +84,7 @@ export default function ProductDetailPage() {
         dispatch(
           addToast({
             title: 'Added',
-            message: `${product?.title ?? 'Product'} added to cart.`,
+            message: `${productTitle} added to cart.`,
             type: 'success',
           })
         )
@@ -96,7 +98,7 @@ export default function ProductDetailPage() {
         )
       }
     },
-    [dispatch, isAuthenticated, addToCart, product?.title]
+    [dispatch, isAuthenticated, addToCart, productTitle]
   )
 
   if (!productId) {
@@ -195,7 +197,7 @@ export default function ProductDetailPage() {
         )}
         <span className="product-detail-page__breadcrumb-sep">›</span>
         <span className="product-detail-page__breadcrumb-current">
-          {product?.title ?? 'Product'}
+          {productTitle}
         </span>
       </nav>
 

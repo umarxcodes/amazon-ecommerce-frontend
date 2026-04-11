@@ -12,7 +12,12 @@ import {
   syncCartAPI,
   createCheckoutSessionAPI,
 } from './cartAPI'
-import { getErrorMessage, loadCart, saveCart } from '../../utils/helpers'
+import {
+  getErrorMessage,
+  loadCart,
+  saveCart,
+  normalizeCartItem,
+} from '../../utils/helpers'
 import { fulfilled, pending, rejected } from '../../app/sliceHelpers'
 
 const persistedCart = loadCart()
@@ -201,22 +206,22 @@ const cartSlice = createSlice({
       .addCase(fetchCart.fulfilled, (state, action) => {
         fulfilled()(state)
         const payload = action.payload
-        state.items =
+        let rawItems =
           payload?.items ??
           payload?.data?.items ??
           payload?.cart?.items ??
           payload?.data ??
           payload?.cart ??
           []
-        if (!Array.isArray(state.items)) state.items = []
+        if (!Array.isArray(rawItems)) rawItems = []
+        state.items = rawItems.map(normalizeCartItem)
       })
       .addCase(addItemToCart.pending, pending())
       .addCase(addItemToCart.rejected, rejected())
       .addCase(addItemToCart.fulfilled, (state, action) => {
         fulfilled()(state)
-        // Backend may return cart data in various formats — handle all
         const payload = action.payload
-        const newItems =
+        let newItems =
           payload?.items ??
           payload?.data?.items ??
           payload?.cart?.items ??
@@ -224,7 +229,7 @@ const cartSlice = createSlice({
           payload?.cart ??
           payload
         if (Array.isArray(newItems)) {
-          state.items = newItems
+          state.items = newItems.map(normalizeCartItem)
         }
       })
       .addCase(updateItemQuantity.pending, pending())
@@ -232,7 +237,7 @@ const cartSlice = createSlice({
       .addCase(updateItemQuantity.fulfilled, (state, action) => {
         fulfilled()(state)
         const payload = action.payload
-        const newItems =
+        let newItems =
           payload?.items ??
           payload?.data?.items ??
           payload?.cart?.items ??
@@ -240,7 +245,7 @@ const cartSlice = createSlice({
           payload?.cart ??
           payload
         if (Array.isArray(newItems)) {
-          state.items = newItems
+          state.items = newItems.map(normalizeCartItem)
         }
       })
       .addCase(removeItem.pending, pending())
@@ -248,7 +253,7 @@ const cartSlice = createSlice({
       .addCase(removeItem.fulfilled, (state, action) => {
         fulfilled()(state)
         const payload = action.payload
-        const newItems =
+        let newItems =
           payload?.items ??
           payload?.data?.items ??
           payload?.cart?.items ??
@@ -256,7 +261,7 @@ const cartSlice = createSlice({
           payload?.cart ??
           payload
         if (Array.isArray(newItems)) {
-          state.items = newItems
+          state.items = newItems.map(normalizeCartItem)
         }
       })
       .addCase(clearBackendCart.pending, pending())

@@ -121,11 +121,18 @@ const productSlice = createSlice({
       .addCase(fetchProducts.rejected, rejected())
       .addCase(fetchProducts.fulfilled, (state, action) => {
         fulfilled()(state)
-        state.items =
+        let items =
           action.payload.products ||
           action.payload.data?.products ||
           action.payload.data ||
           []
+        // Normalize: backend may use 'name' — copy to 'title'
+        if (Array.isArray(items)) {
+          items = items.map((p) =>
+            p && !p.title && p.name ? { ...p, title: p.name } : p
+          )
+        }
+        state.items = items
         state.total =
           action.payload.total ??
           action.payload.data?.total ??
@@ -136,23 +143,25 @@ const productSlice = createSlice({
       .addCase(fetchProductById.rejected, rejected('detailStatus'))
       .addCase(fetchProductById.fulfilled, (state, action) => {
         fulfilled('detailStatus')(state)
-        state.selectedProduct =
-          action.payload.product || action.payload.data || action.payload
+        let p = action.payload.product || action.payload.data || action.payload
+        // Normalize: backend may use 'name' — copy to 'title' for UI consistency
+        if (p && !p.title && p.name) p = { ...p, title: p.name }
+        state.selectedProduct = p
       })
       .addCase(createProduct.pending, pending('mutationStatus'))
       .addCase(createProduct.rejected, rejected('mutationStatus'))
       .addCase(createProduct.fulfilled, (state, action) => {
         fulfilled('mutationStatus')(state)
-        const p =
-          action.payload.product || action.payload.data || action.payload
+        let p = action.payload.product || action.payload.data || action.payload
+        if (p && !p.title && p.name) p = { ...p, title: p.name }
         if (p) state.items.unshift(p)
       })
       .addCase(updateProduct.pending, pending('mutationStatus'))
       .addCase(updateProduct.rejected, rejected('mutationStatus'))
       .addCase(updateProduct.fulfilled, (state, action) => {
         fulfilled('mutationStatus')(state)
-        const p =
-          action.payload.product || action.payload.data || action.payload
+        let p = action.payload.product || action.payload.data || action.payload
+        if (p && !p.title && p.name) p = { ...p, title: p.name }
         if (p) {
           state.items = state.items.map((i) => (i._id === p._id ? p : i))
           if (state.selectedProduct?._id === p._id) state.selectedProduct = p

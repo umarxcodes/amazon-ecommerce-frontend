@@ -14,9 +14,11 @@ export default function AddToCartBox({ product, onAddToCart }) {
   const [qty, setQty] = useState(1)
   const isAuthenticated = useIsAuthenticated()
   const dispatch = useAppDispatch()
-  const stock = product.stock ?? 0
+  const stock = product?.stock ?? 0
   const inStock = stock > 0
-  const price = product.salePrice ?? product.price
+  const price = product?.salePrice ?? product?.price
+  const title = product?.title ?? product?.name ?? 'Product'
+  const mainImage = product?.images?.[0] ?? product?.image ?? ''
 
   const handleAdd = useCallback(() => {
     if (!isAuthenticated) {
@@ -30,9 +32,9 @@ export default function AddToCartBox({ product, onAddToCart }) {
       return
     }
     onAddToCart?.({
-      productId: product._id,
-      title: product.title,
-      image: product.image,
+      productId: product?._id,
+      title,
+      image: mainImage,
       price,
       quantity: qty,
     })
@@ -40,9 +42,9 @@ export default function AddToCartBox({ product, onAddToCart }) {
     isAuthenticated,
     dispatch,
     onAddToCart,
-    product._id,
-    product.title,
-    product.image,
+    product?._id,
+    title,
+    mainImage,
     price,
     qty,
   ])
@@ -65,7 +67,7 @@ export default function AddToCartBox({ product, onAddToCart }) {
     <div className="buybox">
       <div className="buybox__price">
         <strong>{formatCurrency(price)}</strong>
-        {product.salePrice && product.salePrice < product.price && (
+        {product?.salePrice && product?.salePrice < product?.price && (
           <div className="buybox__was">
             Was: <s>{formatCurrency(product.price)}</s>
           </div>

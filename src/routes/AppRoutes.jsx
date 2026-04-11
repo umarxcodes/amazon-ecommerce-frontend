@@ -18,6 +18,7 @@ const ProductDetailPage = lazy(
 )
 const CartPage = lazy(() => import('../pages/CartPage/CartPage'))
 const CheckoutPage = lazy(() => import('../pages/CheckoutPage/CheckoutPage'))
+const GamingPage = lazy(() => import('../pages/GamingPage/GamingPage'))
 const OrdersPage = lazy(() => import('../pages/OrdersPage/OrdersPage'))
 const OrderDetailPage = lazy(
   () => import('../pages/OrderDetailPage/OrderDetailPage')
@@ -79,6 +80,14 @@ export default function AppRoutes() {
           element={
             <SuspensePage>
               <ProductDetailPage />
+            </SuspensePage>
+          }
+        />
+        <Route
+          path="/gaming"
+          element={
+            <SuspensePage>
+              <GamingPage />
             </SuspensePage>
           }
         />

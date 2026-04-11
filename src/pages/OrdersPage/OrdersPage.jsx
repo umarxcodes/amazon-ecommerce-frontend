@@ -131,7 +131,7 @@ export default function OrdersPage() {
         title="No orders yet"
         description="Your order history will appear here."
         action={
-          <Link to="/products" className="btn btn--primary">
+          <Link to="/" className="btn btn--primary">
             Shop Now
           </Link>
         }

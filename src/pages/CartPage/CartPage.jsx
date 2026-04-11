@@ -10,11 +10,8 @@ import {
   useCartCount,
   useCartTotal,
   useCartStatus,
-  useShippingAddress,
   useFetchCart,
   useRemoveItem,
-  useCreateOrder,
-  useStartCheckout,
 } from '../../hooks'
 import {
   clearBackendCart,
@@ -28,14 +25,27 @@ import './CartPage.css'
 const CartItemRow = memo(function CartItemRow({ item }) {
   const dispatch = useAppDispatch()
   const removeItem = useRemoveItem()
+  const productId = item.productId ?? item.product?._id
+  const title =
+    item.title ?? item.product?.name ?? item.product?.title ?? 'Product'
+  const image =
+    item.image ??
+    item.product?.images?.[0] ??
+    item.product?.image ??
+    'https://placehold.co/180x180'
+  const price = item.price ?? item.product?.price ?? 0
+  const stock = item.stock ?? item.product?.stock ?? 0
+  const inStock = item.inStock ?? stock > 0
+  const quantity = item.quantity ?? 1
 
   const handleDelete = useCallback(async () => {
-    const result = await dispatch(removeItem(item.productId))
+    if (!productId) return
+    const result = await dispatch(removeItem(productId))
     if (removeItem.fulfilled.match(result)) {
       dispatch(
         addToast({
           title: 'Removed',
-          message: `${item.title ?? 'Product'} removed from cart.`,
+          message: `${title} removed from cart.`,
           type: 'info',
         })
       )
@@ -48,26 +58,20 @@ const CartItemRow = memo(function CartItemRow({ item }) {
         })
       )
     }
-  }, [dispatch, item.productId, item.title, removeItem])
+  }, [dispatch, productId, title, removeItem])
 
   return (
     <div className="cart-item">
-      <Link to={`/products/${item.productId}`} className="cart-item__img-link">
-        <img
-          src={item.image ?? 'https://placehold.co/180x180'}
-          alt={item.title ?? 'Product'}
-          loading="lazy"
-          width="180"
-          height="180"
-        />
+      <Link to={`/products/${productId}`} className="cart-item__img-link">
+        <img src={image} alt={title} loading="lazy" width="180" height="180" />
       </Link>
 
       <div className="cart-item__info">
-        <Link to={`/products/${item.productId}`} className="cart-item__title">
-          {item.title}
+        <Link to={`/products/${productId}`} className="cart-item__title">
+          {title}
         </Link>
         <div className="cart-item__meta">
-          {item.inStock !== false ? (
+          {inStock ? (
             <span className="cart-item__stock">In Stock</span>
           ) : (
             <span className="cart-item__outofstock">Currently unavailable</span>
@@ -77,14 +81,14 @@ const CartItemRow = memo(function CartItemRow({ item }) {
         <div className="cart-item__actions">
           <select
             className="cart-item__qty-select"
-            value={item.quantity}
+            value={quantity}
             onChange={(e) => {
               // Quantity change handled via backend in future
             }}
             aria-label="Quantity"
           >
             {Array.from(
-              { length: Math.min(item.quantity + 10, 30) },
+              { length: Math.min(quantity + 10, 30) },
               (_, i) => i + 1
             ).map((n) => (
               <option key={n} value={n}>
@@ -114,7 +118,7 @@ const CartItemRow = memo(function CartItemRow({ item }) {
       <div className="cart-item__price-col">
         <div className="cart-item__price-label">Price</div>
         <div className="cart-item__price">
-          <strong>{formatCurrency((item.price ?? 0) * item.quantity)}</strong>
+          <strong>{formatCurrency(price * quantity)}</strong>
         </div>
       </div>
     </div>
@@ -128,11 +132,7 @@ export default function CartPage() {
   const cartCount = useCartCount()
   const cartTotal = useCartTotal()
   const status = useCartStatus()
-  const shippingAddress = useShippingAddress()
   const fetchCart = useFetchCart()
-  const createOrderThunk = useCreateOrder()
-  const startCheckout = useStartCheckout()
-  const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [isClearing, setIsClearing] = useState(false)
 
   useEffect(() => {
@@ -140,86 +140,18 @@ export default function CartPage() {
   }, [fetchCart])
 
   const handleCheckout = useCallback(async () => {
-    if (!shippingAddress.addressLine1 || !shippingAddress.city) {
+    if (items.length === 0) {
       dispatch(
         addToast({
-          title: 'Address required',
-          message: 'Please set your shipping address first.',
+          title: 'Cart is empty',
+          message: 'Add some items to your cart before checking out.',
           type: 'error',
         })
       )
-      navigate('/checkout')
       return
     }
-
-    setIsCheckingOut(true)
-    try {
-      const result = await dispatch(
-        createOrderThunk({
-          shippingAddress: {
-            fullName: shippingAddress.fullName,
-            addressLine1: shippingAddress.addressLine1,
-            city: shippingAddress.city,
-            state: shippingAddress.state,
-            postalCode: shippingAddress.postalCode,
-            country: shippingAddress.country,
-          },
-          items,
-          totalAmount: cartTotal,
-        })
-      )
-
-      if (createOrderThunk.fulfilled.match(result)) {
-        const order =
-          result.payload.order ?? result.payload.data ?? result.payload
-        const id = order?._id ?? order?.id
-        if (id) {
-          startCheckout(id)
-        } else {
-          dispatch(
-            addToast({
-              title: 'Order created',
-              message: 'Redirecting to payment...',
-              type: 'success',
-            })
-          )
-          navigate('/orders')
-        }
-      } else {
-        const msg = result.payload ?? 'Unable to create order.'
-        if (
-          msg.toLowerCase().includes('empty') ||
-          msg.toLowerCase().includes('no item')
-        ) {
-          dispatch(
-            addToast({
-              title: 'Cart is empty',
-              message: 'Add some items to your cart before checking out.',
-              type: 'error',
-            })
-          )
-        } else {
-          dispatch(
-            addToast({
-              title: 'Order failed',
-              message: msg,
-              type: 'error',
-            })
-          )
-        }
-      }
-    } finally {
-      setIsCheckingOut(false)
-    }
-  }, [
-    dispatch,
-    shippingAddress,
-    items,
-    cartTotal,
-    createOrderThunk,
-    startCheckout,
-    navigate,
-  ])
+    navigate('/checkout')
+  }, [dispatch, items.length, navigate])
 
   const handleClearCart = useCallback(async () => {
     if (!window.confirm('Remove all items from your cart?')) return
@@ -323,9 +255,8 @@ export default function CartPage() {
             type="button"
             className="cart-summary-box__checkout-btn"
             onClick={() => navigate('/checkout')}
-            disabled={isCheckingOut}
           >
-            {isCheckingOut ? 'Processing...' : 'Proceed to Checkout'}
+            Proceed to Checkout
           </button>
         </aside>
       </div>
