@@ -3,7 +3,7 @@
 /* URL-driven state (query params for filters) */
 
 import { useCallback, useEffect, useState, useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation } from 'react-router-dom'
 import {
   useAppDispatch,
   useProducts,
@@ -53,6 +53,7 @@ export default function ProductsPage() {
   const isAuthenticated = useIsAuthenticated()
   const fetchProducts = useFetchProducts()
   const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
   const [searchInput, setSearchInput] = useState(
     searchParams.get('search') ?? ''
   )
@@ -75,6 +76,14 @@ export default function ProductsPage() {
   useEffect(() => {
     dispatch(fetchProducts(filters))
   }, [dispatch, filters, fetchProducts])
+
+  // Track the current products URL (with filters) for the ProductDetailPage back button
+  useEffect(() => {
+    sessionStorage.setItem(
+      'lastProductsUrl',
+      location.pathname + location.search
+    )
+  }, [location])
 
   useEffect(() => {
     const timer = setTimeout(() => {

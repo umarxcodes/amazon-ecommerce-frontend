@@ -3,17 +3,20 @@
 /* Protected route — redirects to payment gateway on success */
 
 import { useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import {
   useAppDispatch,
   useShippingAddress,
   useCreateOrder,
   useStartCheckout,
+  useCartItems,
+  useCartTotal,
 } from '../../hooks'
 import { setShippingAddress } from '../../features/cart/cartSlice'
 import { createOrder } from '../../features/orders/orderSlice'
 import { addToast } from '../../features/ui/uiSlice'
 import { checkoutSchema } from '../../features/orders/orderSchemas'
+import { formatCurrency } from '../../utils/helpers'
 import Button from '../../components/shared/Button'
 import './CheckoutPage.css'
 
@@ -35,6 +38,8 @@ export default function CheckoutPage() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const existing = useShippingAddress()
+  const cartItems = useCartItems()
+  const cartTotal = useCartTotal()
   const createOrderThunk = useCreateOrder()
   const startCheckout = useStartCheckout()
   const [form, setForm] = useState(() => ({ ...existing }))
@@ -87,6 +92,17 @@ export default function CheckoutPage() {
         return
       }
 
+      if (!cartItems.length) {
+        dispatch(
+          addToast({
+            title: 'Cart is empty',
+            message: 'Nothing to order. Add items to your cart first.',
+            type: 'error',
+          })
+        )
+        return
+      }
+
       dispatch(setShippingAddress(form))
       setIsSubmitting(true)
       try {
@@ -100,7 +116,8 @@ export default function CheckoutPage() {
               postalCode: form.postalCode,
               country: form.country,
             },
-            totalAmount: 0,
+            items: cartItems,
+            totalAmount: cartTotal,
           })
         )
         if (createOrder.fulfilled.match(result)) {
@@ -121,7 +138,6 @@ export default function CheckoutPage() {
           }
         } else {
           const msg = result.payload ?? 'Could not create order.'
-          // Handle 400 cart empty
           if (
             msg.toLowerCase().includes('empty') ||
             msg.toLowerCase().includes('no item')
@@ -147,14 +163,90 @@ export default function CheckoutPage() {
         setIsSubmitting(false)
       }
     },
-    [dispatch, form, createOrderThunk, startCheckout, navigate]
+    [
+      dispatch,
+      form,
+      cartItems,
+      cartTotal,
+      createOrderThunk,
+      startCheckout,
+      navigate,
+    ]
   )
 
   return (
     <div className="checkout-page">
       <h1 className="checkout-page__title">Checkout</h1>
-      <form className="checkout-page__form" onSubmit={handleSubmit} noValidate>
-        <div className="checkout-form">
+      <div className="checkout-page__layout">
+        {/* Left: Order Summary */}
+        <div className="checkout-page__summary">
+          <h2 className="checkout-page__summary-title">
+            Order Summary ({cartItems.length} item
+            {cartItems.length !== 1 ? 's' : ''})
+          </h2>
+          {cartItems.length === 0 ? (
+            <p className="checkout-page__empty-cart">
+              Your cart is empty. <Link to="/products">Browse products</Link>
+            </p>
+          ) : (
+            <>
+              <div className="checkout-page__items">
+                {cartItems.map((item) => (
+                  <div
+                    key={item.productId ?? item._id}
+                    className="checkout-page__item"
+                  >
+                    <img
+                      src={item.image ?? 'https://placehold.co/60x60'}
+                      alt={item.title ?? 'Product'}
+                      className="checkout-page__item-img"
+                      loading="lazy"
+                      width="60"
+                      height="60"
+                    />
+                    <div className="checkout-page__item-info">
+                      <span className="checkout-page__item-title">
+                        {item.title}
+                      </span>
+                      <span className="checkout-page__item-qty">
+                        Qty: {item.quantity}
+                      </span>
+                    </div>
+                    <span className="checkout-page__item-price">
+                      {formatCurrency((item.price ?? 0) * item.quantity)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="checkout-page__totals">
+                <div className="checkout-page__totals-row">
+                  <span>Subtotal</span>
+                  <span>
+                    <strong>{formatCurrency(cartTotal)}</strong>
+                  </span>
+                </div>
+                <div className="checkout-page__totals-row">
+                  <span>Shipping</span>
+                  <span>FREE</span>
+                </div>
+                <div className="checkout-page__totals-row checkout-page__totals-row--total">
+                  <span>Order Total</span>
+                  <span>
+                    <strong>{formatCurrency(cartTotal)}</strong>
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Right: Shipping Address Form */}
+        <form
+          className="checkout-page__form"
+          onSubmit={handleSubmit}
+          noValidate
+        >
+          <h2 className="checkout-page__form-title">Shipping Address</h2>
           {FIELDS.map((f) => (
             <div key={f.key} className="checkout-form__field">
               <label htmlFor={f.key}>
@@ -182,13 +274,10 @@ export default function CheckoutPage() {
               )}
             </div>
           ))}
-        </div>
-        <div className="checkout-page__summary">
-          <h3>Order Summary</h3>
           <Button
             variant="primary"
             fullWidth
-            disabled={isSubmitting}
+            disabled={isSubmitting || cartItems.length === 0}
             type="submit"
           >
             {isSubmitting ? 'Placing Order...' : 'Place Order & Pay'}
@@ -201,8 +290,8 @@ export default function CheckoutPage() {
           >
             Back to Cart
           </Button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   )
 }

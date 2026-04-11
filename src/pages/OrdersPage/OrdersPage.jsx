@@ -28,6 +28,7 @@ const STATUS_CLASS_MAP = {
 const OrderCard = function OrderCard({ order }) {
   const status = (order.status || 'pending').toLowerCase()
   const statusClass = STATUS_CLASS_MAP[status] || STATUS_CLASS_MAP.pending
+  const isPaid = order.isPaid ?? order.paymentStatus === 'paid'
 
   return (
     <div className="order-card">
@@ -35,6 +36,11 @@ const OrderCard = function OrderCard({ order }) {
         <div className="order-card__meta">
           <span className={`order-card__status ${statusClass}`}>
             {order.status || 'Pending'}
+          </span>
+          <span
+            className={`order-card__payment-badge ${isPaid ? 'order-card__payment-badge--paid' : 'order-card__payment-badge--unpaid'}`}
+          >
+            {isPaid ? '✓ Paid' : '⏳ Unpaid'}
           </span>
           <span className="order-card__date">
             {formatDate(order.createdAt)}
