@@ -1,26 +1,25 @@
 /* ===== AUTH RESTORE COMPONENT ===== */
-/* Validates stored token on app load to restore session */
+/* Rehydrates session from localStorage on app load */
 /* Placed in App.jsx to run on every app initialization */
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useAppDispatch, useAuthToken, useIsAuthenticated } from '../../hooks'
-import { getProfile } from './authSlice'
+import { restoreSession } from './authSlice'
 import { fetchCart } from '../cart/cartSlice'
 
 export default function AuthRestore() {
   const dispatch = useAppDispatch()
   const token = useAuthToken()
   const isAuthenticated = useIsAuthenticated()
-  const hasAttemptedRef = useRef(false)
 
   useEffect(() => {
-    if (hasAttemptedRef.current) return
-    hasAttemptedRef.current = true
+    // Rehydrate auth state from localStorage
+    dispatch(restoreSession())
+  }, [dispatch])
 
+  useEffect(() => {
     if (token && isAuthenticated) {
-      // Validate token by fetching profile
-      dispatch(getProfile())
-      // Also restore cart from backend
+      // Restore cart from backend once authenticated
       dispatch(fetchCart())
     }
   }, [dispatch, token, isAuthenticated])

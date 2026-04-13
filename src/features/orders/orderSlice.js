@@ -8,6 +8,7 @@ import {
   fetchOrderByIdAPI,
   fetchOrdersAPI,
   startCheckoutAPI,
+  cancelOrderAPI,
 } from './orderAPI'
 import { getErrorMessage } from '../../utils/helpers'
 import { fulfilled, pending, rejected } from '../../app/sliceHelpers'
@@ -82,24 +83,34 @@ export const startCheckout = createAsyncThunk(
   'orders/startCheckout',
   async (orderId, thunkApi) => {
     try {
-      // startCheckoutAPI already returns data (axiosInstance.get returns data)
       const result = await startCheckoutAPI(orderId)
       const url = result?.url || result?.checkoutUrl
       if (url) window.location.href = url
       return result
     } catch (err) {
-      // Handle 400 already paid
       if (err.response?.status === 400) {
         return thunkApi.rejectWithValue(
           getErrorMessage(err, 'This order has already been paid.')
         )
       }
-      // Handle 403 forbidden
       if (err.response?.status === 403) {
         return thunkApi.rejectWithValue('Access denied.')
       }
       return thunkApi.rejectWithValue(
         getErrorMessage(err, 'Unable to start checkout')
+      )
+    }
+  }
+)
+
+export const cancelOrder = createAsyncThunk(
+  'orders/cancelOrder',
+  async (orderId, thunkApi) => {
+    try {
+      return await cancelOrderAPI(orderId)
+    } catch (err) {
+      return thunkApi.rejectWithValue(
+        getErrorMessage(err, 'Unable to cancel order')
       )
     }
   }
@@ -150,6 +161,18 @@ const orderSlice = createSlice({
       .addCase(startCheckout.pending, pending('checkoutStatus'))
       .addCase(startCheckout.fulfilled, fulfilled('checkoutStatus'))
       .addCase(startCheckout.rejected, rejected('checkoutStatus'))
+      .addCase(cancelOrder.pending, pending('mutationStatus'))
+      .addCase(cancelOrder.fulfilled, (state, action) => {
+        fulfilled('mutationStatus')(state)
+        const order =
+          action.payload.order || action.payload.data || action.payload
+        if (order) {
+          state.items = state.items.map((o) =>
+            o._id === order._id ? order : o
+          )
+        }
+      })
+      .addCase(cancelOrder.rejected, rejected('mutationStatus'))
   },
 })
 

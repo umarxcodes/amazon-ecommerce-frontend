@@ -1,10 +1,10 @@
 /* ===== AUTHENTICATION SLICE ===== */
-/* Manages user authentication state (login, register, logout, profile) */
+/* Manages user authentication state (login, register, logout) */
 /* Persists session in localStorage for persistent login */
 
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { createSelector } from '@reduxjs/toolkit'
-import { loginAPI, registerAPI, fetchProfileAPI } from './authAPI'
+import { loginAPI, registerAPI } from './authAPI'
 import {
   getErrorMessage,
   loadSession,
@@ -19,7 +19,6 @@ const initialState = {
   user: session?.user || null,
   token: session?.token || null,
   status: 'idle',
-  profileStatus: 'idle',
   error: null,
 }
 
@@ -30,7 +29,6 @@ export const login = createAsyncThunk(
       return await loginAPI(credentials)
     } catch (err) {
       const msg = getErrorMessage(err, 'Login failed')
-      // Normalize 401 errors
       if (err.response?.status === 401) {
         return thunkApi.rejectWithValue('Invalid credentials.')
       }
@@ -46,24 +44,10 @@ export const register = createAsyncThunk(
       return await registerAPI(credentials)
     } catch (err) {
       const msg = getErrorMessage(err, 'Registration failed')
-      // Normalize 409 conflicts
       if (err.response?.status === 409) {
         return thunkApi.rejectWithValue('Email already exists.')
       }
       return thunkApi.rejectWithValue(msg)
-    }
-  }
-)
-
-export const getProfile = createAsyncThunk(
-  'auth/profile',
-  async (_, thunkApi) => {
-    try {
-      return await fetchProfileAPI()
-    } catch (err) {
-      return thunkApi.rejectWithValue(
-        getErrorMessage(err, 'Failed to fetch profile')
-      )
     }
   }
 )
@@ -78,6 +62,13 @@ const authSlice = createSlice({
       state.status = 'idle'
       state.error = null
       clearSession()
+    },
+    restoreSession(state) {
+      // Called on app init — rehydrate from localStorage
+      state.user = session?.user || null
+      state.token = session?.token || null
+      state.status = 'idle'
+      state.error = null
     },
     resetAuthStatus(state) {
       state.status = 'idle'
@@ -99,23 +90,13 @@ const authSlice = createSlice({
       .addCase(register.rejected, rejected())
       .addCase(register.fulfilled, (state, action) => {
         fulfilled()(state)
-        const { user, accessToken } = action.payload.data
-        state.user = user
-        state.token = accessToken
-        saveSession({ user, token: accessToken })
-      })
-      .addCase(getProfile.pending, pending('profileStatus'))
-      .addCase(getProfile.rejected, (state, action) => {
-        rejected('profileStatus')(state, action)
-      })
-      .addCase(getProfile.fulfilled, (state, action) => {
-        fulfilled('profileStatus')(state)
-        if (action.payload) state.user = action.payload.user || action.payload
+        // Backend register returns { success, message, data: user } — NO token
+        // UI should redirect to /login after success
       })
   },
 })
 
-export const { logout, resetAuthStatus } = authSlice.actions
+export const { logout, restoreSession, resetAuthStatus } = authSlice.actions
 export default authSlice.reducer
 
 // Memoized selectors
@@ -139,10 +120,6 @@ export const selectIsAdmin = createSelector(
 export const selectAuthStatus = createSelector(
   [selectAuthState],
   (auth) => auth.status
-)
-export const selectProfileStatus = createSelector(
-  [selectAuthState],
-  (auth) => auth.profileStatus
 )
 export const selectAuthError = createSelector(
   [selectAuthState],

@@ -12,6 +12,7 @@ import {
   useCartStatus,
   useFetchCart,
   useRemoveItem,
+  useUpdateQty,
 } from '../../hooks'
 import {
   clearBackendCart,
@@ -25,6 +26,7 @@ import './CartPage.css'
 const CartItemRow = memo(function CartItemRow({ item }) {
   const dispatch = useAppDispatch()
   const removeItem = useRemoveItem()
+  const updateQty = useUpdateQty()
   const productId = item.productId ?? item.product?._id
   const title =
     item.title ?? item.product?.name ?? item.product?.title ?? 'Product'
@@ -60,6 +62,26 @@ const CartItemRow = memo(function CartItemRow({ item }) {
     }
   }, [dispatch, productId, title, removeItem])
 
+  const handleQtyChange = useCallback(
+    async (newQty) => {
+      if (!productId) return
+      const qty = Number(newQty)
+      if (qty < 1) return
+      if (stock > 0 && qty > stock) {
+        dispatch(
+          addToast({
+            title: 'Out of stock',
+            message: `Only ${stock} available.`,
+            type: 'error',
+          })
+        )
+        return
+      }
+      await dispatch(updateQty({ productId, quantity: qty }))
+    },
+    [dispatch, productId, stock, updateQty]
+  )
+
   return (
     <div className="cart-item">
       <Link to={`/products/${productId}`} className="cart-item__img-link">
@@ -82,9 +104,7 @@ const CartItemRow = memo(function CartItemRow({ item }) {
           <select
             className="cart-item__qty-select"
             value={quantity}
-            onChange={(e) => {
-              // Quantity change handled via backend in future
-            }}
+            onChange={(e) => handleQtyChange(e.target.value)}
             aria-label="Quantity"
           >
             {Array.from(

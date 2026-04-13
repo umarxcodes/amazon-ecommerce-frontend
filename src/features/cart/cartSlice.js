@@ -9,7 +9,6 @@ import {
   updateCartItemAPI,
   removeCartItemAPI,
   clearCartAPI,
-  syncCartAPI,
   createCheckoutSessionAPI,
 } from './cartAPI'
 import {
@@ -25,12 +24,10 @@ const persistedCart = loadCart()
 const initialState = {
   items: persistedCart?.items || persistedCart || [],
   shippingAddress: persistedCart?.shippingAddress || {
-    fullName: '',
-    addressLine1: '',
+    address: '',
     city: '',
-    state: '',
     postalCode: '',
-    country: 'USA',
+    country: '',
   },
   status: 'idle',
   checkoutStatus: 'idle',
@@ -56,7 +53,6 @@ export const addItemToCart = createAsyncThunk(
     try {
       return await addToCartAPI(payload)
     } catch (err) {
-      // Handle stock validation errors
       if (err.response?.status === 400) {
         const msg = getErrorMessage(err, 'Unable to add to cart')
         if (
@@ -79,7 +75,6 @@ export const updateItemQuantity = createAsyncThunk(
     try {
       return await updateCartItemAPI({ productId, quantity })
     } catch (err) {
-      // Handle stock validation — quantity exceeds stock
       if (err.response?.status === 400) {
         const msg = getErrorMessage(err, 'Unable to update cart')
         return thunkApi.rejectWithValue(msg)
@@ -110,8 +105,6 @@ export const clearBackendCart = createAsyncThunk(
     try {
       return await clearCartAPI()
     } catch (err) {
-      // If bulk delete endpoint doesn't exist, fall through gracefully
-      // The local state will still be cleared in the fulfilled handler
       if (err.response?.status === 404 || err.response?.status === 405) {
         return { success: true }
       }
@@ -122,25 +115,11 @@ export const clearBackendCart = createAsyncThunk(
   }
 )
 
-export const syncCart = createAsyncThunk(
-  'cart/syncCart',
-  async (_, thunkApi) => {
-    try {
-      return await syncCartAPI({ items: thunkApi.getState().cart.items })
-    } catch (err) {
-      return thunkApi.rejectWithValue(
-        getErrorMessage(err, 'Unable to sync cart')
-      )
-    }
-  }
-)
-
 export const createCheckoutSession = createAsyncThunk(
   'cart/createCheckoutSession',
-  async (_, thunkApi) => {
+  async (orderId, thunkApi) => {
     try {
-      const { items, shippingAddress } = thunkApi.getState().cart
-      return await createCheckoutSessionAPI({ items, shippingAddress })
+      return await createCheckoutSessionAPI({ orderId })
     } catch (err) {
       return thunkApi.rejectWithValue(
         getErrorMessage(err, 'Unable to start checkout')
@@ -181,6 +160,12 @@ const cartSlice = createSlice({
     },
     clearCart(state) {
       state.items = []
+      state.shippingAddress = {
+        address: '',
+        city: '',
+        postalCode: '',
+        country: '',
+      }
       saveCart({ items: [], shippingAddress: state.shippingAddress })
     },
     setShippingAddress(state, action) {
@@ -195,9 +180,6 @@ const cartSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(syncCart.pending, pending())
-      .addCase(syncCart.fulfilled, fulfilled())
-      .addCase(syncCart.rejected, rejected())
       .addCase(createCheckoutSession.pending, pending('checkoutStatus'))
       .addCase(createCheckoutSession.fulfilled, fulfilled('checkoutStatus'))
       .addCase(createCheckoutSession.rejected, rejected('checkoutStatus'))
@@ -207,12 +189,7 @@ const cartSlice = createSlice({
         fulfilled()(state)
         const payload = action.payload
         let rawItems =
-          payload?.items ??
-          payload?.data?.items ??
-          payload?.cart?.items ??
-          payload?.data ??
-          payload?.cart ??
-          []
+          payload?.items ?? payload?.data?.items ?? payload?.cart?.items ?? []
         if (!Array.isArray(rawItems)) rawItems = []
         state.items = rawItems.map(normalizeCartItem)
       })
@@ -222,12 +199,7 @@ const cartSlice = createSlice({
         fulfilled()(state)
         const payload = action.payload
         let newItems =
-          payload?.items ??
-          payload?.data?.items ??
-          payload?.cart?.items ??
-          payload?.data ??
-          payload?.cart ??
-          payload
+          payload?.items ?? payload?.data?.items ?? payload?.cart?.items ?? []
         if (Array.isArray(newItems)) {
           state.items = newItems.map(normalizeCartItem)
         }
@@ -238,12 +210,7 @@ const cartSlice = createSlice({
         fulfilled()(state)
         const payload = action.payload
         let newItems =
-          payload?.items ??
-          payload?.data?.items ??
-          payload?.cart?.items ??
-          payload?.data ??
-          payload?.cart ??
-          payload
+          payload?.items ?? payload?.data?.items ?? payload?.cart?.items ?? []
         if (Array.isArray(newItems)) {
           state.items = newItems.map(normalizeCartItem)
         }
@@ -254,22 +221,22 @@ const cartSlice = createSlice({
         fulfilled()(state)
         const payload = action.payload
         let newItems =
-          payload?.items ??
-          payload?.data?.items ??
-          payload?.cart?.items ??
-          payload?.data ??
-          payload?.cart ??
-          payload
+          payload?.items ?? payload?.data?.items ?? payload?.cart?.items ?? []
         if (Array.isArray(newItems)) {
           state.items = newItems.map(normalizeCartItem)
         }
       })
       .addCase(clearBackendCart.pending, pending())
       .addCase(clearBackendCart.rejected, rejected())
-      .addCase(clearBackendCart.fulfilled, (state, action) => {
+      .addCase(clearBackendCart.fulfilled, (state) => {
         fulfilled()(state)
-        // Always clear items regardless of response shape
         state.items = []
+        state.shippingAddress = {
+          address: '',
+          city: '',
+          postalCode: '',
+          country: '',
+        }
         saveCart({ items: [], shippingAddress: state.shippingAddress })
       })
   },
