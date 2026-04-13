@@ -90,11 +90,8 @@ const adminSlice = createSlice({
       .addCase(fetchUsers.rejected, rejected())
       .addCase(fetchUsers.fulfilled, (state, action) => {
         fulfilled()(state)
-        state.users =
-          action.payload.users ||
-          action.payload.data?.users ||
-          action.payload ||
-          []
+        // Backend returns { success, count, data: [users] }
+        state.users = action.payload.data || action.payload.users || []
       })
       .addCase(updateUserRole.pending, pending('mutationStatus'))
       .addCase(updateUserRole.rejected, rejected('mutationStatus'))

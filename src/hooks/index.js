@@ -25,7 +25,6 @@ import {
   selectIsAuthenticated,
   selectIsAdmin,
   selectAuthStatus,
-  selectProfileStatus,
   selectAuthError,
   login,
   register,
@@ -36,7 +35,6 @@ export const useAuthToken = () => useAppSelector(selectAuthToken)
 export const useIsAuthenticated = () => useAppSelector(selectIsAuthenticated)
 export const useIsAdmin = () => useAppSelector(selectIsAdmin)
 export const useAuthStatus = () => useAppSelector(selectAuthStatus)
-export const useProfileStatus = () => useAppSelector(selectProfileStatus)
 export const useAuthError = () => useAppSelector(selectAuthError)
 
 export const useLogin = () => {
@@ -50,9 +48,15 @@ export const useRegister = () => {
     [dispatch]
   )
 }
+import { useNavigate } from 'react-router-dom'
+
 export const useLogout = () => {
   const dispatch = useAppDispatch()
-  return useCallback(() => dispatch(logout()), [dispatch])
+  const navigate = useNavigate()
+  return useCallback(() => {
+    dispatch(logout())
+    navigate('/login', { replace: true })
+  }, [dispatch, navigate])
 }
 
 // Cart hooks
