@@ -176,7 +176,7 @@ export default function CheckoutPage() {
           </h2>
           {cartItems.length === 0 ? (
             <p className="checkout-page__empty-cart">
-              Your cart is empty. <Link to="/products">Browse products</Link>
+              Your cart is empty. <Link to="/">Browse products</Link>
             </p>
           ) : (
             <>
