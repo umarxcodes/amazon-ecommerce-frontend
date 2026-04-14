@@ -1,0 +1,201 @@
+/* ===== ADMIN ADD PRODUCT PAGE STYLES ===== */
+/* Amazon-style admin product creation form */
+
+.admin-add-product-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.admin-add-product-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-add-product-page__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0f1111;
+  margin: 0;
+}
+
+/* Form */
+.admin-add-product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.admin-add-product-form__section {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.admin-add-product-form__section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f1111;
+  margin: 0 0 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--color-border);
+}
+
+/* Form Fields */
+.admin-add-product-form__field {
+  margin-bottom: 1.5rem;
+}
+
+.admin-add-product-form__field:last-child {
+  margin-bottom: 0;
+}
+
+.admin-add-product-form__field label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f1111;
+  margin-bottom: 0.5rem;
+}
+
+.admin-add-product-form__field input,
+.admin-add-product-form__field textarea {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.admin-add-product-form__field input:focus,
+.admin-add-product-form__field textarea:focus {
+  outline: none;
+  border-color: #e77600;
+  box-shadow: 0 0 0 3px rgba(228, 121, 17, 0.15);
+}
+
+.admin-add-product-form__field input[aria-invalid='true'],
+.admin-add-product-form__field textarea[aria-invalid='true'] {
+  border-color: #cc0c39;
+}
+
+.admin-add-product-form__field textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.admin-add-product-form__field-hint {
+  font-size: 0.75rem;
+  color: #565959;
+  margin-top: 0.375rem;
+}
+
+.admin-add-product-form__error {
+  display: block;
+  font-size: 0.75rem;
+  color: #cc0c39;
+  margin-top: 0.375rem;
+}
+
+/* Row for price and stock */
+.admin-add-product-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Image Previews */
+.admin-add-product-form__previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.admin-add-product-form__preview {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.admin-add-product-form__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-add-product-form__preview-remove {
+  position: absolute;
+  top: 0.375rem;
+  right: 0.375rem;
+  width: 24px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.admin-add-product-form__preview-remove:hover {
+  background: #cc0c39;
+}
+
+/* Actions */
+.admin-add-product-form__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-add-product-page {
+    padding: 1rem 0.5rem;
+  }
+
+  .admin-add-product-page__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .admin-add-product-page__title {
+    font-size: 1.375rem;
+  }
+
+  .admin-add-product-form__row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-add-product-form__section {
+    padding: 1rem;
+  }
+
+  .admin-add-product-form__previews {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+
+  .admin-add-product-form__actions {
+    flex-direction: column-reverse;
+  }
+
+  .admin-add-product-form__actions button {
+    width: 100%;
+  }
+}

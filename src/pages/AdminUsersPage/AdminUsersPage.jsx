@@ -23,6 +23,7 @@ import { adminCreateSchema } from '../../features/admin/adminSchemas'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import EmptyState from '../../components/shared/EmptyState'
 import Button from '../../components/shared/Button'
+import ConfirmationModal from '../../components/shared/ConfirmationModal'
 import './AdminUsersPage.css'
 
 function AdminCreateForm({ onClose, isSubmitting }) {
@@ -181,8 +182,10 @@ const UserTableRow = function UserTableRow({
   user,
   onRoleChange,
   onDeactivate,
+  onActivate,
   isMutating,
 }) {
+  const isActive = user.active ?? user.isActive
   return (
     <tr>
       <td>{user.name}</td>
@@ -201,23 +204,34 @@ const UserTableRow = function UserTableRow({
       <td>
         <span
           className={`admin-table__status-badge ${
-            (user.active ?? user.isActive)
+            isActive
               ? 'admin-table__status-badge--active'
               : 'admin-table__status-badge--inactive'
           }`}
         >
-          {(user.active ?? user.isActive) ? 'Active' : 'Inactive'}
+          {isActive ? 'Active' : 'Inactive'}
         </span>
       </td>
       <td className="admin-table__actions">
-        <Button
-          variant="danger"
-          size="sm"
-          onClick={() => onDeactivate(user._id)}
-          disabled={isMutating}
-        >
-          Deactivate
-        </Button>
+        {isActive ? (
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => onDeactivate(user)}
+            disabled={isMutating}
+          >
+            Deactivate
+          </Button>
+        ) : (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => onActivate(user._id)}
+            disabled={isMutating}
+          >
+            Activate
+          </Button>
+        )}
       </td>
     </tr>
   )
@@ -232,6 +246,11 @@ export default function AdminUsersPage() {
   const updateUserRoleFn = useUpdateUserRole()
   const deactivateUserFn = useDeactivateUser()
   const [showCreateAdmin, setShowCreateAdmin] = useState(false)
+  const [deactivateModal, setDeactivateModal] = useState({
+    open: false,
+    userId: null,
+    userName: '',
+  })
 
   useEffect(() => {
     fetchUsers()
@@ -263,26 +282,48 @@ export default function AdminUsersPage() {
     [dispatch, updateUserRoleFn]
   )
 
-  const handleDeactivate = useCallback(
-    async (id) => {
-      if (
-        !window.confirm('Deactivate this user? This action cannot be undone.')
+  const handleDeactivate = useCallback((user) => {
+    setDeactivateModal({ open: true, userId: user._id, userName: user.name })
+  }, [])
+
+  const confirmDeactivate = useCallback(async () => {
+    const result = await dispatch(deactivateUserFn(deactivateModal.userId))
+    setDeactivateModal({ open: false, userId: null, userName: '' })
+    if (deactivateUser.fulfilled.match(result)) {
+      dispatch(
+        addToast({
+          title: 'Deactivated',
+          message: 'User has been deactivated.',
+          type: 'info',
+        })
       )
-        return
+    } else {
+      dispatch(
+        addToast({
+          title: 'Failed',
+          message: result.payload ?? 'Could not deactivate user.',
+          type: 'error',
+        })
+      )
+    }
+  }, [dispatch, deactivateUserFn, deactivateModal.userId])
+
+  const handleActivate = useCallback(
+    async (id) => {
       const result = await dispatch(deactivateUserFn(id))
       if (deactivateUser.fulfilled.match(result)) {
         dispatch(
           addToast({
-            title: 'Deactivated',
-            message: 'User has been deactivated.',
-            type: 'info',
+            title: 'Activated',
+            message: 'User has been activated.',
+            type: 'success',
           })
         )
       } else {
         dispatch(
           addToast({
             title: 'Failed',
-            message: result.payload ?? 'Could not deactivate user.',
+            message: result.payload ?? 'Could not activate user.',
             type: 'error',
           })
         )
@@ -361,6 +402,7 @@ export default function AdminUsersPage() {
                 user={user}
                 onRoleChange={handleRoleChange}
                 onDeactivate={handleDeactivate}
+                onActivate={handleActivate}
                 isMutating={mutationStatus === 'loading'}
               />
             ))}
@@ -374,6 +416,20 @@ export default function AdminUsersPage() {
           isSubmitting={mutationStatus === 'loading'}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={deactivateModal.open}
+        onClose={() =>
+          setDeactivateModal({ open: false, userId: null, userName: '' })
+        }
+        onConfirm={confirmDeactivate}
+        title="Deactivate User"
+        message={`Are you sure you want to deactivate "${deactivateModal.userName}"? This action can be reversed later.`}
+        confirmText="Deactivate"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={mutationStatus === 'loading'}
+      />
     </div>
   )
 }

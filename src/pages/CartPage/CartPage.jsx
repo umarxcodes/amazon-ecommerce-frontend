@@ -217,7 +217,7 @@ export default function CartPage() {
           <p className="cart-empty-state__desc">
             Check your Saved for Later items or start adding items to your Cart.
           </p>
-          <Link to="/products" className="cart-empty-state__btn">
+          <Link to="/" className="cart-empty-state__btn">
             Shop today&apos;s deals
           </Link>
         </div>
@@ -253,7 +253,7 @@ export default function CartPage() {
             </span>
           </div>
 
-          <Link to="/products" className="cart-page__continue-shopping">
+          <Link to="/" className="cart-page__continue-shopping">
             ← Continue shopping
           </Link>
         </div>

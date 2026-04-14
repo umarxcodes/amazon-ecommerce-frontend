@@ -3,6 +3,7 @@
 /* Supports multipart/form-data for image uploads (up to 5 files) */
 
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   useAppDispatch,
   useProducts,
@@ -22,6 +23,7 @@ import { addToast } from '../../features/ui/uiSlice'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import EmptyState from '../../components/shared/EmptyState'
 import Button from '../../components/shared/Button'
+import ConfirmationModal from '../../components/shared/ConfirmationModal'
 import { formatCurrency } from '../../utils/helpers'
 import './AdminProductsPage.css'
 
@@ -356,6 +358,11 @@ export default function AdminProductsPage() {
   const deleteProductFn = useDeleteProduct()
   const [modalMode, setModalMode] = useState(null)
   const [editProductId, setEditProductId] = useState(null)
+  const [deleteModal, setDeleteModal] = useState({
+    open: false,
+    productId: null,
+    productName: '',
+  })
 
   useEffect(() => {
     fetchProducts()
@@ -411,10 +418,17 @@ export default function AdminProductsPage() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this product? This action cannot be undone.'))
-      return
-    const result = await dispatch(deleteProductFn(id))
+  const handleDelete = useCallback((product) => {
+    setDeleteModal({
+      open: true,
+      productId: product._id,
+      productName: product.title ?? product.name,
+    })
+  }, [])
+
+  const confirmDelete = useCallback(async () => {
+    const result = await dispatch(deleteProductFn(deleteModal.productId))
+    setDeleteModal({ open: false, productId: null, productName: '' })
     if (deleteProduct.fulfilled.match(result)) {
       dispatch(
         addToast({
@@ -432,7 +446,7 @@ export default function AdminProductsPage() {
         })
       )
     }
-  }
+  }, [dispatch, deleteProductFn, deleteModal.productId])
 
   if (status === 'loading' && !products.length)
     return <LoadingSpinner label="Loading products..." fullScreen />
@@ -441,9 +455,9 @@ export default function AdminProductsPage() {
     <div className="admin-page">
       <div className="admin-page__header">
         <h1>Manage Products</h1>
-        <Button variant="primary" onClick={openAdd}>
+        <Link to="/admin/products/add" className="btn btn--primary">
           Add Product
-        </Button>
+        </Link>
       </div>
 
       {products.length === 0 ? (
@@ -451,9 +465,9 @@ export default function AdminProductsPage() {
           title="No products"
           description="Add your first product."
           action={
-            <Button variant="primary" onClick={openAdd}>
+            <Link to="/admin/products/add" className="btn btn--primary">
               Add Product
-            </Button>
+            </Link>
           }
         />
       ) : (
@@ -527,6 +541,20 @@ export default function AdminProductsPage() {
           isSubmitting={mutationStatus === 'loading'}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={deleteModal.open}
+        onClose={() =>
+          setDeleteModal({ open: false, productId: null, productName: '' })
+        }
+        onConfirm={confirmDelete}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${deleteModal.productName}"? This action cannot be undone.`}
+        confirmText="Delete Product"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={mutationStatus === 'loading'}
+      />
     </div>
   )
 }

@@ -7,7 +7,12 @@ import { Link } from 'react-router-dom'
 import StarRating from '../../../components/shared/StarRating'
 import './ProductCard.css'
 
-function ProductCard({ product, onAddToCart }) {
+function ProductCard({
+  product,
+  onAddToCart,
+  onRemove,
+  showRemoveButton = false,
+}) {
   const [imgErr, setImgErr] = useState(false)
   const stock = product.stock ?? 0
   const inStock = stock > 0
@@ -68,6 +73,19 @@ function ProductCard({ product, onAddToCart }) {
           }}
         >
           Add to Cart
+        </button>
+      )}
+      {showRemoveButton && onRemove && (
+        <button
+          type="button"
+          className="product-card__remove-btn"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onRemove(product)
+          }}
+        >
+          <i className="fas fa-trash-alt" /> Remove
         </button>
       )}
     </div>
