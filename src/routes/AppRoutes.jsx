@@ -29,6 +29,9 @@ const PaymentReturnPage = lazy(
 const AdminProductsPage = lazy(
   () => import('../pages/AdminProductsPage/AdminProductsPage')
 )
+const AdminAddProductPage = lazy(
+  () => import('../pages/AdminAddProductPage/AdminAddProductPage')
+)
 const AdminUsersPage = lazy(
   () => import('../pages/AdminUsersPage/AdminUsersPage')
 )
@@ -151,6 +154,14 @@ export default function AppRoutes() {
             element={
               <SuspensePage>
                 <AdminProductsPage />
+              </SuspensePage>
+            }
+          />
+          <Route
+            path="/admin/products/add"
+            element={
+              <SuspensePage>
+                <AdminAddProductPage />
               </SuspensePage>
             }
           />

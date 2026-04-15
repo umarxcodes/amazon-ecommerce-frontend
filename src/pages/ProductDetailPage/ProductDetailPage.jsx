@@ -39,7 +39,7 @@ export default function ProductDetailPage() {
 
   // Store the current products URL (with filters) in sessionStorage so "Back" preserves them
   useEffect(() => {
-    if (location.pathname.startsWith('/products') && location.search) {
+    if (location.pathname.startsWith('/') && location.search) {
       sessionStorage.setItem(
         'lastProductsUrl',
         location.pathname + location.search
@@ -48,7 +48,7 @@ export default function ProductDetailPage() {
   }, [location])
 
   const backToProductsUrl = useMemo(() => {
-    return sessionStorage.getItem('lastProductsUrl') || '/products'
+    return sessionStorage.getItem('lastProductsUrl') || '/'
   }, [])
 
   const productTitle = product?.title ?? product?.name ?? 'Product'
@@ -107,7 +107,7 @@ export default function ProductDetailPage() {
         title="Invalid product ID"
         description="The product ID is not valid."
         action={
-          <Button variant="primary" onClick={() => navigate('/products')}>
+          <Button variant="primary" onClick={() => navigate('/')}>
             Browse Products
           </Button>
         }
@@ -134,7 +134,7 @@ export default function ProductDetailPage() {
             : (error ?? 'An unexpected error occurred.')
         }
         action={
-          <Button variant="primary" onClick={() => navigate('/products')}>
+          <Button variant="primary" onClick={() => navigate('/')}>
             Browse Products
           </Button>
         }
@@ -148,7 +148,7 @@ export default function ProductDetailPage() {
         title="Product not found"
         description="We couldn't find this product."
         action={
-          <Button variant="primary" onClick={() => navigate('/products')}>
+          <Button variant="primary" onClick={() => navigate('/')}>
             Browse Products
           </Button>
         }
@@ -186,9 +186,7 @@ export default function ProductDetailPage() {
               type="button"
               className="product-detail-page__breadcrumb-link"
               onClick={() =>
-                navigate(
-                  `/products?category=${encodeURIComponent(product.category)}`
-                )
+                navigate(`/?category=${encodeURIComponent(product.category)}`)
               }
             >
               {product.category}
