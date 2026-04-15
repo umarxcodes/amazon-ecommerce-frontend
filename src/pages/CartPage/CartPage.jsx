@@ -21,12 +21,15 @@ import {
 import { addToast } from '../../features/ui/uiSlice'
 import { formatCurrency } from '../../utils/helpers'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
+import ConfirmationModal from '../../components/shared/ConfirmationModal'
 import './CartPage.css'
 
 const CartItemRow = memo(function CartItemRow({ item }) {
   const dispatch = useAppDispatch()
   const removeItem = useRemoveItem()
   const updateQty = useUpdateQty()
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const productId = item.productId ?? item.product?._id
   const title =
     item.title ?? item.product?.name ?? item.product?.title ?? 'Product'
@@ -42,23 +45,29 @@ const CartItemRow = memo(function CartItemRow({ item }) {
 
   const handleDelete = useCallback(async () => {
     if (!productId) return
-    const result = await dispatch(removeItem(productId))
-    if (removeItem.fulfilled.match(result)) {
-      dispatch(
-        addToast({
-          title: 'Removed',
-          message: `${title} removed from cart.`,
-          type: 'info',
-        })
-      )
-    } else {
-      dispatch(
-        addToast({
-          title: 'Failed',
-          message: result.payload ?? 'Could not remove item.',
-          type: 'error',
-        })
-      )
+    setIsDeleting(true)
+    try {
+      const result = await dispatch(removeItem(productId))
+      if (removeItem.fulfilled.match(result)) {
+        dispatch(
+          addToast({
+            title: 'Removed',
+            message: `${title} removed from cart.`,
+            type: 'info',
+          })
+        )
+      } else {
+        dispatch(
+          addToast({
+            title: 'Failed',
+            message: result.payload ?? 'Could not remove item.',
+            type: 'error',
+          })
+        )
+      }
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteModal(false)
     }
   }, [dispatch, productId, title, removeItem])
 
@@ -120,7 +129,7 @@ const CartItemRow = memo(function CartItemRow({ item }) {
           <button
             type="button"
             className="cart-item__action-link"
-            onClick={handleDelete}
+            onClick={() => setShowDeleteModal(true)}
           >
             Delete
           </button>
@@ -141,6 +150,18 @@ const CartItemRow = memo(function CartItemRow({ item }) {
           <strong>{formatCurrency(price * quantity)}</strong>
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        title="Remove from Cart"
+        message={`Are you sure you want to remove "${title}" from your cart?`}
+        confirmText={isDeleting ? 'Removing...' : 'Remove'}
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   )
 })
@@ -154,6 +175,7 @@ export default function CartPage() {
   const status = useCartStatus()
   const fetchCart = useFetchCart()
   const [isClearing, setIsClearing] = useState(false)
+  const [showClearModal, setShowClearModal] = useState(false)
 
   useEffect(() => {
     fetchCart()
@@ -174,7 +196,6 @@ export default function CartPage() {
   }, [dispatch, items.length, navigate])
 
   const handleClearCart = useCallback(async () => {
-    if (!window.confirm('Remove all items from your cart?')) return
     setIsClearing(true)
     try {
       const result = await dispatch(clearBackendCart())
@@ -198,6 +219,7 @@ export default function CartPage() {
       }
     } finally {
       setIsClearing(false)
+      setShowClearModal(false)
     }
   }, [dispatch])
 
@@ -231,7 +253,7 @@ export default function CartPage() {
         <button
           type="button"
           className="cart-page__clear-btn"
-          onClick={handleClearCart}
+          onClick={() => setShowClearModal(true)}
           disabled={isClearing}
         >
           {isClearing ? 'Clearing...' : 'Deselect all items'}
@@ -280,6 +302,18 @@ export default function CartPage() {
           </button>
         </aside>
       </div>
+
+      <ConfirmationModal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        onConfirm={handleClearCart}
+        title="Clear Cart"
+        message="Are you sure you want to remove all items from your cart?"
+        confirmText={isClearing ? 'Clearing...' : 'Clear All'}
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isClearing}
+      />
     </div>
   )
 }
