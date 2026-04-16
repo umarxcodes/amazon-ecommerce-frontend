@@ -87,8 +87,8 @@ export default function GamingPage() {
   )
 
   useEffect(() => {
-    dispatch(fetchProducts(filters))
-  }, [dispatch, filters, fetchProducts])
+    fetchProducts(filters)
+  }, [fetchProducts, filters])
 
   useEffect(() => {
     const timer = setTimeout(() => {

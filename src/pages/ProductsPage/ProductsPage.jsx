@@ -80,8 +80,8 @@ export default function ProductsPage() {
   )
 
   useEffect(() => {
-    dispatch(fetchProducts(filters))
-  }, [dispatch, filters, fetchProducts])
+    fetchProducts(filters)
+  }, [fetchProducts, filters])
 
   // Track the current products URL (with filters) for the ProductDetailPage back button
   useEffect(() => {
