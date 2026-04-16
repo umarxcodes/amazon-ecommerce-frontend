@@ -83,11 +83,9 @@ export const fetchProductByIdAPI = async (id) => {
 
 export const createProductAPI = async (payload) => {
   const isMultipart = payload instanceof FormData
-  const config = isMultipart ? { headers: { 'Content-Type': undefined } } : {}
-  if (isMultipart) {
-    // Remove the default Content-Type so axios sets it with boundary
-    delete config.headers['Content-Type']
-  }
+  const config = isMultipart
+    ? { headers: { 'Content-Type': 'multipart/form-data' } }
+    : {}
   const { data } = await axiosInstance.post('/products', payload, config)
   return data
 }
@@ -97,12 +95,14 @@ export const updateProductAPI = async (payload) => {
   // If formData is provided, use it directly (multipart update)
   if (formData instanceof FormData) {
     const { data } = await axiosInstance.put(`/products/${id}`, formData, {
-      headers: {},
+      headers: { 'Content-Type': 'multipart/form-data' },
     })
     return data
   }
   const isMultipart = body instanceof FormData
-  const config = isMultipart ? { headers: {} } : {}
+  const config = isMultipart
+    ? { headers: { 'Content-Type': 'multipart/form-data' } }
+    : {}
   const { data } = await axiosInstance.put(`/products/${id}`, body, config)
   return data
 }

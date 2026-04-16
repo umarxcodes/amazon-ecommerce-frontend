@@ -543,7 +543,7 @@ export default function AdminProductsPage() {
                     <Button
                       variant="danger"
                       size="sm"
-                      onClick={() => handleDelete(product._id)}
+                      onClick={() => handleDelete(product)}
                       disabled={mutationStatus === 'loading'}
                     >
                       Delete
