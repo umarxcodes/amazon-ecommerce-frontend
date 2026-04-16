@@ -3,7 +3,7 @@
 /* Supports multipart/form-data for image uploads (up to 5 files) */
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import {
   useAppDispatch,
   useProducts,
@@ -35,6 +35,7 @@ const INITIAL_FORM_STATE = {
   category: '',
   brand: '',
   stock: '',
+  rating: '',
   images: [],
 }
 
@@ -49,6 +50,12 @@ function ProductFormModal({ mode, product, onSubmit, onClose, isSubmitting }) {
           category: product.category ?? '',
           brand: product.brand ?? '',
           stock: String(product.stock ?? ''),
+          rating:
+            product.rating !== undefined && product.rating !== null
+              ? String(product.rating)
+              : product.ratings !== undefined && product.ratings !== null
+                ? String(product.ratings)
+                : '',
           images: product.images ?? (product.image ? [product.image] : []),
         }
       : { ...INITIAL_FORM_STATE }
@@ -107,6 +114,14 @@ function ProductFormModal({ mode, product, onSubmit, onClose, isSubmitting }) {
     if (!form.category.trim()) errors.category = 'Category is required'
     if (!form.stock || isNaN(Number(form.stock)) || Number(form.stock) < 0)
       errors.stock = 'Valid stock value is required'
+    if (
+      form.rating !== '' &&
+      (isNaN(Number(form.rating)) ||
+        Number(form.rating) < 0 ||
+        Number(form.rating) > 5)
+    ) {
+      errors.rating = 'Rating must be between 0 and 5'
+    }
     if (mode === 'add' && imageFiles.length === 0 && form.images.length === 0)
       errors.images = 'At least one image is required for new products'
     setFormErrors(errors)
@@ -126,6 +141,7 @@ function ProductFormModal({ mode, product, onSubmit, onClose, isSubmitting }) {
       category: form.category,
       brand: form.brand,
       stock: Number(form.stock),
+      rating: form.rating !== '' ? Number(form.rating) : undefined,
     }
 
     // If we have files, use FormData for multipart upload
@@ -264,6 +280,23 @@ function ProductFormModal({ mode, product, onSubmit, onClose, isSubmitting }) {
           </div>
 
           <div className="admin-modal__field">
+            <label htmlFor="product-rating">Initial Rating</label>
+            <input
+              id="product-rating"
+              type="number"
+              min="0"
+              max="5"
+              step="0.1"
+              value={form.rating}
+              onChange={(e) => updateField('rating', e.target.value)}
+              aria-invalid={!!formErrors.rating}
+            />
+            {formErrors.rating && (
+              <span className="admin-modal__error">{formErrors.rating}</span>
+            )}
+          </div>
+
+          <div className="admin-modal__field">
             <label htmlFor="product-images">
               Images {mode === 'add' ? '*' : '(up to 5)'}
             </label>
@@ -367,11 +400,6 @@ export default function AdminProductsPage() {
   useEffect(() => {
     fetchProducts()
   }, [fetchProducts])
-
-  const openAdd = useCallback(() => {
-    setModalMode('add')
-    setEditProductId(null)
-  }, [])
 
   const openEdit = useCallback((product) => {
     setModalMode('edit')

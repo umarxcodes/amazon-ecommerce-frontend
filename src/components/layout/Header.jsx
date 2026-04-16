@@ -30,7 +30,7 @@ export default function Header() {
   const handleSearch = (e) => {
     e.preventDefault()
     const q = searchInput.trim()
-    navigate(q ? `/products?search=${encodeURIComponent(q)}` : '/products')
+    navigate(q ? `/?search=${encodeURIComponent(q)}` : '/')
   }
 
   const handleLogout = () => {

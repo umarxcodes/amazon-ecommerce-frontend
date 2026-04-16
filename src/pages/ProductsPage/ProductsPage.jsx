@@ -58,6 +58,12 @@ export default function ProductsPage() {
     searchParams.get('search') ?? ''
   )
 
+  // Sync searchInput when URL changes (e.g., from Header navigation)
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') ?? ''
+    setSearchInput(urlSearch)
+  }, [searchParams])
+
   const filters = useMemo(
     () => ({
       search: searchParams.get('search') ?? '',
