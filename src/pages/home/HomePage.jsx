@@ -1,9 +1,9 @@
 /* ===== HOME PAGE ===== */
-/* Amazon-style homepage with hero carousel and product cards */
+/* Pixel-perfect Amazon.com homepage clone */
 /* Public route - no authentication required */
 
-import { useEffect, useCallback, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useCallback, useState, useRef } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   useAppDispatch,
   useProducts,
@@ -11,15 +11,11 @@ import {
   useAddToCart,
   useIsAuthenticated,
   useFetchProducts,
-  useDeleteProduct,
 } from '../../hooks'
 import { addToast } from '../../features/ui/uiSlice'
 import Carousel from '../../components/shared/Carousel'
-import LoadingSpinner from '../../components/shared/LoadingSpinner'
-import EmptyState from '../../components/shared/EmptyState'
-import ProductCard from '../../features/products/components/ProductCard'
 import SkeletonCard from '../../components/shared/SkeletonCard'
-import ConfirmationModal from '../../components/shared/ConfirmationModal'
+import EmptyState from '../../components/shared/EmptyState'
 import './HomePage.css'
 
 const CAROUSEL_IMAGES = [
@@ -29,24 +25,343 @@ const CAROUSEL_IMAGES = [
   'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775711802/banner2_gkbkhc.jpg',
 ]
 
+/* --- Category card data (4-col Amazon style) --- */
+const CATEGORY_CARDS = [
+  {
+    title: 'Get your game on',
+    link: '/products?category=gaming',
+    items: [
+      {
+        img: 'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775823491/Fuji_Gaming_store_Dashboard_card_1x_EN._SY304_CB564799420__upg2zz.jpg',
+        label: 'Gaming laptops',
+      },
+      {
+        img: 'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775823491/Fuji_Gaming_store_Dashboard_card_1x_EN._SY304_CB564799420__upg2zz.jpg',
+        label: 'Controllers',
+      },
+      {
+        img: 'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775823491/Fuji_Gaming_store_Dashboard_card_1x_EN._SY304_CB564799420__upg2zz.jpg',
+        label: 'Headsets',
+      },
+      {
+        img: 'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775823491/Fuji_Gaming_store_Dashboard_card_1x_EN._SY304_CB564799420__upg2zz.jpg',
+        label: 'Chairs',
+      },
+    ],
+  },
+  {
+    title: 'New home arrivals under $50',
+    link: '/products?category=home',
+    items: [
+      {
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Home+1',
+        label: 'Decor',
+      },
+      {
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Home+2',
+        label: 'Kitchen',
+      },
+      {
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Home+3',
+        label: 'Bedding',
+      },
+      {
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Home+4',
+        label: 'Bath',
+      },
+    ],
+  },
+  {
+    title: 'Shop Fashion for less',
+    link: '/products?category=clothing',
+    items: [
+      {
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Fashion+1',
+        label: 'Men',
+      },
+      {
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Fashion+2',
+        label: 'Women',
+      },
+      {
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Fashion+3',
+        label: 'Kids',
+      },
+      {
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Fashion+4',
+        label: 'Shoes',
+      },
+    ],
+  },
+  {
+    title: 'Find gifts for Mom',
+    link: '/products?search=gift',
+    items: [
+      {
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Gift+1',
+        label: 'Beauty',
+      },
+      {
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Gift+2',
+        label: 'Books',
+      },
+      {
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Gift+3',
+        label: 'Home',
+      },
+      {
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Gift+4',
+        label: 'Tech',
+      },
+    ],
+  },
+]
+
+/* --- Promo grid data (4-col side by side) --- */
+const PROMO_SECTIONS = [
+  [
+    {
+      title: 'Gear up to get fit',
+      link: '/products?search=fitness',
+      items: [
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Fitness+1' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Fitness+2' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Fitness+3' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Fitness+4' },
+      ],
+    },
+    {
+      title: 'Wireless Tech',
+      link: '/products?search=wireless',
+      items: [
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Wireless+1' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Wireless+2' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Wireless+3' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Wireless+4' },
+      ],
+    },
+    {
+      title: 'Have more fun with family',
+      link: '/products?search=family',
+      items: [
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Family+1' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Family+2' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Family+3' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Family+4' },
+      ],
+    },
+    {
+      title: 'Level up your gaming',
+      link: '/products?category=gaming',
+      items: [
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Gaming+1' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Gaming+2' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Gaming+3' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Gaming+4' },
+      ],
+    },
+  ],
+  [
+    {
+      title: 'Level up your beauty routine',
+      link: '/products?search=beauty',
+      items: [
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Beauty+1' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Beauty+2' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Beauty+3' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Beauty+4' },
+      ],
+    },
+    {
+      title: 'Score the top PCs',
+      link: '/products?category=computers',
+      items: [
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=PC+1' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=PC+2' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=PC+3' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=PC+4' },
+      ],
+    },
+    {
+      title: 'Gaming merchandise',
+      link: '/products?search=gaming',
+      items: [
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Merch+1' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Merch+2' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Merch+3' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Merch+4' },
+      ],
+    },
+    {
+      title: 'Level up your PC here',
+      link: '/products?category=computers',
+      items: [
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Upgrade+1' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Upgrade+2' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Upgrade+3' },
+        { img: 'https://placehold.co/300x300/f5f5f5/333?text=Upgrade+4' },
+      ],
+    },
+  ],
+]
+
+/* --- Horizontal Product Carousel --- */
+function ProductCarousel({ title, products, onAddToCart }) {
+  const scrollRef = useRef(null)
+
+  const scroll = (dir) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({
+        left: dir * scrollRef.current.clientWidth * 0.75,
+        behavior: 'smooth',
+      })
+    }
+  }
+
+  if (!products.length) return null
+
+  return (
+    <section className="hp-carousel">
+      <h2 className="hp-carousel__title">{title}</h2>
+      <div className="hp-carousel__wrapper">
+        <button
+          type="button"
+          className="hp-carousel__arrow hp-carousel__arrow--prev"
+          onClick={() => scroll(-1)}
+          aria-label="Scroll left"
+        >
+          ‹
+        </button>
+        <div className="hp-carousel__track" ref={scrollRef}>
+          {products.map((p) => (
+            <div key={p._id} className="hp-carousel__card">
+              <Link to={`/products/${p._id}`} className="hp-carousel__card-img">
+                <img
+                  src={p.images?.[0] || 'https://placehold.co/200x200'}
+                  alt={p.name}
+                  loading="lazy"
+                  onError={(e) => {
+                    e.target.src = 'https://placehold.co/200x200'
+                  }}
+                />
+              </Link>
+              <Link
+                to={`/products/${p._id}`}
+                className="hp-carousel__card-title"
+              >
+                {p.name}
+              </Link>
+              <div className="hp-carousel__card-price">${p.price}</div>
+              <div className="hp-carousel__card-rating">
+                {'★'.repeat(Math.round(p.ratings || 0))}
+                {'☆'.repeat(5 - Math.round(p.ratings || 0))}
+                <span className="hp-carousel__card-count">
+                  ({p.numReviews || 0})
+                </span>
+              </div>
+              <button
+                type="button"
+                className="hp-carousel__card-btn"
+                onClick={() =>
+                  onAddToCart?.({
+                    productId: p._id,
+                    title: p.name,
+                    price: p.price,
+                    quantity: 1,
+                  })
+                }
+              >
+                Add to Cart
+              </button>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          className="hp-carousel__arrow hp-carousel__arrow--next"
+          onClick={() => scroll(1)}
+          aria-label="Scroll right"
+        >
+          ›
+        </button>
+      </div>
+    </section>
+  )
+}
+
+/* --- Category Card (Amazon 4-image style) --- */
+function CategoryCardItem({ card }) {
+  return (
+    <div className="hp-cat-card">
+      <h3 className="hp-cat-card__title">{card.title}</h3>
+      <div className="hp-cat-card__grid">
+        {card.items.map((item, i) => (
+          <Link key={i} to={card.link} className="hp-cat-card__item">
+            <img
+              src={item.img}
+              alt={item.label}
+              loading="lazy"
+              onError={(e) => {
+                e.target.src =
+                  'https://placehold.co/300x300/f5f5f5/333?text=Product'
+              }}
+            />
+            <span className="hp-cat-card__label">{item.label}</span>
+          </Link>
+        ))}
+      </div>
+      <Link to={card.link} className="hp-cat-card__link">
+        See more
+      </Link>
+    </div>
+  )
+}
+
+/* --- Promo Card (with 2x2 images) --- */
+function PromoCard({ promo }) {
+  return (
+    <div className="hp-promo-card">
+      <h3 className="hp-promo-card__title">{promo.title}</h3>
+      <div className="hp-promo-card__grid">
+        {promo.items.map((item, i) => (
+          <Link key={i} to={promo.link} className="hp-promo-card__item">
+            <img
+              src={item.img}
+              alt=""
+              loading="lazy"
+              onError={(e) => {
+                e.target.src =
+                  'https://placehold.co/300x300/f5f5f5/333?text=Product'
+              }}
+            />
+          </Link>
+        ))}
+      </div>
+      <Link to={promo.link} className="hp-promo-card__link">
+        Discover more
+      </Link>
+    </div>
+  )
+}
+
+/* ===== MAIN HOME PAGE ===== */
 export default function HomePage() {
   const dispatch = useAppDispatch()
   const products = useProducts()
   const status = useProductStatus()
   const addToCart = useAddToCart()
-  const deleteProductFn = useDeleteProduct()
   const isAuthenticated = useIsAuthenticated()
   const fetchProducts = useFetchProducts()
 
-  const [removeModal, setRemoveModal] = useState({ open: false, product: null })
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [searchParams] = useSearchParams()
+  const search = searchParams.get('search') ?? ''
 
   useEffect(() => {
-    if (status === 'idle') fetchProducts()
-  }, [dispatch, status, fetchProducts])
+    fetchProducts({ search, limit: 24 })
+  }, [dispatch, fetchProducts, search])
 
   const handleAddToCart = useCallback(
-    (product) => {
+    (payload) => {
       if (!isAuthenticated) {
         dispatch(
           addToast({
@@ -57,48 +372,17 @@ export default function HomePage() {
         )
         return
       }
-      addToCart({ productId: product._id, quantity: 1 })
+      addToCart({ productId: payload.productId, quantity: 1 })
       dispatch(
         addToast({
           title: 'Added',
-          message: `${product.title ?? 'Product'} added to cart.`,
+          message: `${payload.title ?? 'Product'} added to cart.`,
           type: 'success',
         })
       )
     },
     [dispatch, isAuthenticated, addToCart]
   )
-
-  const handleRemoveClick = useCallback((product) => {
-    setRemoveModal({ open: true, product })
-  }, [])
-
-  const handleRemoveConfirm = useCallback(async () => {
-    if (!removeModal.product) return
-    setIsDeleting(true)
-
-    const result = await dispatch(deleteProductFn(removeModal.product._id))
-    if (deleteProductFn.fulfilled.match(result)) {
-      dispatch(
-        addToast({
-          title: 'Product removed',
-          message: `"${removeModal.product.title}" has been deleted.`,
-          type: 'success',
-        })
-      )
-    } else {
-      dispatch(
-        addToast({
-          title: 'Failed',
-          message: result.payload ?? 'Could not delete product.',
-          type: 'error',
-        })
-      )
-    }
-
-    setIsDeleting(false)
-    setRemoveModal({ open: false, product: null })
-  }, [dispatch, deleteProductFn, removeModal.product])
 
   if (status === 'loading' && !products.length) {
     return (
@@ -118,7 +402,10 @@ export default function HomePage() {
         title="Unable to load products"
         description="Please try again later."
         action={
-          <button className="btn btn--primary" onClick={() => fetchProducts()}>
+          <button
+            className="btn btn--primary"
+            onClick={() => fetchProducts({ search, limit: 24 })}
+          >
             Retry
           </button>
         }
@@ -128,57 +415,182 @@ export default function HomePage() {
 
   return (
     <div className="home-page">
+      {/* Hero Carousel */}
       <Carousel images={CAROUSEL_IMAGES} autoPlayInterval={4000} />
 
-      {/* Products section */}
-      {products.length > 0 && (
-        <section className="home-page__section">
-          <h2 className="home-page__section-title">Today&apos;s Deals</h2>
-          <div className="home-page__grid">
-            {products.map((product) => (
-              <ProductCard
-                key={product._id}
-                product={product}
-                onAddToCart={handleAddToCart}
-                onRemove={handleRemoveClick}
-                showRemoveButton={true}
-              />
+      {/* Category Cards Grid */}
+      {!search && (
+        <section className="hp-section hp-section--cards">
+          <div className="hp-cat-card-grid">
+            {CATEGORY_CARDS.map((card, i) => (
+              <CategoryCardItem key={i} card={card} />
             ))}
-          </div>
-          <div className="home-page__see-more">
-            <Link to="/products" className="home-page__see-more-link">
-              See all deals
-            </Link>
           </div>
         </section>
       )}
 
-      {products.length === 0 && (
-        <section className="home-page__section">
+      {/* Search results or Today's Deals */}
+      {products.length > 0 && (
+        <section className={`hp-section ${search ? 'hp-section--search' : ''}`}>
+          <h2 className="hp-section__title">
+            {search ? `Results for "${search}"` : "Today's Deals"}
+          </h2>
+          <div className="hp-product-grid">
+            {products.map((product) => (
+              <Link
+                key={product._id}
+                to={`/products/${product._id}`}
+                className="hp-product-card"
+              >
+                <div className="hp-product-card__img">
+                  <img
+                    src={product.images?.[0] || 'https://placehold.co/200x200'}
+                    alt={product.name}
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.src = 'https://placehold.co/200x200'
+                    }}
+                  />
+                </div>
+                <div className="hp-product-card__title">{product.name}</div>
+                <div className="hp-product-card__rating">
+                  {'★'.repeat(Math.round(product.ratings || 0))}
+                  {'☆'.repeat(5 - Math.round(product.ratings || 0))}
+                  <span className="hp-product-card__count">
+                    ({product.numReviews || 0})
+                  </span>
+                </div>
+                <div className="hp-product-card__price">${product.price}</div>
+                <button
+                  type="button"
+                  className="hp-product-card__btn"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleAddToCart({
+                      productId: product._id,
+                      title: product.name,
+                      price: product.price,
+                    })
+                  }}
+                >
+                  Add to Cart
+                </button>
+              </Link>
+            ))}
+          </div>
+          {search && (
+            <div className="hp-section__footer">
+              <Link to="/products" className="hp-see-all-link">
+                See all results for "{search}"
+              </Link>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Horizontal carousel: Related products */}
+      {!search && products.length > 0 && (
+        <ProductCarousel
+          title="Related to items you've viewed"
+          products={products.slice(0, 10)}
+          onAddToCart={handleAddToCart}
+        />
+      )}
+
+      {/* Promo Grid - Set 1 */}
+      {!search && (
+        <section className="hp-section hp-section--promo">
+          <div className="hp-promo-grid">
+            {PROMO_SECTIONS[0].map((promo, i) => (
+              <PromoCard key={i} promo={promo} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Horizontal carousel: More items */}
+      {!search && products.length > 6 && (
+        <ProductCarousel
+          title="More items to consider"
+          products={products.slice(6, 18)}
+          onAddToCart={handleAddToCart}
+        />
+      )}
+
+      {/* Promo Grid - Set 2 */}
+      {!search && (
+        <section className="hp-section hp-section--promo">
+          <div className="hp-promo-grid">
+            {PROMO_SECTIONS[1].map((promo, i) => (
+              <PromoCard key={i} promo={promo} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Best Sellers */}
+      {!search && products.length > 0 && (
+        <section className="hp-section hp-section--bestsellers">
+          <h2 className="hp-section__title">
+            Best Sellers in Clothing, Shoes & Jewelry
+          </h2>
+          <div className="hp-bestsellers-track">
+            {products.slice(0, 8).map((p) => (
+              <Link
+                key={p._id}
+                to={`/products/${p._id}`}
+                className="hp-bestseller"
+              >
+                <img
+                  src={p.images?.[0] || 'https://placehold.co/160x200'}
+                  alt={p.name}
+                  loading="lazy"
+                  onError={(e) => {
+                    e.target.src = 'https://placehold.co/160x200'
+                  }}
+                />
+                <div className="hp-bestseller__price">${p.price}</div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!search && products.length > 0 && (
+        <section className="hp-section hp-section--bestsellers">
+          <h2 className="hp-section__title">Best Sellers in Home & Kitchen</h2>
+          <div className="hp-bestsellers-track">
+            {products.slice(0, 8).map((p) => (
+              <Link
+                key={p._id}
+                to={`/products/${p._id}`}
+                className="hp-bestseller"
+              >
+                <img
+                  src={p.images?.[0] || 'https://placehold.co/160x200'}
+                  alt={p.name}
+                  loading="lazy"
+                  onError={(e) => {
+                    e.target.src = 'https://placehold.co/160x200'
+                  }}
+                />
+                <div className="hp-bestseller__price">${p.price}</div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Empty state */}
+      {!search && products.length === 0 && (
+        <section className="hp-section">
           <EmptyState
             title="No products available"
             description="Check back later for new deals."
-            action={
-              <Link to="/" className="btn btn--primary">
-                Browse All Products
-              </Link>
-            }
           />
         </section>
       )}
-
-      {/* Remove product confirmation modal */}
-      <ConfirmationModal
-        isOpen={removeModal.open}
-        onClose={() => setRemoveModal({ open: false, product: null })}
-        onConfirm={handleRemoveConfirm}
-        title="Remove Product"
-        message={`Are you sure you want to delete "${removeModal.product?.title}"? This action cannot be undone.`}
-        confirmText="Delete Product"
-        cancelText="Cancel"
-        variant="danger"
-        isLoading={isDeleting}
-      />
     </div>
   )
 }

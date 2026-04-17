@@ -16,18 +16,46 @@ const axiosInstance = axios.create({
 })
 
 // Attach JWT to every request — read from Redux store for single source of truth
-axiosInstance.interceptors.request.use((config) => {
-  const token = store.getState()?.auth?.token
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = store.getState()?.auth?.token
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    console.log(
+      '[axios] Request:',
+      config.method?.toUpperCase(),
+      config.baseURL,
+      config.url,
+      'Params:',
+      config.params
+    )
+    return config
+  },
+  (error) => {
+    console.error('[axios] Request Error:', error)
+    return Promise.reject(error)
   }
-  return config
-})
+)
 
 // Handle 401 globally — clear auth state and dispatch logout
 axiosInstance.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    console.log(
+      '[axios] Response:',
+      res.config.method?.toUpperCase(),
+      res.config.url,
+      'Status:',
+      res.status
+    )
+    return res
+  },
   (err) => {
+    console.error(
+      '[axios] Response Error:',
+      err.response?.status,
+      err.response?.data || err.message
+    )
     if (err.response?.status === 401) {
       clearSession()
       store.dispatch(logout())

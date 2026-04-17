@@ -5,11 +5,7 @@
 
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  useAppDispatch,
-  useIsAuthenticated,
-  useIsAdmin,
-} from '../../hooks'
+import { useAppDispatch } from '../../hooks'
 import { createProduct } from '../../features/products/productSlice'
 import { addToast } from '../../features/ui/uiSlice'
 import Button from '../../components/shared/Button'
@@ -26,6 +22,7 @@ export default function AdminAddProductPage() {
     price: '',
     category: '',
     stock: '',
+    rating: '',
   })
   const [images, setImages] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
@@ -65,6 +62,14 @@ export default function AdminAddProductPage() {
     if (!formData.price || Number(formData.price) <= 0) newErrors.price = 'Valid price is required'
     if (!formData.category.trim()) newErrors.category = 'Category is required'
     if (!formData.stock || Number(formData.stock) < 0) newErrors.stock = 'Valid stock quantity is required'
+    if (
+      formData.rating !== '' &&
+      (Number.isNaN(Number(formData.rating)) ||
+        Number(formData.rating) < 0 ||
+        Number(formData.rating) > 5)
+    ) {
+      newErrors.rating = 'Rating must be between 0 and 5'
+    }
     if (images.length === 0) newErrors.images = 'At least one image is required'
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -83,10 +88,13 @@ export default function AdminAddProductPage() {
     data.append('price', Number(formData.price))
     data.append('category', formData.category)
     data.append('stock', Number(formData.stock))
+    if (formData.rating !== '') {
+      data.append('rating', Number(formData.rating))
+    }
 
     // Append images
     images.forEach((image) => {
-      data.append('images', image)
+      data.append('image', image)
     })
 
     const result = await dispatch(createProduct(data))
@@ -204,6 +212,25 @@ export default function AdminAddProductPage() {
               aria-invalid={!!errors.category}
             />
             {errors.category && <span className="admin-add-product-form__error">{errors.category}</span>}
+          </div>
+
+          <div className="admin-add-product-form__field">
+            <label htmlFor="product-rating">Initial Rating</label>
+            <input
+              id="product-rating"
+              type="number"
+              value={formData.rating}
+              onChange={(e) => updateField('rating', e.target.value)}
+              placeholder="0.0"
+              min="0"
+              max="5"
+              step="0.1"
+              aria-invalid={!!errors.rating}
+            />
+            <p className="admin-add-product-form__field-hint">
+              Optional. Set a starting rating from 0 to 5.
+            </p>
+            {errors.rating && <span className="admin-add-product-form__error">{errors.rating}</span>}
           </div>
         </div>
 

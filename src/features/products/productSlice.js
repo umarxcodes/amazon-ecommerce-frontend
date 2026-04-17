@@ -13,6 +13,19 @@ import {
 import { getErrorMessage } from '../../utils/helpers'
 import { fulfilled, pending, rejected } from '../../app/sliceHelpers'
 
+const normalizeProduct = (product) => {
+  if (!product) return product
+
+  return {
+    ...product,
+    title: product.title ?? product.name,
+    rating: product.rating ?? product.ratings ?? 0,
+    ratings: product.ratings ?? product.rating ?? 0,
+    reviewsCount: product.reviewsCount ?? product.numReviews ?? 0,
+    numReviews: product.numReviews ?? product.reviewsCount ?? 0,
+  }
+}
+
 const initialState = {
   items: [],
   selectedProduct: null,
@@ -126,12 +139,7 @@ const productSlice = createSlice({
           action.payload.data?.products ||
           action.payload.data ||
           []
-        // Normalize: backend may use 'name' — copy to 'title'
-        if (Array.isArray(items)) {
-          items = items.map((p) =>
-            p && !p.title && p.name ? { ...p, title: p.name } : p
-          )
-        }
+        if (Array.isArray(items)) items = items.map(normalizeProduct)
         state.items = items
         state.total =
           action.payload.total ??
@@ -143,25 +151,27 @@ const productSlice = createSlice({
       .addCase(fetchProductById.rejected, rejected('detailStatus'))
       .addCase(fetchProductById.fulfilled, (state, action) => {
         fulfilled('detailStatus')(state)
-        let p = action.payload.product || action.payload.data || action.payload
-        // Normalize: backend may use 'name' — copy to 'title' for UI consistency
-        if (p && !p.title && p.name) p = { ...p, title: p.name }
+        const p = normalizeProduct(
+          action.payload.product || action.payload.data || action.payload
+        )
         state.selectedProduct = p
       })
       .addCase(createProduct.pending, pending('mutationStatus'))
       .addCase(createProduct.rejected, rejected('mutationStatus'))
       .addCase(createProduct.fulfilled, (state, action) => {
         fulfilled('mutationStatus')(state)
-        let p = action.payload.product || action.payload.data || action.payload
-        if (p && !p.title && p.name) p = { ...p, title: p.name }
+        const p = normalizeProduct(
+          action.payload.product || action.payload.data || action.payload
+        )
         if (p) state.items.unshift(p)
       })
       .addCase(updateProduct.pending, pending('mutationStatus'))
       .addCase(updateProduct.rejected, rejected('mutationStatus'))
       .addCase(updateProduct.fulfilled, (state, action) => {
         fulfilled('mutationStatus')(state)
-        let p = action.payload.product || action.payload.data || action.payload
-        if (p && !p.title && p.name) p = { ...p, title: p.name }
+        const p = normalizeProduct(
+          action.payload.product || action.payload.data || action.payload
+        )
         if (p) {
           state.items = state.items.map((i) => (i._id === p._id ? p : i))
           if (state.selectedProduct?._id === p._id) state.selectedProduct = p

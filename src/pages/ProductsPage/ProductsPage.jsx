@@ -58,6 +58,12 @@ export default function ProductsPage() {
     searchParams.get('search') ?? ''
   )
 
+  // Sync searchInput when URL changes (e.g., from Header navigation)
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') ?? ''
+    setSearchInput(urlSearch)
+  }, [searchParams])
+
   const filters = useMemo(
     () => ({
       search: searchParams.get('search') ?? '',
@@ -74,8 +80,8 @@ export default function ProductsPage() {
   )
 
   useEffect(() => {
-    dispatch(fetchProducts(filters))
-  }, [dispatch, filters, fetchProducts])
+    fetchProducts(filters)
+  }, [fetchProducts, filters])
 
   // Track the current products URL (with filters) for the ProductDetailPage back button
   useEffect(() => {

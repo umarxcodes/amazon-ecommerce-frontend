@@ -2,7 +2,7 @@
 /* Defines all routes with lazy loading and route guards (Protected/Admin) */
 
 import { lazy, Suspense } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import Layout from '../layout/Layout'
 import ProtectedRoute from './ProtectedRoute'
 import AdminRoute from './AdminRoute'
@@ -41,6 +41,18 @@ const SuspensePage = ({ children }) => (
   <Suspense fallback={<LoadingSpinner fullScreen />}>{children}</Suspense>
 )
 
+const LegacyProductsRedirect = () => {
+  const location = useLocation()
+
+  return <Navigate to={`/products${location.search}`} replace />
+}
+
+const LegacyProductDetailRedirect = () => {
+  const { productId } = useParams()
+
+  return <Navigate to={`/products/${productId}`} replace />
+}
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -78,6 +90,7 @@ export default function AppRoutes() {
             </SuspensePage>
           }
         />
+        <Route path="/product" element={<LegacyProductsRedirect />} />
         <Route
           path="/products/:productId"
           element={
@@ -85,6 +98,10 @@ export default function AppRoutes() {
               <ProductDetailPage />
             </SuspensePage>
           }
+        />
+        <Route
+          path="/product/:productId"
+          element={<LegacyProductDetailRedirect />}
         />
         <Route
           path="/gaming"

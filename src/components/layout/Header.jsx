@@ -2,8 +2,8 @@
 /* Amazon-style navigation header with search, account, and cart */
 /* Provides site-wide navigation and user account dropdown */
 
-import { useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   useCartCount,
   useCurrentUser,
@@ -18,14 +18,21 @@ import './Header.css'
 
 export default function Header() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const dispatch = useAppDispatch()
   const cartCount = useCartCount()
   const user = useCurrentUser()
   const isAuthenticated = useIsAuthenticated()
   const isAdmin = useIsAdmin()
   const logout = useLogout()
-  const [searchInput, setSearchInput] = useState('')
+  const [searchInput, setSearchInput] = useState(
+    searchParams.get('search') ?? ''
+  )
   const [dropdownOpen, setDropdownOpen] = useState(false)
+
+  useEffect(() => {
+    setSearchInput(searchParams.get('search') ?? '')
+  }, [searchParams])
 
   const handleSearch = (e) => {
     e.preventDefault()

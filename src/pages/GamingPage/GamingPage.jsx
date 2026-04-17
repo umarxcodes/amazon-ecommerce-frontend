@@ -30,7 +30,15 @@ const GAMING_CATEGORIES = [
   { value: 'vr-gaming', label: 'VR Gaming' },
 ]
 
-const PLATFORMS = ['All', 'PC', 'PlayStation', 'Xbox', 'Nintendo', 'Mobile', 'VR']
+const PLATFORMS = [
+  'All',
+  'PC',
+  'PlayStation',
+  'Xbox',
+  'Nintendo',
+  'Mobile',
+  'VR',
+]
 
 const SORT_OPTIONS = [
   { value: 'featured', label: 'Featured' },
@@ -55,6 +63,12 @@ export default function GamingPage() {
     searchParams.get('search') ?? ''
   )
 
+  // Sync searchInput when URL changes (e.g., from Header navigation)
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') ?? ''
+    setSearchInput(urlSearch)
+  }, [searchParams])
+
   const filters = useMemo(
     () => ({
       search: searchParams.get('search') ?? '',
@@ -73,8 +87,8 @@ export default function GamingPage() {
   )
 
   useEffect(() => {
-    dispatch(fetchProducts(filters))
-  }, [dispatch, filters, fetchProducts])
+    fetchProducts(filters)
+  }, [fetchProducts, filters])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -323,7 +337,8 @@ export default function GamingPage() {
                 }`}
                 onClick={() =>
                   changeFilter({
-                    rating: filters.rating === String(stars) ? '' : String(stars),
+                    rating:
+                      filters.rating === String(stars) ? '' : String(stars),
                   })
                 }
               >
