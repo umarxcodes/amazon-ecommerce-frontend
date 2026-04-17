@@ -167,13 +167,22 @@ export default function CheckoutPage() {
   return (
     <div className="checkout-page">
       <h1 className="checkout-page__title">Checkout</h1>
+      <p className="checkout-page__headline">
+        Secure checkout. Review your address and payment details before placing
+        your order.
+      </p>
       <div className="checkout-page__layout">
         {/* Left: Order Summary */}
         <div className="checkout-page__summary">
-          <h2 className="checkout-page__summary-title">
-            Order Summary ({cartItems.length} item
-            {cartItems.length !== 1 ? 's' : ''})
-          </h2>
+          <div className="checkout-page__summary-header">
+            <div>
+              <h2 className="checkout-page__summary-title">Order summary</h2>
+              <p className="checkout-page__summary-subtitle">
+                {cartItems.length} item{cartItems.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <span className="checkout-page__badge">Secure</span>
+          </div>
           {cartItems.length === 0 ? (
             <p className="checkout-page__empty-cart">
               Your cart is empty. <Link to="/">Browse products</Link>
@@ -184,7 +193,7 @@ export default function CheckoutPage() {
                 {cartItems.map((item) => (
                   <div
                     key={item.productId ?? item._id}
-                    className="checkout-page__item"
+                    className="checkout-page__item checkout-page__item--compact"
                   >
                     <img
                       src={item.image ?? 'https://placehold.co/60x60'}
@@ -208,7 +217,7 @@ export default function CheckoutPage() {
                   </div>
                 ))}
               </div>
-              <div className="checkout-page__totals">
+              <div className="checkout-page__totals checkout-page__totals--highlight">
                 <div className="checkout-page__totals-row">
                   <span>Subtotal</span>
                   <span>
@@ -237,6 +246,9 @@ export default function CheckoutPage() {
           noValidate
         >
           <h2 className="checkout-page__form-title">Shipping Address</h2>
+          <p className="checkout-page__form-description">
+            Enter the address where you'd like to receive your order.
+          </p>
           {FIELDS.map((f) => (
             <div key={f.key} className="checkout-form__field">
               <label htmlFor={f.key}>
@@ -270,7 +282,7 @@ export default function CheckoutPage() {
             disabled={isSubmitting || cartItems.length === 0}
             type="submit"
           >
-            {isSubmitting ? 'Placing Order...' : 'Place Order & Pay'}
+            {isSubmitting ? 'Placing Order...' : 'Place order & pay'}
           </Button>
           <Button
             variant="ghost"
@@ -278,8 +290,12 @@ export default function CheckoutPage() {
             type="button"
             onClick={() => navigate('/cart')}
           >
-            Back to Cart
+            Back to cart
           </Button>
+          <p className="checkout-page__form-note">
+            You can change your shipping address on the next page. Secure
+            payment powered by Stripe.
+          </p>
         </form>
       </div>
     </div>

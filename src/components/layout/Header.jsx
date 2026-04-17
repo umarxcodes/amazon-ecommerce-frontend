@@ -28,16 +28,27 @@ export default function Header() {
   const [searchInput, setSearchInput] = useState(
     searchParams.get('search') ?? ''
   )
+  const [searchCategory, setSearchCategory] = useState(
+    searchParams.get('category') ?? 'all'
+  )
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   useEffect(() => {
     setSearchInput(searchParams.get('search') ?? '')
+    setSearchCategory(searchParams.get('category') ?? 'all')
   }, [searchParams])
 
   const handleSearch = (e) => {
     e.preventDefault()
     const q = searchInput.trim()
-    navigate(q ? `/products?search=${encodeURIComponent(q)}` : '/products')
+    const category = searchCategory === 'all' ? '' : searchCategory
+    const params = new URLSearchParams()
+
+    if (q) params.set('search', q)
+    if (category) params.set('category', category)
+
+    const query = params.toString()
+    navigate(query ? `/products?${query}` : '/products')
   }
 
   const handleLogout = () => {
@@ -59,7 +70,7 @@ export default function Header() {
         <div className="nav-container">
           <NavLink className="nav-logo-link" to="/">
             <img
-              src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1775646248/amazon_logo_vwm0jl.png"
+              src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1776423136/amazon-logo-white_qyvohr.png"
               alt="Amazon"
               className="nav-logo"
             />
@@ -76,10 +87,11 @@ export default function Header() {
           <form className="nav-search" onSubmit={handleSearch}>
             <select
               className="nav-search__select"
-              defaultValue="All"
+              value={searchCategory}
               aria-label="Search department"
+              onChange={(e) => setSearchCategory(e.target.value)}
             >
-              <option value="All">All</option>
+              <option value="all">All</option>
               <option value="Electronics">Electronics</option>
               <option value="Computers">Computers</option>
               <option value="Gaming">Gaming</option>
@@ -186,7 +198,7 @@ export default function Header() {
 
           <NavLink className="nav-cart" to="/cart">
             <img
-              src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1775645116/cart-icon_1_edned4.png"
+              src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1776423160/cart-icon_cyyvqp.png"
               alt=""
             />
             <span className="nav-cart__count">{cartCount}</span>

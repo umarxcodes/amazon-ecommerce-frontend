@@ -29,6 +29,8 @@ const OrderCard = function OrderCard({ order }) {
   const status = (order.status || 'pending').toLowerCase()
   const statusClass = STATUS_CLASS_MAP[status] || STATUS_CLASS_MAP.pending
   const isPaid = order.isPaid ?? order.paymentStatus === 'paid'
+  const orderId = order._id?.toString?.() || order.id || undefined
+  const orderLabel = orderId ? orderId.slice(-8).toUpperCase() : 'N/A'
 
   return (
     <div className="order-card">
@@ -46,28 +48,30 @@ const OrderCard = function OrderCard({ order }) {
             {formatDate(order.createdAt)}
           </span>
         </div>
-        <span className="order-card__id">
-          Order #{order._id?.slice(-8).toUpperCase() ?? 'N/A'}
-        </span>
+        <span className="order-card__id">Order #{orderLabel}</span>
       </div>
 
       <div className="order-card__body">
         <div className="order-card__items">
-          {order.items?.slice(0, 3).map((item) => (
-            <Link
-              key={item.productId || item._id}
-              to={`/products/${item.productId}`}
-              className="order-card__item-img"
-            >
-              <img
-                src={item.image || 'https://placehold.co/60x60'}
-                alt={item.title || 'Product'}
-                loading="lazy"
-                width="60"
-                height="60"
-              />
-            </Link>
-          ))}
+          {order.items?.slice(0, 3).map((item, index) => {
+            const productId =
+              item.product?.toString?.() || item.productId || undefined
+            return (
+              <Link
+                key={item._id ?? index}
+                to={productId ? `/products/${productId}` : '/products'}
+                className="order-card__item-img"
+              >
+                <img
+                  src={item.image || 'https://placehold.co/60x60'}
+                  alt={item.title || 'Product'}
+                  loading="lazy"
+                  width="60"
+                  height="60"
+                />
+              </Link>
+            )
+          })}
         </div>
 
         <div className="order-card__total">
@@ -77,7 +81,10 @@ const OrderCard = function OrderCard({ order }) {
           </strong>
         </div>
 
-        <Link to={`/orders/${order._id}`} className="order-card__details-btn">
+        <Link
+          to={orderId ? `/orders/${orderId}` : '/orders'}
+          className="order-card__details-btn"
+        >
           View details
         </Link>
       </div>
@@ -174,8 +181,11 @@ export default function OrdersPage() {
         />
       ) : (
         <div className="orders-page__list">
-          {filteredOrders.map((order) => (
-            <OrderCard key={order._id} order={order} />
+          {filteredOrders.map((order, index) => (
+            <OrderCard
+              key={order._id?.toString?.() || order.id || index}
+              order={order}
+            />
           ))}
         </div>
       )}

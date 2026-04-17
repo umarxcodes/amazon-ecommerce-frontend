@@ -2,7 +2,7 @@
 /* Pixel-perfect Amazon.com homepage clone */
 /* Public route - no authentication required */
 
-import { useEffect, useCallback, useState, useRef } from 'react'
+import { useEffect, useCallback, useMemo, useState, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   useAppDispatch,
@@ -19,10 +19,10 @@ import EmptyState from '../../components/shared/EmptyState'
 import './HomePage.css'
 
 const CAROUSEL_IMAGES = [
-  'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775711803/banner4_iaccwu.jpg',
-  'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775711802/banner3_bdjt7k.jpg',
-  'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775711802/banner1_hki4sl.jpg',
-  'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775711802/banner2_gkbkhc.jpg',
+  'https://res.cloudinary.com/dlul8f6xz/image/upload/v1776421978/banner1_kvf6rq.jpg',
+  'https://res.cloudinary.com/dlul8f6xz/image/upload/v1776421978/banner4_ruk2bn.jpg',
+  'https://res.cloudinary.com/dlul8f6xz/image/upload/v1776421978/banner3_co9kgo.jpg',
+  'https://res.cloudinary.com/dlul8f6xz/image/upload/v1776421977/banner_2_s6xm3a.jpg',
 ]
 
 /* --- Category card data (4-col Amazon style) --- */
@@ -205,6 +205,31 @@ const PROMO_SECTIONS = [
   ],
 ]
 
+const EMPTY_PLACEHOLDER = 'https://placehold.co/300x300/f5f5f5/333?text=Product'
+
+function buildCategoryCards(products) {
+  return CATEGORY_CARDS.map((card) => {
+    const params = new URLSearchParams(card.link.split('?')[1])
+    const category = params.get('category')
+    const categoryProducts = products
+      .filter((product) =>
+        category
+          ? product.category?.toLowerCase() === category.toLowerCase()
+          : false
+      )
+      .slice(0, 4)
+
+    return {
+      ...card,
+      items: card.items.map((item, index) => ({
+        ...item,
+        img:
+          categoryProducts[index]?.images?.[0] || item.img || EMPTY_PLACEHOLDER,
+      })),
+    }
+  })
+}
+
 /* --- Horizontal Product Carousel --- */
 function ProductCarousel({ title, products, onAddToCart }) {
   const scrollRef = useRef(null)
@@ -356,6 +381,33 @@ export default function HomePage() {
   const [searchParams] = useSearchParams()
   const search = searchParams.get('search') ?? ''
 
+  const categoryCards = useMemo(() => {
+    const buildItems = (link, fallbackItems) => {
+      const query = new URLSearchParams(link.split('?')[1])
+      const targetCategory = query.get('category')
+      const categoryProducts = products
+        .filter((product) =>
+          targetCategory
+            ? product.category?.toLowerCase() === targetCategory.toLowerCase()
+            : false
+        )
+        .slice(0, 4)
+
+      return fallbackItems.map((item, index) => ({
+        ...item,
+        img:
+          categoryProducts[index]?.images?.[0] ||
+          item.img ||
+          'https://placehold.co/300x300/f5f5f5/333?text=Product',
+      }))
+    }
+
+    return CATEGORY_CARDS.map((card) => ({
+      ...card,
+      items: buildItems(card.link, card.items),
+    }))
+  }, [products])
+
   useEffect(() => {
     fetchProducts({ search, limit: 24 })
   }, [dispatch, fetchProducts, search])
@@ -422,7 +474,7 @@ export default function HomePage() {
       {!search && (
         <section className="hp-section hp-section--cards">
           <div className="hp-cat-card-grid">
-            {CATEGORY_CARDS.map((card, i) => (
+            {categoryCards.map((card, i) => (
               <CategoryCardItem key={i} card={card} />
             ))}
           </div>

@@ -54,7 +54,7 @@ export default function ProductDetailPage() {
   const productTitle = product?.title ?? product?.name ?? 'Product'
 
   useEffect(() => {
-    if (parseInt(productId)) {
+    if (productId) {
       dispatch(resetSelectedProduct())
       fetchProductById(productId)
     }
