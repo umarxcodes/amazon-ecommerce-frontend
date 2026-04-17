@@ -2,7 +2,7 @@
 /* Pixel-perfect Amazon.com homepage clone */
 /* Public route - no authentication required */
 
-import { useEffect, useCallback, useMemo, useState, useRef } from 'react'
+import { useEffect, useCallback, useMemo, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   useAppDispatch,
@@ -25,26 +25,25 @@ const CAROUSEL_IMAGES = [
   'https://res.cloudinary.com/dlul8f6xz/image/upload/v1776421977/banner_2_s6xm3a.jpg',
 ]
 
-/* --- Category card data (4-col Amazon style) --- */
 const CATEGORY_CARDS = [
   {
     title: 'Get your game on',
     link: '/products?category=gaming',
     items: [
       {
-        img: 'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775823491/Fuji_Gaming_store_Dashboard_card_1x_EN._SY304_CB564799420__upg2zz.jpg',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Gaming+laptops',
         label: 'Gaming laptops',
       },
       {
-        img: 'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775823491/Fuji_Gaming_store_Dashboard_card_1x_EN._SY304_CB564799420__upg2zz.jpg',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Controllers',
         label: 'Controllers',
       },
       {
-        img: 'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775823491/Fuji_Gaming_store_Dashboard_card_1x_EN._SY304_CB564799420__upg2zz.jpg',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Headsets',
         label: 'Headsets',
       },
       {
-        img: 'https://res.cloudinary.com/dlul8f6xz/image/upload/v1775823491/Fuji_Gaming_store_Dashboard_card_1x_EN._SY304_CB564799420__upg2zz.jpg',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Chairs',
         label: 'Chairs',
       },
     ],
@@ -54,19 +53,19 @@ const CATEGORY_CARDS = [
     link: '/products?category=home',
     items: [
       {
-        img: 'https://placehold.co/300x300/f5f5f5/333?text=Home+1',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Decor',
         label: 'Decor',
       },
       {
-        img: 'https://placehold.co/300x300/f5f5f5/333?text=Home+2',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Kitchen',
         label: 'Kitchen',
       },
       {
-        img: 'https://placehold.co/300x300/f5f5f5/333?text=Home+3',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Bedding',
         label: 'Bedding',
       },
       {
-        img: 'https://placehold.co/300x300/f5f5f5/333?text=Home+4',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Bath',
         label: 'Bath',
       },
     ],
@@ -75,20 +74,17 @@ const CATEGORY_CARDS = [
     title: 'Shop Fashion for less',
     link: '/products?category=clothing',
     items: [
+      { img: 'https://placehold.co/300x300/f5f5f5/333?text=Men', label: 'Men' },
       {
-        img: 'https://placehold.co/300x300/f5f5f5/333?text=Fashion+1',
-        label: 'Men',
-      },
-      {
-        img: 'https://placehold.co/300x300/f5f5f5/333?text=Fashion+2',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Women',
         label: 'Women',
       },
       {
-        img: 'https://placehold.co/300x300/f5f5f5/333?text=Fashion+3',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Kids',
         label: 'Kids',
       },
       {
-        img: 'https://placehold.co/300x300/f5f5f5/333?text=Fashion+4',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Shoes',
         label: 'Shoes',
       },
     ],
@@ -98,26 +94,25 @@ const CATEGORY_CARDS = [
     link: '/products?search=gift',
     items: [
       {
-        img: 'https://placehold.co/300x300/f5f5f5/333?text=Gift+1',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Beauty',
         label: 'Beauty',
       },
       {
-        img: 'https://placehold.co/300x300/f5f5f5/333?text=Gift+2',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Books',
         label: 'Books',
       },
       {
-        img: 'https://placehold.co/300x300/f5f5f5/333?text=Gift+3',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Home',
         label: 'Home',
       },
       {
-        img: 'https://placehold.co/300x300/f5f5f5/333?text=Gift+4',
+        img: 'https://placehold.co/300x300/f5f5f5/333?text=Tech',
         label: 'Tech',
       },
     ],
   },
 ]
 
-/* --- Promo grid data (4-col side by side) --- */
 const PROMO_SECTIONS = [
   [
     {
@@ -224,10 +219,51 @@ function buildCategoryCards(products) {
       items: card.items.map((item, index) => ({
         ...item,
         img:
-          categoryProducts[index]?.images?.[0] || item.img || EMPTY_PLACEHOLDER,
+          categoryProducts[index]?.images?.[0] ||
+          products[index]?.images?.[0] ||
+          item.img ||
+          EMPTY_PLACEHOLDER,
       })),
     }
   })
+}
+
+function buildPromoSections(products) {
+  return PROMO_SECTIONS.map((section) =>
+    section.map((promo) => {
+      const params = new URLSearchParams(promo.link.split('?')[1])
+      const category = params.get('category')
+      const search = params.get('search')
+      const matchedProducts = products
+        .filter((product) => {
+          if (category) {
+            return product.category?.toLowerCase() === category.toLowerCase()
+          }
+          if (search) {
+            const normalizedSearch = search.toLowerCase()
+            return (
+              product.name?.toLowerCase().includes(normalizedSearch) ||
+              product.description?.toLowerCase().includes(normalizedSearch)
+            )
+          }
+          return false
+        })
+        .slice(0, promo.items.length)
+
+      const fallbackProducts = products.slice(0, promo.items.length)
+      return {
+        ...promo,
+        items: promo.items.map((item, index) => ({
+          ...item,
+          img:
+            matchedProducts[index]?.images?.[0] ||
+            fallbackProducts[index]?.images?.[0] ||
+            item.img ||
+            EMPTY_PLACEHOLDER,
+        })),
+      }
+    })
+  )
 }
 
 /* --- Horizontal Product Carousel --- */
@@ -381,35 +417,12 @@ export default function HomePage() {
   const [searchParams] = useSearchParams()
   const search = searchParams.get('search') ?? ''
 
-  const categoryCards = useMemo(() => {
-    const buildItems = (link, fallbackItems) => {
-      const query = new URLSearchParams(link.split('?')[1])
-      const targetCategory = query.get('category')
-      const categoryProducts = products
-        .filter((product) =>
-          targetCategory
-            ? product.category?.toLowerCase() === targetCategory.toLowerCase()
-            : false
-        )
-        .slice(0, 4)
+  const categoryCards = useMemo(() => buildCategoryCards(products), [products])
 
-      return fallbackItems.map((item, index) => ({
-        ...item,
-        img:
-          categoryProducts[index]?.images?.[0] ||
-          item.img ||
-          'https://placehold.co/300x300/f5f5f5/333?text=Product',
-      }))
-    }
-
-    return CATEGORY_CARDS.map((card) => ({
-      ...card,
-      items: buildItems(card.link, card.items),
-    }))
-  }, [products])
+  const promoSections = useMemo(() => buildPromoSections(products), [products])
 
   useEffect(() => {
-    fetchProducts({ search, limit: 24 })
+    fetchProducts({ search, limit: 100 })
   }, [dispatch, fetchProducts, search])
 
   const handleAddToCart = useCallback(
@@ -436,7 +449,7 @@ export default function HomePage() {
     [dispatch, isAuthenticated, addToCart]
   )
 
-  if (status === 'loading' && !products.length) {
+  if ((status === 'loading' || status === 'idle') && !products.length) {
     return (
       <div className="home-page">
         <div className="home-page__skeleton-grid">
@@ -554,7 +567,7 @@ export default function HomePage() {
       {!search && (
         <section className="hp-section hp-section--promo">
           <div className="hp-promo-grid">
-            {PROMO_SECTIONS[0].map((promo, i) => (
+            {promoSections[0].map((promo, i) => (
               <PromoCard key={i} promo={promo} />
             ))}
           </div>
@@ -574,7 +587,7 @@ export default function HomePage() {
       {!search && (
         <section className="hp-section hp-section--promo">
           <div className="hp-promo-grid">
-            {PROMO_SECTIONS[1].map((promo, i) => (
+            {promoSections[1].map((promo, i) => (
               <PromoCard key={i} promo={promo} />
             ))}
           </div>

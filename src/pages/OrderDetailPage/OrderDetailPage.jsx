@@ -90,7 +90,11 @@ export default function OrderDetailPage() {
     )
   }
 
-  if (!order && status === 'succeeded') {
+  if (!order) {
+    if (status === 'loading' || status === 'idle') {
+      return <LoadingSpinner label="Loading order..." fullScreen />
+    }
+
     return (
       <EmptyState
         title="Order not found"
@@ -216,15 +220,9 @@ export default function OrderDetailPage() {
               item.product?.toString?.() || item.productId || undefined
             const productLink = productId ? `/products/${productId}` : null
             return (
-              <div
-                key={item._id ?? productId}
-                className="order-detail__item"
-              >
+              <div key={item._id ?? productId} className="order-detail__item">
                 {productLink ? (
-                  <Link
-                    to={productLink}
-                    className="order-detail__item-img"
-                  >
+                  <Link to={productLink} className="order-detail__item-img">
                     <img
                       src={item.image ?? 'https://placehold.co/80x80'}
                       alt={item.title ?? 'Product'}
@@ -246,10 +244,7 @@ export default function OrderDetailPage() {
                 )}
                 <div className="order-detail__item-info">
                   {productLink ? (
-                    <Link
-                      to={productLink}
-                      className="order-detail__item-title"
-                    >
+                    <Link to={productLink} className="order-detail__item-title">
                       {item.title}
                     </Link>
                   ) : (
@@ -265,7 +260,8 @@ export default function OrderDetailPage() {
                   {formatCurrency((item.price ?? 0) * (item.quantity ?? 0))}
                 </span>
               </div>
-          ))}
+            )
+          })}
 
           <div className="order-detail__totals">
             <div className="order-detail__totals-row">
