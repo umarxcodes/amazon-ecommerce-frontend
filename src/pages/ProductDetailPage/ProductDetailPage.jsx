@@ -77,7 +77,7 @@ export default function ProductDetailPage() {
             type: 'info',
           })
         )
-        return
+        return false
       }
       const result = await addToCart(payload)
       if (addToCart.fulfilled.match(result)) {
@@ -88,6 +88,7 @@ export default function ProductDetailPage() {
             type: 'success',
           })
         )
+        return true
       } else {
         dispatch(
           addToast({
@@ -96,6 +97,7 @@ export default function ProductDetailPage() {
             type: 'error',
           })
         )
+        return false
       }
     },
     [dispatch, isAuthenticated, addToCart, productTitle]

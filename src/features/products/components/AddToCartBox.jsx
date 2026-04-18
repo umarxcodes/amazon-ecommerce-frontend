@@ -3,6 +3,7 @@
 /* Amazon-style checkout box with security indicators */
 
 import { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useIsAuthenticated } from '../../../hooks'
 import { useAppDispatch } from '../../../hooks'
 import { addToast } from '../../../features/ui/uiSlice'
@@ -14,6 +15,7 @@ export default function AddToCartBox({ product, onAddToCart }) {
   const [qty, setQty] = useState(1)
   const isAuthenticated = useIsAuthenticated()
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const stock = product?.stock ?? 0
   const inStock = stock > 0
   const price = product?.salePrice ?? product?.price
@@ -49,7 +51,7 @@ export default function AddToCartBox({ product, onAddToCart }) {
     qty,
   ])
 
-  const handleBuy = useCallback(() => {
+  const handleBuy = useCallback(async () => {
     if (!isAuthenticated) {
       dispatch(
         addToast({
@@ -60,8 +62,27 @@ export default function AddToCartBox({ product, onAddToCart }) {
       )
       return
     }
-    handleAdd()
-  }, [handleAdd, isAuthenticated, dispatch])
+    const result = await onAddToCart?.({
+      productId: product?._id,
+      title,
+      image: mainImage,
+      price,
+      quantity: qty,
+    })
+    if (result) {
+      navigate('/checkout')
+    }
+  }, [
+    isAuthenticated,
+    dispatch,
+    onAddToCart,
+    product?._id,
+    title,
+    mainImage,
+    price,
+    qty,
+    navigate,
+  ])
 
   return (
     <div className="buybox">

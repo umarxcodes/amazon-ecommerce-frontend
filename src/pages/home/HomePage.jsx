@@ -25,245 +25,91 @@ const CAROUSEL_IMAGES = [
   'https://res.cloudinary.com/dlul8f6xz/image/upload/v1776421977/banner_2_s6xm3a.jpg',
 ]
 
-const CATEGORY_CARDS = [
-  {
-    title: 'Get your game on',
-    link: '/products?category=gaming',
-    items: [
-      {
-        img: '',
-        label: 'Gaming laptops',
-      },
-      {
-        img: '',
-        label: 'Controllers',
-      },
-      {
-        img: '',
-        label: 'Headsets',
-      },
-      {
-        img: '',
-        label: 'Chairs',
-      },
-    ],
-  },
-  {
-    title: 'New home arrivals under $50',
-    link: '/products?category=home',
-    items: [
-      {
-        img: '',
-        label: 'Decor',
-      },
-      {
-        img: '',
-        label: 'Kitchen',
-      },
-      {
-        img: '',
-        label: 'Bedding',
-      },
-      {
-        img: '',
-        label: 'Bath',
-      },
-    ],
-  },
-  {
-    title: 'Shop Fashion for less',
-    link: '/products?category=clothing',
-    items: [
-      { img: '', label: 'Men' },
-      {
-        img: '',
-        label: 'Women',
-      },
-      {
-        img: '',
-        label: 'Kids',
-      },
-      {
-        img: '',
-        label: 'Shoes',
-      },
-    ],
-  },
-  {
-    title: 'Find gifts for Mom',
-    link: '/products?search=gift',
-    items: [
-      {
-        img: '',
-        label: 'Beauty',
-      },
-      {
-        img: '',
-        label: 'Books',
-      },
-      {
-        img: '',
-        label: 'Home',
-      },
-      {
-        img: '',
-        label: 'Tech',
-      },
-    ],
-  },
-]
-
-const PROMO_SECTIONS = [
-  [
-    {
-      title: 'Gear up to get fit',
-      link: '/products?search=fitness',
-      items: [
-        { img: '' },
-        { img: '' },
-        { img: '' },
-        { img: '' },
-      ],
-    },
-    {
-      title: 'Wireless Tech',
-      link: '/products?search=wireless',
-      items: [
-        { img: '' },
-        { img: '' },
-        { img: '' },
-        { img: '' },
-      ],
-    },
-    {
-      title: 'Have more fun with family',
-      link: '/products?search=family',
-      items: [
-        { img: '' },
-        { img: '' },
-        { img: '' },
-        { img: '' },
-      ],
-    },
-    {
-      title: 'Level up your gaming',
-      link: '/products?category=gaming',
-      items: [
-        { img: '' },
-        { img: '' },
-        { img: '' },
-        { img: '' },
-      ],
-    },
-  ],
-  [
-    {
-      title: 'Level up your beauty routine',
-      link: '/products?search=beauty',
-      items: [
-        { img: '' },
-        { img: '' },
-        { img: '' },
-        { img: '' },
-      ],
-    },
-    {
-      title: 'Score the top PCs',
-      link: '/products?category=computers',
-      items: [
-        { img: '' },
-        { img: '' },
-        { img: '' },
-        { img: '' },
-      ],
-    },
-    {
-      title: 'Gaming merchandise',
-      link: '/products?search=gaming',
-      items: [
-        { img: '' },
-        { img: '' },
-        { img: '' },
-        { img: '' },
-      ],
-    },
-    {
-      title: 'Level up your PC here',
-      link: '/products?category=computers',
-      items: [
-        { img: '' },
-        { img: '' },
-        { img: '' },
-        { img: '' },
-      ],
-    },
-  ],
-]
-
-const EMPTY_PLACEHOLDER = 'https://placehold.co/300x300/f5f5f5/333?text=Product'
-
-function buildCategoryCards(products) {
-  return CATEGORY_CARDS.map((card) => {
-    const params = new URLSearchParams(card.link.split('?')[1])
-    const category = params.get('category')
-    const categoryProducts = products
-      .filter((product) =>
-        category
-          ? product.category?.toLowerCase() === category.toLowerCase()
-          : false
-      )
-      .slice(0, 4)
-
-    return {
-      ...card,
-      items: card.items.map((item, index) => ({
-        ...item,
-        img:
-          categoryProducts[index]?.images?.[0] ||
-          products[index]?.images?.[0] ||
-          item.img ||
-          EMPTY_PLACEHOLDER,
-      })),
-    }
+function buildCategorySections(products) {
+  const categories = {}
+  products.forEach((product) => {
+    const cat = product.category || 'Other'
+    if (!categories[cat]) categories[cat] = []
+    categories[cat].push(product)
   })
+  return Object.entries(categories)
+    .slice(0, 4)
+    .map(([cat, prods]) => ({
+      title: `Shop ${cat}`,
+      link: `/products?category=${encodeURIComponent(cat)}`,
+      items: prods.slice(0, 4).map((p) => ({
+        img:
+          p.images?.[0] ||
+          'https://placehold.co/300x300/f5f5f5/333?text=No+Image',
+        label: p.name,
+      })),
+    }))
 }
 
 function buildPromoSections(products) {
-  return PROMO_SECTIONS.map((section) =>
-    section.map((promo) => {
-      const params = new URLSearchParams(promo.link.split('?')[1])
-      const category = params.get('category')
-      const search = params.get('search')
-      const matchedProducts = products
-        .filter((product) => {
-          if (category) {
-            return product.category?.toLowerCase() === category.toLowerCase()
-          }
-          if (search) {
-            const normalizedSearch = search.toLowerCase()
-            return (
-              product.name?.toLowerCase().includes(normalizedSearch) ||
-              product.description?.toLowerCase().includes(normalizedSearch)
-            )
-          }
-          return false
-        })
-        .slice(0, promo.items.length)
+  const topRated = products.filter((p) => (p.ratings || 0) >= 4).slice(0, 8)
+  const recent = products.slice(0, 8)
+  const gaming = products
+    .filter((p) => p.category?.toLowerCase() === 'gaming')
+    .slice(0, 8)
+  const electronics = products
+    .filter((p) => p.category?.toLowerCase() === 'electronics')
+    .slice(0, 8)
 
-      const fallbackProducts = products.slice(0, promo.items.length)
-      return {
-        ...promo,
-        items: promo.items.map((item, index) => ({
-          ...item,
-          img:
-            matchedProducts[index]?.images?.[0] ||
-            fallbackProducts[index]?.images?.[0] ||
-            item.img ||
-            EMPTY_PLACEHOLDER,
-        })),
-      }
-    })
-  )
+  return [
+    [
+      {
+        title: "Today's Deals",
+        link: '/products',
+        items: recent.slice(0, 4).map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
+      },
+      {
+        title: 'Top Rated Products',
+        link: '/products?sort=rating',
+        items: topRated.slice(0, 4).map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
+      },
+      {
+        title: 'Gaming Essentials',
+        link: '/products?category=gaming',
+        items: gaming.slice(0, 4).map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
+      },
+      {
+        title: 'Electronics Deals',
+        link: '/products?category=electronics',
+        items: electronics
+          .slice(0, 4)
+          .map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
+      },
+    ],
+    [
+      {
+        title: 'New Arrivals',
+        link: '/products?sort=-createdAt',
+        items: products.slice(0, 4).map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
+      },
+      {
+        title: 'Best Sellers',
+        link: '/products?sort=-numReviews',
+        items: products.slice(0, 4).map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
+      },
+      {
+        title: 'Home & Kitchen',
+        link: '/products?category=home',
+        items: products
+          .filter((p) => p.category?.toLowerCase() === 'home')
+          .slice(0, 4)
+          .map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
+      },
+      {
+        title: 'Fashion Finds',
+        link: '/products?category=clothing',
+        items: products
+          .filter((p) => p.category?.toLowerCase() === 'clothing')
+          .slice(0, 4)
+          .map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
+      },
+    ],
+  ]
 }
 
 /* --- Horizontal Product Carousel --- */
@@ -417,7 +263,10 @@ export default function HomePage() {
   const [searchParams] = useSearchParams()
   const search = searchParams.get('search') ?? ''
 
-  const categoryCards = useMemo(() => buildCategoryCards(products), [products])
+  const categoryCards = useMemo(
+    () => buildCategorySections(products),
+    [products]
+  )
 
   const promoSections = useMemo(() => buildPromoSections(products), [products])
 
