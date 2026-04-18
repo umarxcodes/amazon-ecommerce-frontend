@@ -185,25 +185,6 @@ function buildShelfItems(products) {
   }))
 }
 
-function buildGalleryItems(products) {
-  return products.flatMap((product) => {
-    const images = product.images?.length ? product.images : [IMAGE_PLACEHOLDER]
-
-    return images.map((image, index) => ({
-      id: `${product._id}-gallery-${index}`,
-      productId: product._id,
-      image,
-      title: product.name,
-      category: product.category,
-      price: product.price,
-      rating: product.ratings ?? 0,
-      numReviews: product.numReviews ?? 0,
-      prime: product.prime,
-      alternateView: index > 0,
-    }))
-  })
-}
-
 function CategoryShowcaseCard({ card }) {
   return (
     <article className="hp-category-card">
@@ -365,7 +346,10 @@ export default function HomePage() {
     fetchProducts({ search, limit: 100 })
   }, [fetchProducts, search])
 
-  const categoryEntries = useMemo(() => buildCategoryEntries(products), [products])
+  const categoryEntries = useMemo(
+    () => buildCategoryEntries(products),
+    [products]
+  )
 
   const categoryRows = useMemo(() => {
     const cards = categoryEntries.map(([category, categoryProducts]) => ({
@@ -390,15 +374,13 @@ export default function HomePage() {
     [products]
   )
 
-  const galleryShelfItems = useMemo(() => buildGalleryItems(products), [products])
-
   const categoryShelves = useMemo(
     () =>
       categoryEntries
         .map(([category, categoryProducts]) => ({
           title: SHELF_TITLES[category] ?? `Top picks in ${category}`,
           link: categoryLink(category),
-          items: buildShelfItems(categoryProducts),
+          items: buildShelfItems(categoryProducts.slice(0, 10)), // Limit to 10 per category
         }))
         .filter((section) => section.items.length > 0),
     [categoryEntries]
@@ -530,13 +512,6 @@ export default function HomePage() {
       ))}
 
       <ProductShelf
-        title="Every product image from your backend"
-        items={galleryShelfItems}
-        link="/products"
-        linkLabel="Browse products"
-      />
-
-      <ProductShelf
         title="New arrivals in your catalog"
         items={newestShelfItems}
         link="/products?sort=-createdAt"
@@ -552,33 +527,6 @@ export default function HomePage() {
           linkLabel="See more"
         />
       ))}
-
-      <section className="hp-section">
-        <div className="hp-product-panel">
-          <div className="hp-section__heading">
-            <div>
-              <h2 className="hp-section__title">Shop the full catalog</h2>
-              <p className="hp-section__subtitle">
-                All {products.length} backend products are rendered below on the
-                home page.
-              </p>
-            </div>
-            <Link to="/products" className="hp-inline-link">
-              View catalog
-            </Link>
-          </div>
-
-          <div className="hp-product-panel__grid">
-            {products.map((product) => (
-              <ProductCard
-                key={product._id}
-                product={product}
-                onAddToCart={handleAddToCart}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
 
       {!products.length ? (
         <section className="hp-section">
