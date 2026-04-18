@@ -296,7 +296,7 @@ export default function CartPage() {
           <button
             type="button"
             className="cart-summary-box__checkout-btn"
-            onClick={() => navigate('/checkout')}
+            onClick={handleCheckout}
           >
             Proceed to Checkout
           </button>

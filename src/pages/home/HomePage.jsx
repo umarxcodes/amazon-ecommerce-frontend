@@ -1,21 +1,18 @@
-/* ===== HOME PAGE ===== */
-/* Pixel-perfect Amazon.com homepage clone */
-/* Public route - no authentication required */
-
-import { useEffect, useCallback, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
-  useAppDispatch,
-  useProducts,
-  useProductStatus,
   useAddToCart,
-  useIsAuthenticated,
+  useAppDispatch,
   useFetchProducts,
+  useIsAuthenticated,
+  useProductStatus,
+  useProducts,
 } from '../../hooks'
 import { addToast } from '../../features/ui/uiSlice'
 import Carousel from '../../components/shared/Carousel'
-import SkeletonCard from '../../components/shared/SkeletonCard'
 import EmptyState from '../../components/shared/EmptyState'
+import SkeletonCard from '../../components/shared/SkeletonCard'
+import ProductCard from '../../features/products/components/ProductCard'
 import './HomePage.css'
 
 const CAROUSEL_IMAGES = [
@@ -25,233 +22,334 @@ const CAROUSEL_IMAGES = [
   'https://res.cloudinary.com/dlul8f6xz/image/upload/v1776421977/banner_2_s6xm3a.jpg',
 ]
 
-function buildCategorySections(products) {
-  const categories = {}
-  products.forEach((product) => {
-    const cat = product.category || 'Other'
-    if (!categories[cat]) categories[cat] = []
-    categories[cat].push(product)
-  })
-  return Object.entries(categories)
-    .slice(0, 4)
-    .map(([cat, prods]) => ({
-      title: `Shop ${cat}`,
-      link: `/products?category=${encodeURIComponent(cat)}`,
-      items: prods.slice(0, 4).map((p) => ({
-        img:
-          p.images?.[0] ||
-          'https://placehold.co/300x300/f5f5f5/333?text=No+Image',
-        label: p.name,
-      })),
-    }))
+const IMAGE_PLACEHOLDER =
+  'https://placehold.co/320x320/f7f8f8/111111?text=Amazon'
+
+const CATEGORY_ORDER = [
+  'Electronics',
+  'Computers & Accessories',
+  'Gaming',
+  'Home & Kitchen',
+  'Clothing',
+  'Health & Beauty',
+  'Sports & Outdoors',
+  'Books',
+  'Toys & Games',
+  'Automotive',
+  'Grocery & Gourmet',
+]
+
+const CATEGORY_CARD_TITLES = {
+  Electronics: 'Upgrade your electronics',
+  'Computers & Accessories': 'Build your desk setup',
+  Gaming: 'Level up your play',
+  'Home & Kitchen': 'Refresh your home',
+  Clothing: 'Style picks for every day',
+  'Health & Beauty': 'Beauty and wellness finds',
+  'Sports & Outdoors': 'Gear up for the outdoors',
+  Books: 'Page-turners worth reading',
+  'Toys & Games': 'Playroom favorites',
+  Automotive: 'Keep your ride ready',
+  'Grocery & Gourmet': 'Pantry and gourmet picks',
 }
 
-function buildPromoSections(products) {
-  const topRated = products.filter((p) => (p.ratings || 0) >= 4).slice(0, 8)
-  const recent = products.slice(0, 8)
-  const gaming = products
-    .filter((p) => p.category?.toLowerCase() === 'gaming')
-    .slice(0, 8)
-  const electronics = products
-    .filter((p) => p.category?.toLowerCase() === 'electronics')
-    .slice(0, 8)
-
-  return [
-    [
-      {
-        title: "Today's Deals",
-        link: '/products',
-        items: recent.slice(0, 4).map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
-      },
-      {
-        title: 'Top Rated Products',
-        link: '/products?sort=rating',
-        items: topRated.slice(0, 4).map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
-      },
-      {
-        title: 'Gaming Essentials',
-        link: '/products?category=gaming',
-        items: gaming.slice(0, 4).map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
-      },
-      {
-        title: 'Electronics Deals',
-        link: '/products?category=electronics',
-        items: electronics
-          .slice(0, 4)
-          .map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
-      },
-    ],
-    [
-      {
-        title: 'New Arrivals',
-        link: '/products?sort=-createdAt',
-        items: products.slice(0, 4).map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
-      },
-      {
-        title: 'Best Sellers',
-        link: '/products?sort=-numReviews',
-        items: products.slice(0, 4).map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
-      },
-      {
-        title: 'Home & Kitchen',
-        link: '/products?category=home',
-        items: products
-          .filter((p) => p.category?.toLowerCase() === 'home')
-          .slice(0, 4)
-          .map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
-      },
-      {
-        title: 'Fashion Finds',
-        link: '/products?category=clothing',
-        items: products
-          .filter((p) => p.category?.toLowerCase() === 'clothing')
-          .slice(0, 4)
-          .map((p) => ({ img: p.images?.[0] || 'https://placehold.co/300x300/f5f5f5/333?text=No+Image' })),
-      },
-    ],
-  ]
+const SHELF_TITLES = {
+  Electronics: 'Top picks in Electronics',
+  'Computers & Accessories': 'Work and play essentials',
+  Gaming: 'Most loved in Gaming',
+  'Home & Kitchen': 'Best sellers in Home & Kitchen',
+  Clothing: 'Trending fashion picks',
+  'Health & Beauty': 'Popular beauty finds',
+  'Sports & Outdoors': 'Outdoor and fitness favorites',
+  Books: 'Readers are loving these books',
+  'Toys & Games': 'Fun finds for every age',
+  Automotive: 'Automotive upgrades and tools',
+  'Grocery & Gourmet': 'Pantry picks and gourmet treats',
 }
 
-/* --- Horizontal Product Carousel --- */
-function ProductCarousel({ title, products, onAddToCart }) {
-  const scrollRef = useRef(null)
+const categoryLink = (category) =>
+  `/products?category=${encodeURIComponent(category)}`
 
-  const scroll = (dir) => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({
-        left: dir * scrollRef.current.clientWidth * 0.75,
-        behavior: 'smooth',
-      })
-    }
+const formatCurrency = (value = 0) =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: Number.isInteger(Number(value)) ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(Number(value) || 0)
+
+const getProductImage = (product, index = 0) =>
+  product.images?.[index] ?? product.images?.[0] ?? IMAGE_PLACEHOLDER
+
+const chunkItems = (items, chunkSize) => {
+  const chunks = []
+
+  for (let index = 0; index < items.length; index += chunkSize) {
+    chunks.push(items.slice(index, index + chunkSize))
   }
 
-  if (!products.length) return null
+  return chunks
+}
+
+const sortByNewest = (products) =>
+  [...products].sort(
+    (left, right) =>
+      new Date(right.createdAt ?? 0).getTime() -
+      new Date(left.createdAt ?? 0).getTime()
+  )
+
+const sortByTopRated = (products) =>
+  [...products].sort((left, right) => {
+    const ratingDelta = (right.ratings ?? 0) - (left.ratings ?? 0)
+
+    if (ratingDelta !== 0) return ratingDelta
+
+    const reviewDelta = (right.numReviews ?? 0) - (left.numReviews ?? 0)
+
+    if (reviewDelta !== 0) return reviewDelta
+
+    return (right.price ?? 0) - (left.price ?? 0)
+  })
+
+function buildCategoryEntries(products) {
+  const groupedProducts = products.reduce((groups, product) => {
+    const category = product.category || 'Other'
+
+    if (!groups[category]) {
+      groups[category] = []
+    }
+
+    groups[category].push(product)
+    return groups
+  }, {})
+
+  const knownCategories = CATEGORY_ORDER.filter(
+    (category) => groupedProducts[category]?.length
+  )
+  const otherCategories = Object.keys(groupedProducts)
+    .filter((category) => !CATEGORY_ORDER.includes(category))
+    .sort()
+
+  return [...knownCategories, ...otherCategories].map((category) => [
+    category,
+    groupedProducts[category],
+  ])
+}
+
+function buildCategoryTiles(products) {
+  if (!products.length) return []
+
+  const primaryTiles = products.map((product) => ({
+    id: `${product._id}-primary`,
+    productId: product._id,
+    image: getProductImage(product),
+    label: product.name,
+  }))
+
+  const additionalTiles = products.flatMap((product) =>
+    (product.images ?? []).slice(1).map((image, index) => ({
+      id: `${product._id}-alt-${index}`,
+      productId: product._id,
+      image,
+      label: `${product.name} view ${index + 2}`,
+    }))
+  )
+
+  const tiles = [...primaryTiles, ...additionalTiles]
+
+  while (tiles.length < 4) {
+    const fallbackTile = tiles[tiles.length % Math.max(tiles.length, 1)]
+
+    if (!fallbackTile) break
+
+    tiles.push({
+      ...fallbackTile,
+      id: `${fallbackTile.id}-repeat-${tiles.length}`,
+    })
+  }
+
+  return tiles.slice(0, 4)
+}
+
+function buildShelfItems(products) {
+  return products.map((product) => ({
+    id: product._id,
+    productId: product._id,
+    image: getProductImage(product),
+    title: product.name,
+    category: product.category,
+    price: product.price,
+    rating: product.ratings ?? 0,
+    numReviews: product.numReviews ?? 0,
+    prime: product.prime,
+  }))
+}
+
+function buildGalleryItems(products) {
+  return products.flatMap((product) => {
+    const images = product.images?.length ? product.images : [IMAGE_PLACEHOLDER]
+
+    return images.map((image, index) => ({
+      id: `${product._id}-gallery-${index}`,
+      productId: product._id,
+      image,
+      title: product.name,
+      category: product.category,
+      price: product.price,
+      rating: product.ratings ?? 0,
+      numReviews: product.numReviews ?? 0,
+      prime: product.prime,
+      alternateView: index > 0,
+    }))
+  })
+}
+
+function CategoryShowcaseCard({ card }) {
+  return (
+    <article className="hp-category-card">
+      <div className="hp-category-card__header">
+        <h2 className="hp-category-card__title">{card.title}</h2>
+        <span className="hp-category-card__count">{card.count} items</span>
+      </div>
+
+      <div className="hp-category-card__grid">
+        {card.items.map((item) => (
+          <Link
+            key={item.id}
+            to={`/products/${item.productId}`}
+            className="hp-category-card__tile"
+          >
+            <div className="hp-category-card__image">
+              <img
+                src={item.image}
+                alt={item.label}
+                loading="lazy"
+                onError={(event) => {
+                  event.target.src = IMAGE_PLACEHOLDER
+                }}
+              />
+            </div>
+            <span className="hp-category-card__label">{item.label}</span>
+          </Link>
+        ))}
+      </div>
+
+      <Link to={card.link} className="hp-inline-link">
+        {card.footer}
+      </Link>
+    </article>
+  )
+}
+
+function ProductShelf({ title, items, link, linkLabel = 'See more' }) {
+  const trackRef = useRef(null)
+
+  if (!items.length) return null
+
+  const handleScroll = (direction) => {
+    if (!trackRef.current) return
+
+    trackRef.current.scrollBy({
+      left: direction * trackRef.current.clientWidth * 0.88,
+      behavior: 'smooth',
+    })
+  }
 
   return (
-    <section className="hp-carousel">
-      <h2 className="hp-carousel__title">{title}</h2>
-      <div className="hp-carousel__wrapper">
-        <button
-          type="button"
-          className="hp-carousel__arrow hp-carousel__arrow--prev"
-          onClick={() => scroll(-1)}
-          aria-label="Scroll left"
-        >
-          ‹
-        </button>
-        <div className="hp-carousel__track" ref={scrollRef}>
-          {products.map((p) => (
-            <div key={p._id} className="hp-carousel__card">
-              <Link to={`/products/${p._id}`} className="hp-carousel__card-img">
-                <img
-                  src={p.images?.[0] || 'https://placehold.co/200x200'}
-                  alt={p.name}
-                  loading="lazy"
-                  onError={(e) => {
-                    e.target.src = 'https://placehold.co/200x200'
-                  }}
-                />
-              </Link>
-              <Link
-                to={`/products/${p._id}`}
-                className="hp-carousel__card-title"
-              >
-                {p.name}
-              </Link>
-              <div className="hp-carousel__card-price">${p.price}</div>
-              <div className="hp-carousel__card-rating">
-                {'★'.repeat(Math.round(p.ratings || 0))}
-                {'☆'.repeat(5 - Math.round(p.ratings || 0))}
-                <span className="hp-carousel__card-count">
-                  ({p.numReviews || 0})
-                </span>
-              </div>
-              <button
-                type="button"
-                className="hp-carousel__card-btn"
-                onClick={() =>
-                  onAddToCart?.({
-                    productId: p._id,
-                    title: p.name,
-                    price: p.price,
-                    quantity: 1,
-                  })
-                }
-              >
-                Add to Cart
-              </button>
-            </div>
-          ))}
+    <section className="hp-section">
+      <div className="hp-shelf">
+        <div className="hp-section__heading">
+          <div>
+            <h2 className="hp-section__title">{title}</h2>
+            <p className="hp-section__subtitle">
+              Built directly from your backend catalog data.
+            </p>
+          </div>
+          {link ? (
+            <Link to={link} className="hp-inline-link">
+              {linkLabel}
+            </Link>
+          ) : null}
         </div>
-        <button
-          type="button"
-          className="hp-carousel__arrow hp-carousel__arrow--next"
-          onClick={() => scroll(1)}
-          aria-label="Scroll right"
-        >
-          ›
-        </button>
+
+        <div className="hp-shelf__frame">
+          {items.length > 5 ? (
+            <button
+              type="button"
+              className="hp-shelf__arrow hp-shelf__arrow--prev"
+              onClick={() => handleScroll(-1)}
+              aria-label={`Scroll ${title} left`}
+            >
+              ‹
+            </button>
+          ) : null}
+
+          <div className="hp-shelf__track" ref={trackRef}>
+            {items.map((item) => (
+              <article key={item.id} className="hp-shelf__item">
+                <Link
+                  to={`/products/${item.productId}`}
+                  className="hp-shelf__image"
+                >
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    loading="lazy"
+                    onError={(event) => {
+                      event.target.src = IMAGE_PLACEHOLDER
+                    }}
+                  />
+                  {item.alternateView ? (
+                    <span className="hp-shelf__badge">More view</span>
+                  ) : null}
+                </Link>
+
+                <Link
+                  to={`/products/${item.productId}`}
+                  className="hp-shelf__name"
+                >
+                  {item.title}
+                </Link>
+
+                <p className="hp-shelf__meta">
+                  {item.category}
+                  {item.numReviews ? ` • ${item.numReviews} reviews` : ''}
+                </p>
+
+                <div className="hp-shelf__footer">
+                  <span className="hp-shelf__price">
+                    {formatCurrency(item.price)}
+                  </span>
+                  {item.prime ? (
+                    <span className="hp-shelf__tag hp-shelf__tag--prime">
+                      Prime
+                    </span>
+                  ) : item.rating > 0 ? (
+                    <span className="hp-shelf__tag">
+                      {item.rating.toFixed(1)} ★
+                    </span>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {items.length > 5 ? (
+            <button
+              type="button"
+              className="hp-shelf__arrow hp-shelf__arrow--next"
+              onClick={() => handleScroll(1)}
+              aria-label={`Scroll ${title} right`}
+            >
+              ›
+            </button>
+          ) : null}
+        </div>
       </div>
     </section>
   )
 }
 
-/* --- Category Card (Amazon 4-image style) --- */
-function CategoryCardItem({ card }) {
-  return (
-    <div className="hp-cat-card">
-      <h3 className="hp-cat-card__title">{card.title}</h3>
-      <div className="hp-cat-card__grid">
-        {card.items.map((item, i) => (
-          <Link key={i} to={card.link} className="hp-cat-card__item">
-            <img
-              src={item.img}
-              alt={item.label}
-              loading="lazy"
-              onError={(e) => {
-                e.target.src =
-                  'https://placehold.co/300x300/f5f5f5/333?text=Product'
-              }}
-            />
-            <span className="hp-cat-card__label">{item.label}</span>
-          </Link>
-        ))}
-      </div>
-      <Link to={card.link} className="hp-cat-card__link">
-        See more
-      </Link>
-    </div>
-  )
-}
-
-/* --- Promo Card (with 2x2 images) --- */
-function PromoCard({ promo }) {
-  return (
-    <div className="hp-promo-card">
-      <h3 className="hp-promo-card__title">{promo.title}</h3>
-      <div className="hp-promo-card__grid">
-        {promo.items.map((item, i) => (
-          <Link key={i} to={promo.link} className="hp-promo-card__item">
-            <img
-              src={item.img}
-              alt=""
-              loading="lazy"
-              onError={(e) => {
-                e.target.src =
-                  'https://placehold.co/300x300/f5f5f5/333?text=Product'
-              }}
-            />
-          </Link>
-        ))}
-      </div>
-      <Link to={promo.link} className="hp-promo-card__link">
-        Discover more
-      </Link>
-    </div>
-  )
-}
-
-/* ===== MAIN HOME PAGE ===== */
 export default function HomePage() {
   const dispatch = useAppDispatch()
   const products = useProducts()
@@ -263,40 +361,71 @@ export default function HomePage() {
   const [searchParams] = useSearchParams()
   const search = searchParams.get('search') ?? ''
 
-  const categoryCards = useMemo(
-    () => buildCategorySections(products),
+  useEffect(() => {
+    fetchProducts({ search, limit: 100 })
+  }, [fetchProducts, search])
+
+  const categoryEntries = useMemo(() => buildCategoryEntries(products), [products])
+
+  const categoryRows = useMemo(() => {
+    const cards = categoryEntries.map(([category, categoryProducts]) => ({
+      category,
+      title: CATEGORY_CARD_TITLES[category] ?? `Explore ${category}`,
+      link: categoryLink(category),
+      footer: `See more in ${category}`,
+      count: categoryProducts.length,
+      items: buildCategoryTiles(categoryProducts),
+    }))
+
+    return chunkItems(cards, 4)
+  }, [categoryEntries])
+
+  const dealShelfItems = useMemo(
+    () => buildShelfItems(sortByTopRated(products).slice(0, 12)),
     [products]
   )
 
-  const promoSections = useMemo(() => buildPromoSections(products), [products])
+  const newestShelfItems = useMemo(
+    () => buildShelfItems(sortByNewest(products).slice(0, 12)),
+    [products]
+  )
 
-  useEffect(() => {
-    fetchProducts({ search, limit: 100 })
-  }, [dispatch, fetchProducts, search])
+  const galleryShelfItems = useMemo(() => buildGalleryItems(products), [products])
 
-  const handleAddToCart = useCallback(
-    (payload) => {
-      if (!isAuthenticated) {
-        dispatch(
-          addToast({
-            title: 'Sign in required',
-            message: 'Please sign in to add items.',
-            type: 'info',
-          })
-        )
-        return
-      }
-      addToCart({ productId: payload.productId, quantity: 1 })
+  const categoryShelves = useMemo(
+    () =>
+      categoryEntries
+        .map(([category, categoryProducts]) => ({
+          title: SHELF_TITLES[category] ?? `Top picks in ${category}`,
+          link: categoryLink(category),
+          items: buildShelfItems(categoryProducts),
+        }))
+        .filter((section) => section.items.length > 0),
+    [categoryEntries]
+  )
+
+  const handleAddToCart = ({ productId, title }) => {
+    if (!isAuthenticated) {
       dispatch(
         addToast({
-          title: 'Added',
-          message: `${payload.title ?? 'Product'} added to cart.`,
-          type: 'success',
+          title: 'Sign in required',
+          message: 'Please sign in to add items.',
+          type: 'info',
         })
       )
-    },
-    [dispatch, isAuthenticated, addToCart]
-  )
+      return
+    }
+
+    addToCart({ productId, quantity: 1 })
+
+    dispatch(
+      addToast({
+        title: 'Added',
+        message: `${title ?? 'Product'} added to cart.`,
+        type: 'success',
+      })
+    )
+  }
 
   if ((status === 'loading' || status === 'idle') && !products.length) {
     return (
@@ -317,8 +446,9 @@ export default function HomePage() {
         description="Please try again later."
         action={
           <button
+            type="button"
             className="btn btn--primary"
-            onClick={() => fetchProducts({ search, limit: 24 })}
+            onClick={() => fetchProducts({ search, limit: 100 })}
           >
             Retry
           </button>
@@ -327,184 +457,137 @@ export default function HomePage() {
     )
   }
 
-  return (
-    <div className="home-page">
-      {/* Hero Carousel */}
-      <Carousel images={CAROUSEL_IMAGES} autoPlayInterval={4000} />
-
-      {/* Category Cards Grid */}
-      {!search && (
-        <section className="hp-section hp-section--cards">
-          <div className="hp-cat-card-grid">
-            {categoryCards.map((card, i) => (
-              <CategoryCardItem key={i} card={card} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Search results or Today's Deals */}
-      {products.length > 0 && (
-        <section className={`hp-section ${search ? 'hp-section--search' : ''}`}>
-          <h2 className="hp-section__title">
-            {search ? `Results for "${search}"` : "Today's Deals"}
-          </h2>
-          <div className="hp-product-grid">
-            {products.map((product) => (
-              <Link
-                key={product._id}
-                to={`/products/${product._id}`}
-                className="hp-product-card"
-              >
-                <div className="hp-product-card__img">
-                  <img
-                    src={product.images?.[0] || 'https://placehold.co/200x200'}
-                    alt={product.name}
-                    loading="lazy"
-                    onError={(e) => {
-                      e.target.src = 'https://placehold.co/200x200'
-                    }}
-                  />
-                </div>
-                <div className="hp-product-card__title">{product.name}</div>
-                <div className="hp-product-card__rating">
-                  {'★'.repeat(Math.round(product.ratings || 0))}
-                  {'☆'.repeat(5 - Math.round(product.ratings || 0))}
-                  <span className="hp-product-card__count">
-                    ({product.numReviews || 0})
-                  </span>
-                </div>
-                <div className="hp-product-card__price">${product.price}</div>
-                <button
-                  type="button"
-                  className="hp-product-card__btn"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    handleAddToCart({
-                      productId: product._id,
-                      title: product.name,
-                      price: product.price,
-                    })
-                  }}
-                >
-                  Add to Cart
-                </button>
-              </Link>
-            ))}
-          </div>
-          {search && (
-            <div className="hp-section__footer">
-              <Link to="/products" className="hp-see-all-link">
-                See all results for "{search}"
+  if (search) {
+    return (
+      <div className="home-page">
+        <section className="hp-section hp-section--search">
+          <div className="hp-product-panel">
+            <div className="hp-section__heading">
+              <div>
+                <h1 className="hp-search-title">Results for "{search}"</h1>
+                <p className="hp-section__subtitle">
+                  {products.length} backend products matched your search.
+                </p>
+              </div>
+              <Link to="/products" className="hp-inline-link">
+                Open product catalog
               </Link>
             </div>
-          )}
-        </section>
-      )}
 
-      {/* Horizontal carousel: Related products */}
-      {!search && products.length > 0 && (
-        <ProductCarousel
-          title="Related to items you've viewed"
-          products={products.slice(0, 10)}
-          onAddToCart={handleAddToCart}
+            {products.length ? (
+              <div className="hp-product-panel__grid">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product._id}
+                    product={product}
+                    onAddToCart={handleAddToCart}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                title="No products found"
+                description="Try a different search term or browse the full catalog."
+              />
+            )}
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  return (
+    <div className="home-page">
+      <section className="hp-hero">
+        <Carousel images={CAROUSEL_IMAGES} autoPlayInterval={4000} />
+      </section>
+
+      {categoryRows[0]?.length ? (
+        <section className="hp-section hp-section--overlap">
+          <div className="hp-card-grid">
+            {categoryRows[0].map((card) => (
+              <CategoryShowcaseCard key={card.category} card={card} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <ProductShelf
+        title="Today's top deals from your backend"
+        items={dealShelfItems}
+        link="/products"
+        linkLabel="Shop all deals"
+      />
+
+      {categoryRows.slice(1).map((row, index) => (
+        <section key={index} className="hp-section">
+          <div className="hp-card-grid">
+            {row.map((card) => (
+              <CategoryShowcaseCard key={card.category} card={card} />
+            ))}
+          </div>
+        </section>
+      ))}
+
+      <ProductShelf
+        title="Every product image from your backend"
+        items={galleryShelfItems}
+        link="/products"
+        linkLabel="Browse products"
+      />
+
+      <ProductShelf
+        title="New arrivals in your catalog"
+        items={newestShelfItems}
+        link="/products?sort=-createdAt"
+        linkLabel="See newest"
+      />
+
+      {categoryShelves.map((section) => (
+        <ProductShelf
+          key={section.title}
+          title={section.title}
+          items={section.items}
+          link={section.link}
+          linkLabel="See more"
         />
-      )}
+      ))}
 
-      {/* Promo Grid - Set 1 */}
-      {!search && (
-        <section className="hp-section hp-section--promo">
-          <div className="hp-promo-grid">
-            {promoSections[0].map((promo, i) => (
-              <PromoCard key={i} promo={promo} />
+      <section className="hp-section">
+        <div className="hp-product-panel">
+          <div className="hp-section__heading">
+            <div>
+              <h2 className="hp-section__title">Shop the full catalog</h2>
+              <p className="hp-section__subtitle">
+                All {products.length} backend products are rendered below on the
+                home page.
+              </p>
+            </div>
+            <Link to="/products" className="hp-inline-link">
+              View catalog
+            </Link>
+          </div>
+
+          <div className="hp-product-panel__grid">
+            {products.map((product) => (
+              <ProductCard
+                key={product._id}
+                product={product}
+                onAddToCart={handleAddToCart}
+              />
             ))}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* Horizontal carousel: More items */}
-      {!search && products.length > 6 && (
-        <ProductCarousel
-          title="More items to consider"
-          products={products.slice(6, 18)}
-          onAddToCart={handleAddToCart}
-        />
-      )}
-
-      {/* Promo Grid - Set 2 */}
-      {!search && (
-        <section className="hp-section hp-section--promo">
-          <div className="hp-promo-grid">
-            {promoSections[1].map((promo, i) => (
-              <PromoCard key={i} promo={promo} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Best Sellers */}
-      {!search && products.length > 0 && (
-        <section className="hp-section hp-section--bestsellers">
-          <h2 className="hp-section__title">
-            Best Sellers in Clothing, Shoes & Jewelry
-          </h2>
-          <div className="hp-bestsellers-track">
-            {products.slice(0, 8).map((p) => (
-              <Link
-                key={p._id}
-                to={`/products/${p._id}`}
-                className="hp-bestseller"
-              >
-                <img
-                  src={p.images?.[0] || 'https://placehold.co/160x200'}
-                  alt={p.name}
-                  loading="lazy"
-                  onError={(e) => {
-                    e.target.src = 'https://placehold.co/160x200'
-                  }}
-                />
-                <div className="hp-bestseller__price">${p.price}</div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {!search && products.length > 0 && (
-        <section className="hp-section hp-section--bestsellers">
-          <h2 className="hp-section__title">Best Sellers in Home & Kitchen</h2>
-          <div className="hp-bestsellers-track">
-            {products.slice(0, 8).map((p) => (
-              <Link
-                key={p._id}
-                to={`/products/${p._id}`}
-                className="hp-bestseller"
-              >
-                <img
-                  src={p.images?.[0] || 'https://placehold.co/160x200'}
-                  alt={p.name}
-                  loading="lazy"
-                  onError={(e) => {
-                    e.target.src = 'https://placehold.co/160x200'
-                  }}
-                />
-                <div className="hp-bestseller__price">${p.price}</div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Empty state */}
-      {!search && products.length === 0 && (
+      {!products.length ? (
         <section className="hp-section">
           <EmptyState
             title="No products available"
             description="Check back later for new deals."
           />
         </section>
-      )}
+      ) : null}
     </div>
   )
 }

@@ -77,7 +77,9 @@ const OrderCard = function OrderCard({ order }) {
         <div className="order-card__total">
           Total:{' '}
           <strong>
-            {formatCurrency(order.totalAmount ?? order.total ?? 0)}
+            {formatCurrency(
+              order.totalPrice ?? order.totalAmount ?? order.total ?? 0
+            )}
           </strong>
         </div>
 

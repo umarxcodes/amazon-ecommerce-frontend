@@ -28,7 +28,7 @@
 }
 
 /* ===== ORDER SUMMARY (left side) ===== */
-..checkout-page__summary {
+.checkout-page__summary {
   background: #fff;
   border: 1px solid #e3e6e6;
   border-radius: 10px;

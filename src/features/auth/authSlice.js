@@ -88,7 +88,7 @@ const authSlice = createSlice({
       })
       .addCase(register.pending, pending())
       .addCase(register.rejected, rejected())
-      .addCase(register.fulfilled, (state, action) => {
+      .addCase(register.fulfilled, (state) => {
         fulfilled()(state)
         // Backend register returns { success, message, data: user } — NO token
         // UI should redirect to /login after success

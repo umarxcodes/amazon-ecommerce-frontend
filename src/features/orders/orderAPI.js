@@ -28,3 +28,8 @@ export const startCheckoutAPI = async (orderId) => {
   const { data } = await axiosInstance.post('/payment/checkout', { orderId })
   return data
 }
+
+export const confirmCheckoutAPI = async (payload) => {
+  const { data } = await axiosInstance.post('/payment/confirm', payload)
+  return data
+}

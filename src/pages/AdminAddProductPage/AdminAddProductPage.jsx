@@ -10,6 +10,7 @@ import { createProduct } from '../../features/products/productSlice'
 import { addToast } from '../../features/ui/uiSlice'
 import Button from '../../components/shared/Button'
 import ConfirmationModal from '../../components/shared/ConfirmationModal'
+import { PRODUCT_CATEGORIES } from '../../constants/productCategories'
 import './AdminAddProductPage.css'
 
 export default function AdminAddProductPage() {
@@ -40,8 +41,13 @@ export default function AdminAddProductPage() {
   }, [])
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files)
+    const files = Array.from(e.target.files).slice(0, 5)
     setImages(files)
+    setErrors((prev) => {
+      const next = { ...prev }
+      delete next.images
+      return next
+    })
 
     // Generate previews
     const previews = files.map((file) => URL.createObjectURL(file))
@@ -70,7 +76,11 @@ export default function AdminAddProductPage() {
     ) {
       newErrors.rating = 'Rating must be between 0 and 5'
     }
+    if (!PRODUCT_CATEGORIES.includes(formData.category)) {
+      newErrors.category = 'Please choose one of the supported categories'
+    }
     if (images.length === 0) newErrors.images = 'At least one image is required'
+    if (images.length > 5) newErrors.images = 'You can upload up to 5 images only'
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -203,14 +213,19 @@ export default function AdminAddProductPage() {
 
           <div className="admin-add-product-form__field">
             <label htmlFor="product-category">Category *</label>
-            <input
+            <select
               id="product-category"
-              type="text"
               value={formData.category}
               onChange={(e) => updateField('category', e.target.value)}
-              placeholder="e.g., Electronics, Clothing, Home & Kitchen"
               aria-invalid={!!errors.category}
-            />
+            >
+              <option value="">Select a category</option>
+              {PRODUCT_CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
             {errors.category && <span className="admin-add-product-form__error">{errors.category}</span>}
           </div>
 
@@ -249,7 +264,7 @@ export default function AdminAddProductPage() {
               aria-invalid={!!errors.images}
             />
             <p className="admin-add-product-form__field-hint">
-              Upload multiple images (JPG, PNG, WebP). First image will be the main product image.
+              Upload up to 5 images (JPG, PNG, WebP). First image will be the main product image.
             </p>
             {errors.images && <span className="admin-add-product-form__error">{errors.images}</span>}
           </div>
