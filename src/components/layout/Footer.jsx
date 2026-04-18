@@ -69,7 +69,7 @@ export default function Footer() {
       </div>
       <div className="footer__bottom">
         <img
-          src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1775646248/amazon_logo_vwm0jl.png"
+          src="https://res.cloudinary.com/dlul8f6xz/image/upload/v1776423136/amazon-logo-white_qyvohr.png"
           alt="Amazon"
           className="footer__logo"
         />

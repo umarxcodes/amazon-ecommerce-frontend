@@ -52,8 +52,8 @@ export default function ProductTabs({ product }) {
               <tr>
                 <th>Rating</th>
                 <td>
-                  <StarRating rating={product?.rating} />{' '}
-                  {Number(product?.rating || 0).toFixed(1)} / 5
+                  <StarRating rating={product?.ratings} />{' '}
+                  {Number(product?.ratings || 0).toFixed(1)} / 5
                 </td>
               </tr>
               <tr>
@@ -77,7 +77,7 @@ export default function ProductTabs({ product }) {
         {active === 'reviews' && (
           <div className="product-tabs__reviews">
             <StarRating
-              rating={product?.rating}
+              rating={product?.ratings}
               count={product?.reviewsCount}
               size="lg"
             />

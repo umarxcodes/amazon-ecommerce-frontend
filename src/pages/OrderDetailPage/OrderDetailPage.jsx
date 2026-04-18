@@ -90,7 +90,11 @@ export default function OrderDetailPage() {
     )
   }
 
-  if (!order && status === 'succeeded') {
+  if (!order) {
+    if (status === 'loading' || status === 'idle') {
+      return <LoadingSpinner label="Loading order..." fullScreen />
+    }
+
     return (
       <EmptyState
         title="Order not found"
@@ -211,39 +215,53 @@ export default function OrderDetailPage() {
 
         <div className="order-detail__items">
           <h3>Items</h3>
-          {order.items?.map((item) => (
-            <div
-              key={item.productId ?? item._id}
-              className="order-detail__item"
-            >
-              <Link
-                to={`/products/${item.productId}`}
-                className="order-detail__item-img"
-              >
-                <img
-                  src={item.image ?? 'https://placehold.co/80x80'}
-                  alt={item.title ?? 'Product'}
-                  loading="lazy"
-                  width="80"
-                  height="80"
-                />
-              </Link>
-              <div className="order-detail__item-info">
-                <Link
-                  to={`/products/${item.productId}`}
-                  className="order-detail__item-title"
-                >
-                  {item.title}
-                </Link>
-                <span className="order-detail__item-qty">
-                  Qty: {item.quantity}
+          {order.items?.map((item) => {
+            const productId =
+              item.product?.toString?.() || item.productId || undefined
+            const productLink = productId ? `/products/${productId}` : null
+            return (
+              <div key={item._id ?? productId} className="order-detail__item">
+                {productLink ? (
+                  <Link to={productLink} className="order-detail__item-img">
+                    <img
+                      src={item.image ?? 'https://placehold.co/80x80'}
+                      alt={item.title ?? 'Product'}
+                      loading="lazy"
+                      width="80"
+                      height="80"
+                    />
+                  </Link>
+                ) : (
+                  <div className="order-detail__item-img">
+                    <img
+                      src={item.image ?? 'https://placehold.co/80x80'}
+                      alt={item.title ?? 'Product'}
+                      loading="lazy"
+                      width="80"
+                      height="80"
+                    />
+                  </div>
+                )}
+                <div className="order-detail__item-info">
+                  {productLink ? (
+                    <Link to={productLink} className="order-detail__item-title">
+                      {item.title}
+                    </Link>
+                  ) : (
+                    <span className="order-detail__item-title">
+                      {item.title}
+                    </span>
+                  )}
+                  <span className="order-detail__item-qty">
+                    Qty: {item.quantity}
+                  </span>
+                </div>
+                <span className="order-detail__item-price">
+                  {formatCurrency((item.price ?? 0) * (item.quantity ?? 0))}
                 </span>
               </div>
-              <span className="order-detail__item-price">
-                {formatCurrency((item.price ?? 0) * (item.quantity ?? 0))}
-              </span>
-            </div>
-          ))}
+            )
+          })}
 
           <div className="order-detail__totals">
             <div className="order-detail__totals-row">
