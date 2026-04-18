@@ -109,11 +109,15 @@ export default function OrderDetailPage() {
   }
 
   // Check if payment was cancelled (via URL params)
-  const paymentCancelled = checkoutStatus === 'failed'
+  const checkoutError = checkoutStatus === 'failed' ? error : null
   const paymentSuccess = checkoutStatus === 'succeeded'
 
   const paymentStatus =
-    (order?.paymentStatus ?? order?.isPaid) ? 'paid' : 'pending'
+    order?.isPaid || order?.paymentResult?.status === 'paid'
+      ? 'paid'
+      : 'pending'
+  const orderTotal =
+    order.totalPrice ?? order.totalAmount ?? order.total ?? 0
 
   return (
     <div className="order-detail-page">
@@ -134,13 +138,13 @@ export default function OrderDetailPage() {
           <strong>Payment successful!</strong> Your order has been paid.
         </div>
       )}
-      {paymentCancelled && (
+      {checkoutError && (
         <div className="order-detail-page__payment-cancelled" role="alert">
           <i
             className="fas fa-times-circle"
             style={{ color: '#b12704', marginRight: '0.5rem' }}
           />
-          Payment cancelled. You can retry payment below.
+          {checkoutError}
         </div>
       )}
 
@@ -197,8 +201,8 @@ export default function OrderDetailPage() {
                     : '✕ Failed'}
               </strong>
             </p>
-            {order.paymentIntentId && (
-              <p>Stripe — •••• {order.paymentIntentId.slice(-4)}</p>
+            {order.paymentResult?.id && (
+              <p>Stripe — •••• {order.paymentResult.id.slice(-4)}</p>
             )}
             {paymentStatus !== 'paid' && (
               <Button
@@ -267,7 +271,7 @@ export default function OrderDetailPage() {
             <div className="order-detail__totals-row">
               <span>Subtotal</span>
               <span>
-                {formatCurrency(order.totalAmount ?? order.total ?? 0)}
+                {formatCurrency(orderTotal)}
               </span>
             </div>
             <div className="order-detail__totals-row">

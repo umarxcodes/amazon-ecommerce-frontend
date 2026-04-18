@@ -165,10 +165,12 @@ import {
   selectOrderError,
   selectCreateOrderStatus,
   selectCheckoutStatus as selectOrderCheckoutStatus,
+  selectConfirmStatus as selectOrderConfirmStatus,
   fetchOrders,
   fetchOrderById,
   createOrder,
   startCheckout,
+  confirmCheckout,
 } from '../features/orders/orderSlice'
 export const useOrders = () => useAppSelector(selectAllOrders)
 export const useSelectedOrder = () => useAppSelector(selectSelectedOrder)
@@ -180,6 +182,8 @@ export const useCreateOrderStatus = () =>
   useAppSelector(selectCreateOrderStatus)
 export const useOrderCheckoutStatus = () =>
   useAppSelector(selectOrderCheckoutStatus)
+export const useOrderConfirmStatus = () =>
+  useAppSelector(selectOrderConfirmStatus)
 
 export const useFetchOrders = () => {
   const dispatch = useAppDispatch()
@@ -196,6 +200,13 @@ export const useCreateOrder = () => {
 export const useStartCheckout = () => {
   const dispatch = useAppDispatch()
   return useCallback((id) => dispatch(startCheckout(id)), [dispatch])
+}
+export const useConfirmCheckout = () => {
+  const dispatch = useAppDispatch()
+  return useCallback(
+    (payload) => dispatch(confirmCheckout(payload)),
+    [dispatch]
+  )
 }
 
 // Admin hooks

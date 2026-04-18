@@ -12,9 +12,7 @@ function Carousel({ images = [], autoPlayInterval = 4000 }) {
   const trackRef = useRef(null)
 
   const total = images.length
-  if (!total) return null
-
-  const extendedImages = [...images, images[0]]
+  const extendedImages = total ? [...images, images[0]] : []
 
   const stopAutoPlay = useCallback(() => {
     if (timerRef.current) {
@@ -71,6 +69,8 @@ function Carousel({ images = [], autoPlayInterval = 4000 }) {
   }
 
   const displayIndex = currentIndex >= total ? 0 : currentIndex
+
+  if (!total) return null
 
   return (
     <div

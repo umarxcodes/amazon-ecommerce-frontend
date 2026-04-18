@@ -157,7 +157,6 @@ export default function CheckoutPage() {
       dispatch,
       form,
       cartItems,
-      cartTotal,
       createOrderThunk,
       startCheckout,
       navigate,

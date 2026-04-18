@@ -4,6 +4,7 @@
 
 import { createAsyncThunk, createSlice, createSelector } from '@reduxjs/toolkit'
 import {
+  confirmCheckoutAPI,
   createOrderAPI,
   fetchOrderByIdAPI,
   fetchOrdersAPI,
@@ -20,6 +21,7 @@ const initialState = {
   detailStatus: 'idle',
   createOrderStatus: 'idle',
   checkoutStatus: 'idle',
+  confirmStatus: 'idle',
   error: null,
 }
 
@@ -116,6 +118,27 @@ export const cancelOrder = createAsyncThunk(
   }
 )
 
+export const confirmCheckout = createAsyncThunk(
+  'orders/confirmCheckout',
+  async (payload, thunkApi) => {
+    try {
+      return await confirmCheckoutAPI(payload)
+    } catch (err) {
+      if (err.response?.status === 400) {
+        return thunkApi.rejectWithValue(
+          getErrorMessage(err, 'Payment has not completed yet.')
+        )
+      }
+      if (err.response?.status === 403) {
+        return thunkApi.rejectWithValue('Access denied.')
+      }
+      return thunkApi.rejectWithValue(
+        getErrorMessage(err, 'Unable to confirm payment')
+      )
+    }
+  }
+)
+
 const orderSlice = createSlice({
   name: 'orders',
   initialState,
@@ -125,6 +148,7 @@ const orderSlice = createSlice({
       state.detailStatus = 'idle'
       state.createOrderStatus = 'idle'
       state.checkoutStatus = 'idle'
+      state.confirmStatus = 'idle'
       state.error = null
     },
     setSelectedOrder(state, action) {
@@ -161,6 +185,19 @@ const orderSlice = createSlice({
       .addCase(startCheckout.pending, pending('checkoutStatus'))
       .addCase(startCheckout.fulfilled, fulfilled('checkoutStatus'))
       .addCase(startCheckout.rejected, rejected('checkoutStatus'))
+      .addCase(confirmCheckout.pending, pending('confirmStatus'))
+      .addCase(confirmCheckout.fulfilled, (state, action) => {
+        fulfilled('confirmStatus')(state)
+        const order =
+          action.payload.order || action.payload.data || action.payload
+        if (order) {
+          state.selectedOrder = order
+          state.items = state.items.map((existingOrder) =>
+            existingOrder._id === order._id ? order : existingOrder
+          )
+        }
+      })
+      .addCase(confirmCheckout.rejected, rejected('confirmStatus'))
       .addCase(cancelOrder.pending, pending('mutationStatus'))
       .addCase(cancelOrder.fulfilled, (state, action) => {
         fulfilled('mutationStatus')(state)
@@ -208,4 +245,8 @@ export const selectCreateOrderStatus = createSelector(
 export const selectCheckoutStatus = createSelector(
   [selectOrderState],
   (orders) => orders.checkoutStatus
+)
+export const selectConfirmStatus = createSelector(
+  [selectOrderState],
+  (orders) => orders.confirmStatus
 )

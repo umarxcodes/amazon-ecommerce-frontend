@@ -5,11 +5,13 @@
 import { useEffect, useCallback, useMemo } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import {
+  useConfirmCheckout,
   useAppDispatch,
   useSelectedOrder,
   useOrderDetailStatus,
   useOrderError,
   useOrderCheckoutStatus,
+  useOrderConfirmStatus,
   useFetchOrderById,
   useStartCheckout,
 } from '../../hooks'
@@ -28,9 +30,12 @@ export default function PaymentReturnPage() {
   const status = useOrderDetailStatus()
   const error = useOrderError()
   const checkoutStatus = useOrderCheckoutStatus()
+  const confirmStatus = useOrderConfirmStatus()
   const navigate = useNavigate()
   const fetchOrderById = useFetchOrderById()
   const startCheckout = useStartCheckout()
+  const confirmCheckout = useConfirmCheckout()
+  const sessionId = searchParams.get('session_id') ?? ''
 
   // Determine if this is a success or cancel return
   const isCancel = useMemo(
@@ -46,8 +51,19 @@ export default function PaymentReturnPage() {
   }, [dispatch, orderId, fetchOrderById])
 
   useEffect(() => {
-    if (status === 'succeeded' && order) {
-      const paymentStatus = order.paymentStatus ?? (order.isPaid ? 'paid' : 'pending')
+    if (!orderId || !sessionId || isCancel) return
+
+    confirmCheckout({ orderId, sessionId }).finally(() => {
+      fetchOrderById(orderId)
+    })
+  }, [confirmCheckout, fetchOrderById, isCancel, orderId, sessionId])
+
+  useEffect(() => {
+    if ((status === 'succeeded' || confirmStatus === 'succeeded') && order) {
+      const paymentStatus =
+        order.isPaid || order.paymentResult?.status === 'paid'
+          ? 'paid'
+          : 'pending'
       if (paymentStatus === 'paid' && !isCancel) {
         dispatch(
           addToast({
@@ -66,7 +82,7 @@ export default function PaymentReturnPage() {
         )
       }
     }
-  }, [status, order, isCancel, dispatch])
+  }, [status, confirmStatus, order, isCancel, dispatch])
 
   const handleRetryPayment = useCallback(() => {
     if (orderId) {
@@ -113,7 +129,10 @@ export default function PaymentReturnPage() {
     )
   }
 
-  const paymentStatus = order.paymentStatus ?? (order.isPaid ? 'paid' : 'pending')
+  const paymentStatus =
+    order.isPaid || order.paymentResult?.status === 'paid' ? 'paid' : 'pending'
+  const orderTotal =
+    order.totalPrice ?? order.totalAmount ?? order.total ?? 0
 
   return (
     <div className="order-detail-page">
@@ -134,6 +153,19 @@ export default function PaymentReturnPage() {
           Payment cancelled. You can retry below.
         </div>
       )}
+
+      {!isCancel &&
+      sessionId &&
+      confirmStatus === 'failed' &&
+      paymentStatus !== 'paid' ? (
+        <div className="order-detail-page__payment-cancelled" role="alert">
+          <i
+            className="fas fa-exclamation-circle"
+            style={{ color: '#b12704', marginRight: '0.5rem' }}
+          />
+          {error ?? 'We could not verify your Stripe payment yet. Please retry or refresh the order.'}
+        </div>
+      ) : null}
 
       <div className="order-detail-layout">
         <div className="order-detail__info">
@@ -184,19 +216,19 @@ export default function PaymentReturnPage() {
           <h3>Items</h3>
           {order.items?.map((item) => (
             <div
-              key={item.productId ?? item._id}
+              key={item.product ?? item.productId ?? item._id}
               className="order-detail__item"
             >
               <div className="order-detail__item-info" style={{ flex: 1 }}>
                 <span className="order-detail__item-title">
-                  {item.title ?? 'Product'}
+                  {item.name ?? item.title ?? 'Product'}
                 </span>
                 <span className="order-detail__item-qty">
                   Qty: {item.quantity}
                 </span>
               </div>
               <span className="order-detail__item-price">
-                ${(item.price ?? 0) * (item.quantity ?? 0)}
+                ${((item.price ?? 0) * (item.quantity ?? 0)).toFixed(2)}
               </span>
             </div>
           ))}
@@ -204,9 +236,7 @@ export default function PaymentReturnPage() {
           <div className="order-detail__totals">
             <div className="order-detail__totals-row order-detail__totals-row--total">
               <span>Order Total</span>
-              <strong>
-                ${(order.totalAmount ?? order.total ?? 0) + (order.tax ?? 0)}
-              </strong>
+              <strong>${orderTotal.toFixed(2)}</strong>
             </div>
           </div>
         </div>

@@ -25,6 +25,7 @@ import EmptyState from '../../components/shared/EmptyState'
 import Button from '../../components/shared/Button'
 import ConfirmationModal from '../../components/shared/ConfirmationModal'
 import { formatCurrency } from '../../utils/helpers'
+import { PRODUCT_CATEGORIES } from '../../constants/productCategories'
 import './AdminProductsPage.css'
 
 const INITIAL_FORM_STATE = {
@@ -63,6 +64,9 @@ function ProductFormModal({ mode, product, onSubmit, onClose, isSubmitting }) {
   const [imageFiles, setImageFiles] = useState([])
   const [formErrors, setFormErrors] = useState({})
   const fileInputRef = useRef(null)
+  const categoryOptions = PRODUCT_CATEGORIES.includes(form.category)
+    ? PRODUCT_CATEGORIES
+    : [form.category, ...PRODUCT_CATEGORIES].filter(Boolean)
 
   const updateField = useCallback((key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -112,6 +116,12 @@ function ProductFormModal({ mode, product, onSubmit, onClose, isSubmitting }) {
     if (form.salePrice && Number(form.salePrice) >= Number(form.price))
       errors.salePrice = 'Sale price must be less than regular price'
     if (!form.category.trim()) errors.category = 'Category is required'
+    if (
+      form.category.trim() &&
+      !PRODUCT_CATEGORIES.includes(form.category.trim())
+    ) {
+      errors.category = 'Please choose one of the supported categories'
+    }
     if (!form.stock || isNaN(Number(form.stock)) || Number(form.stock) < 0)
       errors.stock = 'Valid stock value is required'
     if (
@@ -160,7 +170,7 @@ function ProductFormModal({ mode, product, onSubmit, onClose, isSubmitting }) {
       if (mode === 'edit' && form.images.length > 0) {
         form.images.forEach((url) => {
           if (typeof url === 'string') {
-            formData.append('existingImages', url)
+            formData.append('images', url)
           }
         })
       }
@@ -239,13 +249,20 @@ function ProductFormModal({ mode, product, onSubmit, onClose, isSubmitting }) {
           <div className="admin-modal__row">
             <div className="admin-modal__field">
               <label htmlFor="product-category">Category *</label>
-              <input
+              <select
                 id="product-category"
                 required
                 value={form.category}
                 onChange={(e) => updateField('category', e.target.value)}
                 aria-invalid={!!formErrors.category}
-              />
+              >
+                <option value="">Select a category</option>
+                {categoryOptions.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
               {formErrors.category && (
                 <span className="admin-modal__error">
                   {formErrors.category}
@@ -414,12 +431,12 @@ export default function AdminProductsPage() {
   const handleSave = async (payload, isMultipart) => {
     let result
     if (modalMode === 'add') {
-      result = await dispatch(createProductFn(payload))
+      result = await createProductFn(payload)
     } else {
       const updatePayload = isMultipart
         ? { id: editProductId, formData: payload }
         : { id: editProductId, ...payload }
-      result = await dispatch(updateProductFn(updatePayload))
+      result = await updateProductFn(updatePayload)
     }
 
     if (
@@ -455,7 +472,7 @@ export default function AdminProductsPage() {
   }, [])
 
   const confirmDelete = useCallback(async () => {
-    const result = await dispatch(deleteProductFn(deleteModal.productId))
+    const result = await deleteProductFn(deleteModal.productId)
     setDeleteModal({ open: false, productId: null, productName: '' })
     if (deleteProduct.fulfilled.match(result)) {
       dispatch(
