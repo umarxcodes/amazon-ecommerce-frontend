@@ -1,19 +1,199 @@
-import { useEffect, useMemo, useRef } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import {
-  useAddToCart,
-  useAppDispatch,
-  useFetchProducts,
-  useIsAuthenticated,
-  useProductStatus,
-  useProducts,
-} from '../../hooks'
+import { useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAppDispatch, useIsAuthenticated, useAddToCart } from '../../hooks'
 import { addToast } from '../../features/ui/uiSlice'
-import Carousel from '../../components/shared/Carousel'
-import EmptyState from '../../components/shared/EmptyState'
-import SkeletonCard from '../../components/shared/SkeletonCard'
-import ProductCard from '../../features/products/components/ProductCard'
+import axiosInstance from '../../services/axiosInstance'
 import './HomePage.css'
+
+const IMAGE_PLACEHOLDER = 'https://via.placeholder.com/320x320?text=No+Image'
+
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(value || 0)
+}
+
+const StarRating = ({ rating }) => {
+  const fullStars = Math.floor(rating)
+  const hasHalfStar = rating % 1 !== 0
+  return (
+    <span className="hp-product-card__rating">
+      {[...Array(5)].map((_, i) => {
+        if (i < fullStars) {
+          return (
+            <span
+              key={i}
+              className="hp-product-card__star hp-product-card__star--full"
+            >
+              ★
+            </span>
+          )
+        } else if (i === fullStars && hasHalfStar) {
+          return (
+            <span
+              key={i}
+              className="hp-product-card__star hp-product-card__star--half"
+            >
+              ★
+            </span>
+          )
+        } else {
+          return (
+            <span
+              key={i}
+              className="hp-product-card__star hp-product-card__star--empty"
+            >
+              ☆
+            </span>
+          )
+        }
+      })}
+    </span>
+  )
+}
+
+const ProductCard = ({ product, onAddToCart, onProductClick }) => {
+  const [imageSrc, setImageSrc] = useState(
+    product.images?.[0] || IMAGE_PLACEHOLDER
+  )
+
+  const handleCardClick = (e) => {
+    if (e.target.closest('.hp-product-card__add-btn')) return
+    onProductClick(product._id)
+  }
+
+  return (
+    <div
+      className="hp-product-card"
+      onClick={handleCardClick}
+      style={{ cursor: 'pointer' }}
+    >
+      <div className="hp-product-card__image-container">
+        <img
+          src={imageSrc}
+          alt={product.name}
+          className="hp-product-card__image"
+          onError={() => setImageSrc(IMAGE_PLACEHOLDER)}
+          loading="lazy"
+        />
+        {product.prime && (
+          <span className="hp-product-card__prime-badge">Prime</span>
+        )}
+      </div>
+
+      <div className="hp-product-card__content">
+        <h3 className="hp-product-card__name" title={product.name}>
+          {product.name}
+        </h3>
+
+        <div className="hp-product-card__rating-section">
+          <StarRating rating={product.ratings || 0} />
+          {product.numReviews > 0 && (
+            <span className="hp-product-card__reviews">
+              ({product.numReviews})
+            </span>
+          )}
+        </div>
+
+        <p className="hp-product-card__price">
+          ${(product.price || 0).toFixed(2)}
+        </p>
+
+        <p
+          className={`hp-product-card__stock ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}`}
+        >
+          {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+        </p>
+
+        <button
+          className="hp-product-card__add-btn"
+          onClick={() => onAddToCart(product)}
+          disabled={product.stock === 0}
+        >
+          Add to Cart
+        </button>
+      </div>
+    </div>
+  )
+}
+
+const Section = ({
+  title,
+  products,
+  layout = 'scroll',
+  onProductClick,
+  onAddToCart,
+}) => {
+  const scrollRef = useRef(null)
+
+  if (!products || products.length === 0) return null
+
+  const handleScroll = (direction) => {
+    if (!scrollRef.current) return
+    const scrollAmount = direction === 'left' ? -400 : 400
+    scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+  }
+
+  if (layout === 'grid') {
+    return (
+      <section className="hp-section">
+        <div className="hp-section__header">
+          <h2 className="hp-section__title">{title}</h2>
+          <a href="#" className="hp-section__see-more">
+            See more →
+          </a>
+        </div>
+        <div className="hp-section__grid">
+          {products.map((product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+              onAddToCart={onAddToCart}
+              onProductClick={onProductClick}
+            />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section className="hp-section">
+      <div className="hp-section__header">
+        <h2 className="hp-section__title">{title}</h2>
+        <a href="#" className="hp-section__see-more">
+          See more →
+        </a>
+      </div>
+      <div className="hp-section__scroll-container">
+        <button
+          className="hp-section__scroll-btn hp-section__scroll-btn--left"
+          onClick={() => handleScroll('left')}
+        >
+          ‹
+        </button>
+        <div className="hp-section__scroll-track" ref={scrollRef}>
+          {products.map((product) => (
+            <div key={product._id} className="hp-section__scroll-item">
+              <ProductCard
+                product={product}
+                onAddToCart={onAddToCart}
+                onProductClick={onProductClick}
+              />
+            </div>
+          ))}
+        </div>
+        <button
+          className="hp-section__scroll-btn hp-section__scroll-btn--right"
+          onClick={() => handleScroll('right')}
+        >
+          ›
+        </button>
+      </div>
+    </section>
+  )
+}
 
 const CAROUSEL_IMAGES = [
   'https://res.cloudinary.com/dlul8f6xz/image/upload/v1776421978/banner1_kvf6rq.jpg',
@@ -22,520 +202,222 @@ const CAROUSEL_IMAGES = [
   'https://res.cloudinary.com/dlul8f6xz/image/upload/v1776421977/banner_2_s6xm3a.jpg',
 ]
 
-const IMAGE_PLACEHOLDER =
-  'https://placehold.co/320x320/f7f8f8/111111?text=Amazon'
+const Carousel = ({ images, autoPlayInterval = 4000 }) => {
+  const [currentIndex, setCurrentIndex] = useState(0)
 
-const CATEGORY_ORDER = [
-  'Electronics',
-  'Computers & Accessories',
-  'Gaming',
-  'Home & Kitchen',
-  'Clothing',
-  'Health & Beauty',
-  'Sports & Outdoors',
-  'Books',
-  'Toys & Games',
-  'Automotive',
-  'Grocery & Gourmet',
-]
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length)
+    }, autoPlayInterval)
+    return () => clearInterval(interval)
+  }, [autoPlayInterval, images.length])
 
-const CATEGORY_CARD_TITLES = {
-  Electronics: 'Upgrade your electronics',
-  'Computers & Accessories': 'Build your desk setup',
-  Gaming: 'Level up your play',
-  'Home & Kitchen': 'Refresh your home',
-  Clothing: 'Style picks for every day',
-  'Health & Beauty': 'Beauty and wellness finds',
-  'Sports & Outdoors': 'Gear up for the outdoors',
-  Books: 'Page-turners worth reading',
-  'Toys & Games': 'Playroom favorites',
-  Automotive: 'Keep your ride ready',
-  'Grocery & Gourmet': 'Pantry and gourmet picks',
-}
-
-const SHELF_TITLES = {
-  Electronics: 'Top picks in Electronics',
-  'Computers & Accessories': 'Work and play essentials',
-  Gaming: 'Most loved in Gaming',
-  'Home & Kitchen': 'Best sellers in Home & Kitchen',
-  Clothing: 'Trending fashion picks',
-  'Health & Beauty': 'Popular beauty finds',
-  'Sports & Outdoors': 'Outdoor and fitness favorites',
-  Books: 'Readers are loving these books',
-  'Toys & Games': 'Fun finds for every age',
-  Automotive: 'Automotive upgrades and tools',
-  'Grocery & Gourmet': 'Pantry picks and gourmet treats',
-}
-
-const categoryLink = (category) =>
-  `/products?category=${encodeURIComponent(category)}`
-
-const formatCurrency = (value = 0) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: Number.isInteger(Number(value)) ? 0 : 2,
-    maximumFractionDigits: 2,
-  }).format(Number(value) || 0)
-
-const getProductImage = (product, index = 0) =>
-  product.images?.[index] ?? product.images?.[0] ?? IMAGE_PLACEHOLDER
-
-const chunkItems = (items, chunkSize) => {
-  const chunks = []
-
-  for (let index = 0; index < items.length; index += chunkSize) {
-    chunks.push(items.slice(index, index + chunkSize))
-  }
-
-  return chunks
-}
-
-const sortByNewest = (products) =>
-  [...products].sort(
-    (left, right) =>
-      new Date(right.createdAt ?? 0).getTime() -
-      new Date(left.createdAt ?? 0).getTime()
-  )
-
-const sortByTopRated = (products) =>
-  [...products].sort((left, right) => {
-    const ratingDelta = (right.ratings ?? 0) - (left.ratings ?? 0)
-
-    if (ratingDelta !== 0) return ratingDelta
-
-    const reviewDelta = (right.numReviews ?? 0) - (left.numReviews ?? 0)
-
-    if (reviewDelta !== 0) return reviewDelta
-
-    return (right.price ?? 0) - (left.price ?? 0)
-  })
-
-function buildCategoryEntries(products) {
-  const groupedProducts = products.reduce((groups, product) => {
-    const category = product.category || 'Other'
-
-    if (!groups[category]) {
-      groups[category] = []
-    }
-
-    groups[category].push(product)
-    return groups
-  }, {})
-
-  const knownCategories = CATEGORY_ORDER.filter(
-    (category) => groupedProducts[category]?.length
-  )
-  const otherCategories = Object.keys(groupedProducts)
-    .filter((category) => !CATEGORY_ORDER.includes(category))
-    .sort()
-
-  return [...knownCategories, ...otherCategories].map((category) => [
-    category,
-    groupedProducts[category],
-  ])
-}
-
-function buildCategoryTiles(products) {
-  if (!products.length) return []
-
-  const primaryTiles = products.map((product) => ({
-    id: `${product._id}-primary`,
-    productId: product._id,
-    image: getProductImage(product),
-    label: product.name,
-  }))
-
-  const additionalTiles = products.flatMap((product) =>
-    (product.images ?? []).slice(1).map((image, index) => ({
-      id: `${product._id}-alt-${index}`,
-      productId: product._id,
-      image,
-      label: `${product.name} view ${index + 2}`,
-    }))
-  )
-
-  const tiles = [...primaryTiles, ...additionalTiles]
-
-  while (tiles.length < 4) {
-    const fallbackTile = tiles[tiles.length % Math.max(tiles.length, 1)]
-
-    if (!fallbackTile) break
-
-    tiles.push({
-      ...fallbackTile,
-      id: `${fallbackTile.id}-repeat-${tiles.length}`,
-    })
-  }
-
-  return tiles.slice(0, 4)
-}
-
-function buildShelfItems(products) {
-  return products.map((product) => ({
-    id: product._id,
-    productId: product._id,
-    image: getProductImage(product),
-    title: product.name,
-    category: product.category,
-    price: product.price,
-    rating: product.ratings ?? 0,
-    numReviews: product.numReviews ?? 0,
-    prime: product.prime,
-  }))
-}
-
-function CategoryShowcaseCard({ card }) {
   return (
-    <article className="hp-category-card">
-      <div className="hp-category-card__header">
-        <h2 className="hp-category-card__title">{card.title}</h2>
-        <span className="hp-category-card__count">{card.count} items</span>
-      </div>
-
-      <div className="hp-category-card__grid">
-        {card.items.map((item) => (
-          <Link
-            key={item.id}
-            to={`/products/${item.productId}`}
-            className="hp-category-card__tile"
-          >
-            <div className="hp-category-card__image">
-              <img
-                src={item.image}
-                alt={item.label}
-                loading="lazy"
-                onError={(event) => {
-                  event.target.src = IMAGE_PLACEHOLDER
-                }}
-              />
-            </div>
-            <span className="hp-category-card__label">{item.label}</span>
-          </Link>
+    <div className="hp-carousel">
+      <img
+        src={images[currentIndex]}
+        alt="Banner"
+        className="hp-carousel__image"
+      />
+      <div className="hp-carousel__dots">
+        {images.map((_, idx) => (
+          <button
+            key={idx}
+            className={`hp-carousel__dot ${idx === currentIndex ? 'active' : ''}`}
+            onClick={() => setCurrentIndex(idx)}
+            aria-label={`Go to slide ${idx + 1}`}
+          />
         ))}
       </div>
-
-      <Link to={card.link} className="hp-inline-link">
-        {card.footer}
-      </Link>
-    </article>
-  )
-}
-
-function ProductShelf({ title, items, link, linkLabel = 'See more' }) {
-  const trackRef = useRef(null)
-
-  if (!items.length) return null
-
-  const handleScroll = (direction) => {
-    if (!trackRef.current) return
-
-    trackRef.current.scrollBy({
-      left: direction * trackRef.current.clientWidth * 0.88,
-      behavior: 'smooth',
-    })
-  }
-
-  return (
-    <section className="hp-section">
-      <div className="hp-shelf">
-        <div className="hp-section__heading">
-          <div>
-            <h2 className="hp-section__title">{title}</h2>
-            <p className="hp-section__subtitle">
-              Built directly from your backend catalog data.
-            </p>
-          </div>
-          {link ? (
-            <Link to={link} className="hp-inline-link">
-              {linkLabel}
-            </Link>
-          ) : null}
-        </div>
-
-        <div className="hp-shelf__frame">
-          {items.length > 5 ? (
-            <button
-              type="button"
-              className="hp-shelf__arrow hp-shelf__arrow--prev"
-              onClick={() => handleScroll(-1)}
-              aria-label={`Scroll ${title} left`}
-            >
-              ‹
-            </button>
-          ) : null}
-
-          <div className="hp-shelf__track" ref={trackRef}>
-            {items.map((item) => (
-              <article key={item.id} className="hp-shelf__item">
-                <Link
-                  to={`/products/${item.productId}`}
-                  className="hp-shelf__image"
-                >
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    loading="lazy"
-                    onError={(event) => {
-                      event.target.src = IMAGE_PLACEHOLDER
-                    }}
-                  />
-                  {item.alternateView ? (
-                    <span className="hp-shelf__badge">More view</span>
-                  ) : null}
-                </Link>
-
-                <Link
-                  to={`/products/${item.productId}`}
-                  className="hp-shelf__name"
-                >
-                  {item.title}
-                </Link>
-
-                <p className="hp-shelf__meta">
-                  {item.category}
-                  {item.numReviews ? ` • ${item.numReviews} reviews` : ''}
-                </p>
-
-                <div className="hp-shelf__footer">
-                  <span className="hp-shelf__price">
-                    {formatCurrency(item.price)}
-                  </span>
-                  {item.prime ? (
-                    <span className="hp-shelf__tag hp-shelf__tag--prime">
-                      Prime
-                    </span>
-                  ) : item.rating > 0 ? (
-                    <span className="hp-shelf__tag">
-                      {item.rating.toFixed(1)} ★
-                    </span>
-                  ) : null}
-                </div>
-              </article>
-            ))}
-          </div>
-
-          {items.length > 5 ? (
-            <button
-              type="button"
-              className="hp-shelf__arrow hp-shelf__arrow--next"
-              onClick={() => handleScroll(1)}
-              aria-label={`Scroll ${title} right`}
-            >
-              ›
-            </button>
-          ) : null}
-        </div>
-      </div>
-    </section>
+    </div>
   )
 }
 
 export default function HomePage() {
+  const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const products = useProducts()
-  const status = useProductStatus()
-  const addToCart = useAddToCart()
   const isAuthenticated = useIsAuthenticated()
-  const fetchProducts = useFetchProducts()
+  const addToCart = useAddToCart()
 
-  const [searchParams] = useSearchParams()
-  const search = searchParams.get('search') ?? ''
+  const [allProducts, setAllProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    fetchProducts({ search, limit: 100 })
-  }, [fetchProducts, search])
+    const fetchProducts = async () => {
+      try {
+        setLoading(true)
+        const response = await axiosInstance.get('/products?page=1&limit=100')
+        const products = Array.isArray(response.data)
+          ? response.data
+          : response.data.products || response.data.data || []
+        setAllProducts(products)
+      } catch (err) {
+        setError(err.message || 'Failed to load products')
+        console.error('Failed to fetch products:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  const categoryEntries = useMemo(
-    () => buildCategoryEntries(products),
-    [products]
-  )
+    fetchProducts()
+  }, [])
 
-  const categoryRows = useMemo(() => {
-    const cards = categoryEntries.map(([category, categoryProducts]) => ({
-      category,
-      title: CATEGORY_CARD_TITLES[category] ?? `Explore ${category}`,
-      link: categoryLink(category),
-      footer: `See more in ${category}`,
-      count: categoryProducts.length,
-      items: buildCategoryTiles(categoryProducts),
-    }))
+  // Handle product click - navigate to detail page
+  const handleProductClick = (productId) => {
+    navigate(`/products/${productId}`)
+  }
 
-    return chunkItems(cards, 4)
-  }, [categoryEntries])
-
-  const dealShelfItems = useMemo(
-    () => buildShelfItems(sortByTopRated(products).slice(0, 12)),
-    [products]
-  )
-
-  const newestShelfItems = useMemo(
-    () => buildShelfItems(sortByNewest(products).slice(0, 12)),
-    [products]
-  )
-
-  const categoryShelves = useMemo(
-    () =>
-      categoryEntries
-        .map(([category, categoryProducts]) => ({
-          title: SHELF_TITLES[category] ?? `Top picks in ${category}`,
-          link: categoryLink(category),
-          items: buildShelfItems(categoryProducts.slice(0, 10)), // Limit to 10 per category
-        }))
-        .filter((section) => section.items.length > 0),
-    [categoryEntries]
-  )
-
-  const handleAddToCart = ({ productId, title }) => {
+  // Handle add to cart with toast notification
+  const handleAddToCart = async (product) => {
     if (!isAuthenticated) {
       dispatch(
         addToast({
           title: 'Sign in required',
-          message: 'Please sign in to add items.',
+          message: 'Please sign in to add items to cart.',
           type: 'info',
         })
       )
       return
     }
 
-    addToCart({ productId, quantity: 1 })
-
-    dispatch(
-      addToast({
-        title: 'Added',
-        message: `${title ?? 'Product'} added to cart.`,
-        type: 'success',
+    try {
+      const result = await addToCart({
+        productId: product._id,
+        quantity: 1,
       })
-    )
+
+      if (result.type === 'cart/addToCart/fulfilled' || result.payload) {
+        dispatch(
+          addToast({
+            title: 'Added to Cart',
+            message: `${product.name} added to cart successfully!`,
+            type: 'success',
+          })
+        )
+      } else {
+        dispatch(
+          addToast({
+            title: 'Failed',
+            message: 'Could not add product to cart.',
+            type: 'error',
+          })
+        )
+      }
+    } catch (err) {
+      dispatch(
+        addToast({
+          title: 'Error',
+          message: 'Failed to add product to cart.',
+          type: 'error',
+        })
+      )
+    }
+  }
+  // Derive sections from products array
+  const sections = {
+    topDeals: allProducts
+      .sort((a, b) => (a.price || 0) - (b.price || 0))
+      .slice(0, 10),
+    newArrivals: allProducts
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+      .slice(0, 8),
+    electronics:
+      allProducts.filter(
+        (p) =>
+          p.category?.toLowerCase().includes('electronic') ||
+          p.category === 'Electronics'
+      ).length > 0
+        ? allProducts.filter(
+            (p) =>
+              p.category?.toLowerCase().includes('electronic') ||
+              p.category === 'Electronics'
+          )
+        : allProducts.slice(0, 6),
+    fashion:
+      allProducts.filter(
+        (p) =>
+          p.category?.toLowerCase().includes('fashion') ||
+          p.category === 'Fashion'
+      ).length > 0
+        ? allProducts.filter(
+            (p) =>
+              p.category?.toLowerCase().includes('fashion') ||
+              p.category === 'Fashion'
+          )
+        : allProducts.slice(0, 6),
+    bestSellers: allProducts
+      .sort((a, b) => (b.ratings || 0) - (a.ratings || 0))
+      .slice(0, 8),
+    allProducts: allProducts,
   }
 
-  if ((status === 'loading' || status === 'idle') && !products.length) {
+  if (loading) {
     return (
       <div className="home-page">
-        <div className="home-page__skeleton-grid">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <SkeletonCard key={index} />
-          ))}
-        </div>
+        <p style={{ textAlign: 'center', padding: '2rem' }}>
+          Loading products...
+        </p>
       </div>
     )
   }
 
-  if (status === 'failed' && !products.length) {
-    return (
-      <EmptyState
-        title="Unable to load products"
-        description="Please try again later."
-        action={
-          <button
-            type="button"
-            className="btn btn--primary"
-            onClick={() => fetchProducts({ search, limit: 100 })}
-          >
-            Retry
-          </button>
-        }
-      />
-    )
-  }
-
-  if (search) {
+  if (error) {
     return (
       <div className="home-page">
-        <section className="hp-section hp-section--search">
-          <div className="hp-product-panel">
-            <div className="hp-section__heading">
-              <div>
-                <h1 className="hp-search-title">Results for "{search}"</h1>
-                <p className="hp-section__subtitle">
-                  {products.length} backend products matched your search.
-                </p>
-              </div>
-              <Link to="/products" className="hp-inline-link">
-                Open product catalog
-              </Link>
-            </div>
-
-            {products.length ? (
-              <div className="hp-product-panel__grid">
-                {products.map((product) => (
-                  <ProductCard
-                    key={product._id}
-                    product={product}
-                    onAddToCart={handleAddToCart}
-                  />
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                title="No products found"
-                description="Try a different search term or browse the full catalog."
-              />
-            )}
-          </div>
-        </section>
+        <p style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>
+          Error: {error}
+        </p>
       </div>
     )
   }
 
   return (
     <div className="home-page">
-      <section className="hp-hero">
-        <Carousel images={CAROUSEL_IMAGES} autoPlayInterval={4000} />
-      </section>
+      <Carousel images={CAROUSEL_IMAGES} autoPlayInterval={4000} />
 
-      {categoryRows[0]?.length ? (
-        <section className="hp-section hp-section--overlap">
-          <div className="hp-card-grid">
-            {categoryRows[0].map((card) => (
-              <CategoryShowcaseCard key={card.category} card={card} />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      <ProductShelf
-        title="Today's top deals from your backend"
-        items={dealShelfItems}
-        link="/products"
-        linkLabel="Shop all deals"
+      <Section
+        title="Top Deals"
+        products={sections.topDeals}
+        layout="scroll"
+        onProductClick={handleProductClick}
+        onAddToCart={handleAddToCart}
       />
-
-      {categoryRows.slice(1).map((row, index) => (
-        <section key={index} className="hp-section">
-          <div className="hp-card-grid">
-            {row.map((card) => (
-              <CategoryShowcaseCard key={card.category} card={card} />
-            ))}
-          </div>
-        </section>
-      ))}
-
-      <ProductShelf
-        title="New arrivals in your catalog"
-        items={newestShelfItems}
-        link="/products?sort=-createdAt"
-        linkLabel="See newest"
+      <Section
+        title="New Arrivals"
+        products={sections.newArrivals}
+        layout="scroll"
+        onProductClick={handleProductClick}
+        onAddToCart={handleAddToCart}
       />
-
-      {categoryShelves.map((section) => (
-        <ProductShelf
-          key={section.title}
-          title={section.title}
-          items={section.items}
-          link={section.link}
-          linkLabel="See more"
-        />
-      ))}
-
-      {!products.length ? (
-        <section className="hp-section">
-          <EmptyState
-            title="No products available"
-            description="Check back later for new deals."
-          />
-        </section>
-      ) : null}
+      <Section
+        title="Electronics"
+        products={sections.electronics}
+        layout="grid"
+        onProductClick={handleProductClick}
+        onAddToCart={handleAddToCart}
+      />
+      <Section
+        title="Fashion"
+        products={sections.fashion}
+        layout="scroll"
+        onProductClick={handleProductClick}
+        onAddToCart={handleAddToCart}
+      />
+      <Section
+        title="Best Sellers"
+        products={sections.bestSellers}
+        layout="scroll"
+        onProductClick={handleProductClick}
+        onAddToCart={handleAddToCart}
+      />
+      <Section
+        title="All Products"
+        products={sections.allProducts}
+        layout="grid"
+        onProductClick={handleProductClick}
+        onAddToCart={handleAddToCart}
+      />
     </div>
   )
 }
